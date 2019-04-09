@@ -16,10 +16,13 @@ async function fnMain(){
     // HINT: if config isn't valid, then abort
     // fnValidateConfig(config);
 
-    // set permissions of /share
+    // reset permissions of "/share"
+    execSync("setfacl -R -bn /share");
+    execSync("chmod -R a+rX /share");
+    
+    // set permissions of "/share"
     // EXPLAIN: at first, we set that "/share" and all its children are owned by root:root
     //   and that only root can read or make changes to them
-    // TODO: reset the ACLs before modifying them
     execSync("chown -R root:root /share");
     execSync("setfacl -R -m 'u::rwx,g::rwx,o::x' /share");
     execSync("setfacl -R -dm 'u::rwx,g::rwx,o::x' /share");
