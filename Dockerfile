@@ -10,7 +10,8 @@ RUN yum clean all -y \
     samba \
     samba-client \
     samba-common \
-  && yum autoremove -y
+  && yum autoremove -y \
+  && yum clean all -y
 
 COPY ./startup /startup
 
