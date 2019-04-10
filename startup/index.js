@@ -1,4 +1,6 @@
 
+
+
 // we need "child_process" and "fs"
 const { exec, execSync, spawnSync, spawn } = require("child_process");
 const fs = require("fs");
@@ -10,6 +12,12 @@ fnMain();
 
 
 
+// TODO: implement anonymous login
+// TODO: implement read-write and read-only permissions
+//   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "users": ["rw:user1", "ro:user2"] }
+// TODO: implement user groups support
+//   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "access": ["rw:group1", "ro:group2", "rw:user1"] }
+// TODO: handle SIGTERM
 async function fnMain(){
     // load configuration from JSON file "/share/config.json"
     const config = fnLoadConfig("/share/config.json");
@@ -32,6 +40,7 @@ async function fnMain(){
     console.log("[LOG] '/share/config.json' syntax is correct.");
 
     // reset permissions of "/share"
+    // TODO: replace execSync() with spawnSync()
     try {
         execSync("setfacl -R -bn /share", { stdio: [undefined, undefined, undefined] });
         execSync("chmod -R a+rX /share", { stdio: [undefined, undefined, undefined] });
@@ -46,6 +55,7 @@ async function fnMain(){
     // set permissions of "/share"
     // EXPLAIN: at first, we set that "/share" and all its children are owned by root:root
     //   and that only root can read or make changes to them
+    // TODO: replace execSync() with spawnSync()
     try {
         execSync("chown -R root:root /share", { stdio: [undefined, undefined, undefined] });
         execSync("setfacl -R -m 'u::rwx,g::rwx,o::x' /share", { stdio: [undefined, undefined, undefined] });
@@ -123,8 +133,6 @@ async function fnMain(){
     console.log("[LOG] SAMBA server is now ready.");
 
     // prevent this script from exiting, so that this container doesn't stop
-    // TODO: find a better alternative
-    // HINT: process.stdin.resume() doesn't seem to work...
     forever();
 }
 
@@ -132,6 +140,8 @@ async function fnMain(){
 
 // FUNCTION: forever()
 // PURPOSE: prevent the script from exiting
+// TODO: find a better alternative
+// HINT: process.stdin.resume() doesn't seem to work...
 function forever(){
     // forever() just calls itself every 5 seconds
     setTimeout(() => { forever(); }, 5000);
@@ -175,9 +185,10 @@ function fnValidateConfig(config){
     }
 
     // TODO: check if all usernames in config["users"] are correct UNIX usernames (according to useradd man page)
+    //   also check that their passwords are valid UNIX passwords
 
     // TODO: check if all shares in config["shares"] are valid shares
-    // EXPLAIN: "name" of the share must be a valid name; "path" must a valid children path of "/share"; "users" must be valid
+    //   EXPLAIN: "name" of the share must be a valid name; "path" must a valid children path of "/share"; "users" must be valid
 
     return true;
 }
@@ -300,23 +311,46 @@ function fnCreateUsers(users){
     while (i < users.length){
         
         // add the user to the OS
-        // TODO: this use of execSync() is very dangerous (HINT: use "stdin" option of execSync)
         // EXAMPLE: users[i] == { "name": "user1", "password": "123456" } --->
-        //   execSync(" useradd user1 ");
-        //   execSync(" echo '123456' | passwd user1 --stdin ");
-        execSync("useradd " + users[i]["name"]);
-        execSync("echo '" + users[i]["password"] + "' | passwd " + users[i]["name"] + " --stdin");
+        //   useradd user1
+        //   echo '123456' | passwd user1 --stdin
+        try {
+            if (fnUserExists(users[i]["name"]) === true){ throw "ERROR"; }
+            spawnSync("useradd", [users[i]["name"]], { stdio: [undefined, undefined, undefined] });
+            spawnSync("passwd", [users[i]["name"], "--stdin"], { input: users[i]["password"] + "\n", stdio: [undefined, undefined, undefined] });
+        }
+        catch (error){
+            return "USER '" + users[i]["name"] + "' COULD NOT BE ADDED TO OS";
+        }
         
         // add the user to SAMBA
-        // TODO: this use of execSync() is very dangerous (HINT: use "stdin" option of execSync)
         // EXAMPLE: users[i] == { "name": "user1", "password": "123456" } --->
-        //   execSync(" (echo '123456'; echo '123456') | smbpasswd -a user1 -s ");
-        execSync("(echo '" + users[i]["password"] + "'; echo '" + users[i]["password"] + "') | smbpasswd -a " + users[i]["name"] + " -s");
+        //   (echo '123456'; echo '123456') | smbpasswd -a user1 -s
+        try {
+            spawnSync("smbpasswd", ["-a", users[i]["name"], "-s"], { input: users[i]["password"] + "\n" + users[i]["password"] + "\n", stdio: [undefined, undefined, undefined] });
+        }
+        catch (error){
+            return "USER '" + users[i]["name"] + "' COULD NOT BE ADDED TO SAMBA";
+        }
         
         i++;
     }
 
     return true;
+}
+
+
+
+// FUNCTION: fnUserExists()
+// INPUT: "username" is the user to check
+// OUTPUT: true in case the user exists, otherwise false
+// PURPOSE: check if a given user exists in the OS
+// TODO: algorithm could be improved, but for now it should work for every future release of "centos:7" docker image
+function fnUserExists(username){
+    return (
+        username === "root" ||
+        fs.readFileSync("/etc/passwd", "utf8").includes("\n" + username + ":x")
+    );
 }
 
 
@@ -331,16 +365,22 @@ function fnCreateShares(shares){
     while (i < shares.length){
         
         // if it doesn't exist on disk, create it
-        // TODO: using fs.existsSync() is an obsolete method
-        if (fs.existsSync(shares[i]["path"]) !== true){
-            fs.mkdirSync(shares[i]["path"]);
+        // TODO: could be improved
+        try {
+            if (fs.existsSync(shares[i]["path"]) !== true){
+                fs.mkdirSync(shares[i]["path"]);
+            }
+            if (fs.existsSync(shares[i]["path"]) !== true){ throw "ERROR"; }
+        }
+        catch (error){
+            return "SHARE '" + shares[i]["path"] + "' COULD NOT BE CREATED";
         }
         
         // for each "user" of the share, generate the ACLs
         // EXAMPLE: shares[i]["users"] == ["user1", "user2"] --->
-        //   entries == "u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx"
+        //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx"
         let j = 0;
-        let entries = [];
+        let entries = ["u::rwx", "g::rwx", "o::x"];
         while (j < shares[i]["users"].length){
             entries.push("u:" + shares[i]["users"][j] + ":rwx,g:" + shares[i]["users"][j] + ":rwx");
             j++;
@@ -348,14 +388,18 @@ function fnCreateShares(shares){
         entries = entries.join(",");
         
         // set the correct ACLs for the share
-        // TODO: this use of execSync() is very dangerous
         // EXAMPLE: shares[i]["path"] == "/share/public" --->
-        //   execSync(" chown root:root '/share/public' ");
-        //   execSync(" setfacl -R -m 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public' ");
-        //   execSync(" setfacl -R -dm 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public' ");
-        execSync("chown root:root '" + shares[i]["path"] + "'");
-        execSync("setfacl -R -m 'u::rwx,g::rwx,o::x," + entries + "' '" + shares[i]["path"] + "'");
-        execSync("setfacl -R -dm 'u::rwx,g::rwx,o::x," + entries + "' '" + shares[i]["path"] + "'");
+        //   chown -R root:root '/share/public'
+        //   setfacl -R -m 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
+        //   setfacl -R -dm 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
+        try {
+            spawnSync("chown", ["-R", "root:root", shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
+            spawnSync("setfacl", ["-R", "-m", entries, shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
+            spawnSync("setfacl", ["-R", "-dm", entries, shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
+        }
+        catch (error){
+            return "PERMISSIONS FOR '" + shares[i]["path"] + "' COULD NOT BE SET";
+        }
         
         i++;
     }
