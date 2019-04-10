@@ -1,19 +1,22 @@
 
 
-FROM adevur/centos-nodejs:lts
+FROM centos:7
 
 MAINTAINER adevur (madavurro@protonmail.com)
 
-RUN yum clean all -y \
+COPY ./startup /startup
+
+RUN (curl -sL https://rpm.nodesource.com/setup_10.x | bash -) \
+  && yum clean all -y \
   && yum update -y \
   && yum install -y \
     samba \
     samba-client \
     samba-common \
+    nodejs \
   && yum autoremove -y \
-  && yum clean all -y
-
-COPY ./startup /startup
+  && yum clean all -y \
+  && npm install npm --global
 
 CMD ["node", "/startup/index.js"]
 
