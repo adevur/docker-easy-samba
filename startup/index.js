@@ -30,6 +30,10 @@ fnMain().catch((error) => {
 // TODO: implement "*" wildcard to match all users in config.json/shares/access
 //   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "access": ["ro:*", "rw:user1"] }
 //     it means: share named "public" with path "/share/public" can be read by all users, and only "user1" has write permissions on it
+// TODO: implement "no:" permission in "config.json/shares/access" property
+//   EXAMPLE: { "name": "public", "path": "/share/public", "access": ["rw:group1", "ro:user1", "no:user2"] }
+//     it means: there's a share named "public" located at "/share/public" and it can be read and written by all users of group1
+//       with two exceptions: user1 has only read access, and user2 has no access at all
 async function fnMain(){
     // handle SIGTERM signals in case someone tries to stop this script
     process.on("SIGTERM", () => {
