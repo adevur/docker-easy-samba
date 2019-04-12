@@ -5,9 +5,12 @@
         { "name": "user1", "password": "123456" },
         { "name": "user2", "password": "aaabbb" }
     ],
+    "groups": [
+        { "name": "group1", "users": ["user1", "user2"] }
+    ],
     "shares": [
-        { "name": "public", "path": "/share/public", "users": ["user1", "user2"] },
-        { "name": "user1", "path": "/share/user1", "users": ["user1"] },
-        { "name": "user2", "path": "/share/user2", "users": ["user2"] }
+        { "name": "public", "path": "/share/public", "access": ["ro:group1", "rw:user1"] },
+        { "name": "user1", "path": "/share/user1", "access": ["user1"] },
+        { "name": "user2", "path": "/share/user2", "access": ["user2"] }
     ]
 }
