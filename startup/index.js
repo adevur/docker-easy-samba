@@ -31,6 +31,9 @@ fnMain().catch((error) => {
 //   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "users": ["rw:user1", "ro:user2"] }
 // TODO: implement user groups support
 //   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "access": ["rw:group1", "ro:group2", "rw:user1"] }
+// TODO: implement "*" wildcard to match all users in config.json/shares/access
+//   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "access": ["ro:*", "rw:user1"] }
+//     it means: share named "public" with path "/share/public" can be read by all users, and only "user1" has write permissions on it
 async function fnMain(){
     // handle SIGTERM signals in case someone tries to stop this script
     process.on("SIGTERM", () => {
