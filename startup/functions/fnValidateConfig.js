@@ -26,7 +26,7 @@ const fnValidateString = require("/startup/functions/fnValidateString.js");
 //   check if config file content is correct
 function fnValidateConfig(config){
     // TODO: document "sharedb"
-    const sharedb = { "users": [], "names": ["global", "guest"], "paths": ["/share/config.json"] };
+    const sharedb = { "users": [], "names": ["global", "guest"], "paths": ["/share/config.json"], "groups": {} };
 
     // "config" must contain "domain", "guest", "users" and "shares" properties
     if (fnHas(config, ["domain", "guest", "users", "shares"]) !== true){
@@ -108,15 +108,27 @@ function fnValidateConfig(config){
         return "'users' MUST BE AN ARRAY";
     }
 
+    // TODO: work in progress
+    if (fnHas(config, "groups")){
+        // TODO: config["groups"] must be an array of elements like {"name": "group1", "users": ["user1", "user2"]}
+
+        // TODO: a group name must follow the same rules of usernames; cannot exist a group and a user with the same name
+
+        // put groups into sharedb
+        config["groups"].forEach((group) => {
+            sharedb.groups[group["name"]] = group["users"];
+        });
+    }
+
     // check "shares" property
     // "shares" must be an array (it can be empty)
     if (fnIsArray(config["shares"]) === true){
         // for each "share" in "shares" ...
         let error = "";
         const result = config["shares"].every((share) => {
-            // "share" must have "name", "path" and "users" properties
-            if (fnHas(share, ["name", "path", "users"]) !== true){
-                error = "EVERY SHARE IN 'shares' MUST HAVE 'name', 'path' AND 'users' PROPERTIES";
+            // "share" must have "name", "path" and "access" properties (and cannot have "users" property)
+            if (fnHas(share, ["name", "path", "access"]) !== true || fnHas(share, ["users"]) === true){
+                error = "EVERY SHARE IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' PROPERTIES";
                 return false;
             }
             // "name" must be a unique alphanumeric name of minimum 1 char length
@@ -146,15 +158,64 @@ function fnValidateConfig(config){
                 error = "SHARE PATHS MUST BE ALPHANUMERIC";
                 return false;
             }
-            // check share["users"]
-            // EXPLAIN: must be an array; must contain only users defined early in config["users"]
-            if (fnIsArray(share["users"]) !== true || (share["users"].every((user) => { return sharedb.users.includes(user); })) !== true){
-                error = "ONE OR MORE USERS OF SHARE '" + share["name"] + "' ARE NOT VALID";
+            // check share["access"]
+            // must be an array
+            if (fnIsArray(share["access"]) !== true){
+                error = "PROPERTY 'access' OF SHARE '" + share["name"] + "' IS NOT AN ARRAY";
+                return false;
+            }
+            // must contain only users or groups defined early in config["users"] and config["groups"]
+            // users and groups can be prefixed with "rw:" or "ro:"
+            const temp = share["access"].every((access) => {
+                if ((access.startsWith("rw:") || access.startsWith("ro:")) && access.length > 3){
+                    if (sharedb.users.includes(access.substring(3)) || fnHas(sharedb.groups, access.substring(3))){
+                        return true;
+                    }
+                }
+                else if (sharedb.users.includes(access) || fnHas(sharedb.groups, access)){
+                    return true;
+                }
+                return false;
+            });
+            if (temp !== true){
+                error = "ONE OR MORE ACCESS RULES OF SHARE '" + share["name"] + "' ARE NOT VALID";
                 return false;
             }
 
+            // push shares' names
             sharedb.names.push(share["name"]);
+            // push shares' paths
             sharedb.paths.push(share["path"]);
+            // TODO: update config["shares"] in order to include "users" property
+            // TODO: EXPLAIN
+            share["users"] = [];
+            share["access"].forEach((access) => {
+                if (fnHas(sharedb.groups, (access.startsWith("ro:") || access.startsWith("rw:")) ? access.substring(3) : access)){
+                    const users = (fnHas(sharedb.groups, access)) ? sharedb.groups[access] : sharedb.groups[access.substring(3)];
+                    const perm = (access.startsWith("ro:")) ? "ro:" : "rw:";
+                    users.forEach((user) => {
+                        if (share["users"].indexOf("ro:" + user) >= 0){
+                            share["users"].splice(share["users"].indexOf("ro:" + user), 1);
+                        }
+                        if (share["users"].indexOf("rw:" + user) >= 0){
+                            share["users"].splice(share["users"].indexOf("rw:" + user), 1);
+                        }
+                        share["users"].push(perm + user);
+                    });
+                }
+                else {
+                    const user = (access.startsWith("ro:") || access.startsWith("rw:")) ? access.substring(3) : access;
+                    const perm = (access.startsWith("ro:")) ? "ro:" : "rw:";
+                    if (share["users"].indexOf("ro:" + user) >= 0){
+                        share["users"].splice(share["users"].indexOf("ro:" + user), 1);
+                    }
+                    if (share["users"].indexOf("rw:" + user) >= 0){
+                        share["users"].splice(share["users"].indexOf("rw:" + user), 1);
+                    }
+                    share["users"].push(perm + user);
+                }
+            });
+
             return true;
         });
         if (result !== true){

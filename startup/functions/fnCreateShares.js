@@ -35,12 +35,14 @@ function fnCreateShares(shares){
         }
         
         // for each "user" of the share, generate the ACLs
-        // EXAMPLE: shares[i]["users"] == ["user1", "user2"] --->
-        //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx"
+        // EXAMPLE: shares[i]["users"] == ["rw:user1", "ro:user2"] --->
+        //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rx,g:user2:rx"
         let j = 0;
         let entries = ["u::rwx", "g::rwx", "o::x"];
         while (j < shares[i]["users"].length){
-            entries.push("u:" + shares[i]["users"][j] + ":rwx,g:" + shares[i]["users"][j] + ":rwx");
+            const user = shares[i]["users"][j].substring(3);
+            const perm = (shares[i]["users"][j].startsWith("ro:")) ? "rx" : "rwx";
+            entries.push("u:" + user + ":" + perm + ",g:" + user + ":" + perm);
             j++;
         }
         entries = entries.join(",");
