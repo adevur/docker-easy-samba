@@ -1,24 +1,46 @@
 
 
 
-// we need "child_process" and "fs"
-const { exec, execSync, spawnSync, spawn } = require("child_process");
+// dependencies
+
+// native Node.js modules
+const { spawnSync, spawn } = require("child_process");
 const fs = require("fs");
+
+// external functions
+const fnLoadConfig = require("/startup/functions/fnLoadConfig.js");
+const fnValidateConfig = require("/startup/functions/fnValidateConfig.js");
+const fnCreateGuest = require("/startup/functions/fnCreateGuest.js");
+const fnCreateUsers = require("/startup/functions/fnCreateUsers.js");
+const fnCreateShares = require("/startup/functions/fnCreateShares.js");
+const fnGenSmbConf = require("/startup/functions/fnGenSmbConf.js");
+const fnSleep = require("/startup/functions/fnSleep.js");
 
 
 
 // call the main function of this script
-fnMain();
+fnMain().catch((error) => {
+    console.log("[ERROR] script has failed for unknown reasons.");
+    console.log("[DEBUG] DETAILS ABOUT THE ERROR:", error);
+});
 
 
 
-// TODO: implement anonymous login
+// FIXME: guest share implementation gives permission errors
 // TODO: implement read-write and read-only permissions
 //   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "users": ["rw:user1", "ro:user2"] }
 // TODO: implement user groups support
 //   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "access": ["rw:group1", "ro:group2", "rw:user1"] }
-// TODO: handle SIGTERM
 async function fnMain(){
+    // handle SIGTERM signals in case someone tries to stop this script
+    process.on("SIGTERM", () => {
+        process.exitCode = 0;
+        process.exit();
+    });
+
+    // now the script can start
+    console.log("[LOG] SAMBA server configuration process has started.");
+
     // load configuration from JSON file "/share/config.json"
     const config = fnLoadConfig("/share/config.json");
     
@@ -40,10 +62,10 @@ async function fnMain(){
     console.log("[LOG] '/share/config.json' syntax is correct.");
 
     // reset permissions of "/share"
-    // TODO: replace execSync() with spawnSync()
+    // HOW: setfacl -R -bn /share && chmod -R a+rX /share
     try {
-        execSync("setfacl -R -bn /share", { stdio: [undefined, undefined, undefined] });
-        execSync("chmod -R a+rX /share", { stdio: [undefined, undefined, undefined] });
+        spawnSync("setfacl", ["-R", "-bn", "/share"], { stdio: "ignore" });
+        spawnSync("chmod", ["-R", "a+rX", "/share"], { stdio: "ignore" });
     }
     catch (error){
         console.log("[ERROR] permissions of '/share' could not be reset.");
@@ -55,11 +77,14 @@ async function fnMain(){
     // set permissions of "/share"
     // EXPLAIN: at first, we set that "/share" and all its children are owned by root:root
     //   and that only root can read or make changes to them
-    // TODO: replace execSync() with spawnSync()
+    // HOW:
+    //   chown -R root:root /share
+    //   setfacl -R -m 'u::rwx,g::rwx,o::x' /share
+    //   setfacl -R -dm 'u::rwx,g::rwx,o::x' /share
     try {
-        execSync("chown -R root:root /share", { stdio: [undefined, undefined, undefined] });
-        execSync("setfacl -R -m 'u::rwx,g::rwx,o::x' /share", { stdio: [undefined, undefined, undefined] });
-        execSync("setfacl -R -dm 'u::rwx,g::rwx,o::x' /share", { stdio: [undefined, undefined, undefined] });
+        spawnSync("chown", ["-R", "root:root", "/share"], { stdio: "ignore" });
+        spawnSync("setfacl", ["-R", "-m", "u::rwx,g::rwx,o::x", "/share"], { stdio: "ignore" });
+        spawnSync("setfacl", ["-R", "-dm", "u::rwx,g::rwx,o::x", "/share"], { stdio: "ignore" });
     }
     catch (error){
         console.log("[ERROR] permissions of '/share' could not be set.");
@@ -68,10 +93,19 @@ async function fnMain(){
     }
     console.log("[LOG] permissions of '/share' have been correctly set.");
 
-    // TODO: add the capability of creating an anonymous share
-    /*if (config["guest"] !== false){
-        fnCreateGuest(config["guest"]);
-    }*/
+    // add guest share
+    if (config["guest"] !== false) {
+        const createGuest = fnCreateGuest(config["guest"]);
+        if (createGuest !== true){
+            console.log("[ERROR] guest share could not be created: " + createGuest + ".");
+            process.exitCode = 1;
+            return;
+        }
+        console.log("[LOG] guest share has been correctly created.");
+    }
+    else {
+        console.log("[LOG] guest share will not be created.");
+    }
 
     // add the users in the container's OS and in SAMBA
     const createUsers = fnCreateUsers(config["users"]);
@@ -93,7 +127,7 @@ async function fnMain(){
 
     // generate the SAMBA server configuration and write it to "/etc/samba/smb.conf"
     try {
-        const smbconf = fnGenSmbConf(config["domain"], /*config["guest"]*/ false, config["shares"]);
+        const smbconf = fnGenSmbConf(config["domain"], config["guest"], config["shares"]);
         fs.writeFileSync("/etc/samba/smb.conf", smbconf);
     }
     catch (error){
@@ -104,382 +138,50 @@ async function fnMain(){
     console.log("[LOG] '/etc/samba/smb.conf' has been correctly generated and written.");
 
     // start "nmbd" daemon
-    try {
-        spawn("/usr/sbin/nmbd", ["--daemon", "--no-process-group"], { stdio: [undefined, undefined, undefined] });
-    }
-    catch (error){
-        console.log("[ERROR] 'nmbd' could not be started.");
-        process.exitCode = 1;
-        return;
-    }
-    console.log("[LOG] 'nmbd' has been correctly started.");
+    console.log("[LOG] starting 'nmbd'...");
+    spawn("/usr/sbin/nmbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
+        .on("error", () => {
+            console.log("[ERROR] 'nmbd' could not be started.");
+            process.exitCode = 1;
+            process.exit();
+        })
+        .on("exit", () => {
+            console.log("[ERROR] 'nmbd' terminated for unknown reasons.");
+            process.exitCode = 1;
+            process.exit();
+        })
+        .on("message", () => {
+            // do nothing
+            // EXPLAIN: this is needed in order to prevent the script from exiting
+        })
+    ;
 
     // wait 2 seconds
     console.log("[LOG] waiting 2 seconds before starting 'smbd'...");
     await fnSleep(2000);
 
     // start "smbd" daemon
-    try {
-        spawn("/usr/sbin/smbd", ["--daemon", "--no-process-group"], { stdio: [undefined, undefined, undefined] });
-    }
-    catch (error){
-        console.log("[ERROR] 'smbd' could not be started.");
-        process.exitCode = 1;
-        return;
-    }
-    console.log("[LOG] 'smbd' has been correctly started.");
+    console.log("[LOG] starting 'smbd'...");
+    spawn("/usr/sbin/smbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
+        .on("error", () => {
+            console.log("[ERROR] 'smbd' could not be started.");
+            process.exitCode = 1;
+            process.exit();
+        })
+        .on("exit", () => {
+            console.log("[ERROR] 'smbd' terminated for unknown reasons.");
+            process.exitCode = 1;
+            process.exit();
+        })
+        .on("message", () => {
+            // do nothing
+            // EXPLAIN: this is needed in order to prevent the script from exiting
+        })
+    ;
 
     // script has been executed, now the SAMBA server is ready
     console.log("[LOG] SAMBA server is now ready.");
-
-    // prevent this script from exiting, so that this container doesn't stop
-    forever();
 }
 
-
-
-// FUNCTION: forever()
-// PURPOSE: prevent the script from exiting
-// TODO: find a better alternative
-// HINT: process.stdin.resume() doesn't seem to work...
-function forever(){
-    // forever() just calls itself every 5 seconds
-    setTimeout(() => { forever(); }, 5000);
-}
-
-
-
-// FUNCTION: fnLoadConfig()
-// INPUT: "path": path of the configuration file
-// OUTPUT: the content of the config file, already parsed; it returns false in case of errors
-// PURPOSE: load the configuration file
-function fnLoadConfig(path){
-    try {
-        return JSON.parse(fs.readFileSync(path, "utf8"));
-    }
-    catch (error){
-        return false;
-    }
-}
-
-
-
-// FUNCTION: fnValidateConfig()
-// INPUT: configuration, as parsed from "/share/config.json"
-// OUTPUT: true in case of no errors, otherwise a string that describes the error
-// PURPOSE: check if config file syntax is correct
-// TODO: check "users" and "shares"
-function fnValidateConfig(config){
-    // "config" must contain "domain", "users" and "shares" properties
-    if (
-        config.hasOwnProperty("domain") !== true ||
-        config.hasOwnProperty("users") !== true ||
-        config.hasOwnProperty("shares") !== true
-    ){
-        return "DOESN'T CONTAIN 'domain', 'users' AND 'shares'";
-    }
-
-    // "domain" must be a valid NetBIOS name
-    if (fnCheckNetBIOSname(String(config["domain"])) !== true){
-        return "'domain' IS NOT A VALID NETBIOS NAME";
-    }
-
-    // TODO: check if all usernames in config["users"] are correct UNIX usernames (according to useradd man page)
-    //   also check that their passwords are valid UNIX passwords
-
-    // TODO: check if all shares in config["shares"] are valid shares
-    //   EXPLAIN: "name" of the share must be a valid name; "path" must a valid children path of "/share"; "users" must be valid
-
-    return true;
-}
-
-
-
-// FUNCTION: fnCheckNetBIOSname()
-// INPUT: "name": name to validate
-// OUTPUT: true in case the name is valid, otherwise false
-// PURPOSE: check that a given name is a valid NetBIOS Name
-// SOURCE: https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name
-function fnCheckNetBIOSname(name){
-    // minimum length: 1 character, maximum length: 15 characters
-    if (name.length < 1 || name.length > 15){
-        return false;
-    }
-
-    // check if "name" is an ASCII string
-    if (fnIsAsciiString(name) !== true){
-        return false;
-    }
-
-    // first character must be alphanumeric
-    if (fnIsAlphanumericString(name.charAt(0)) !== true){
-        return false;
-    }
-
-    // last character must be alphanumeric
-    if (fnIsAlphanumericString(name.charAt(name.length - 1)) !== true){
-        return false;
-    }
-
-    // "name" cannot be made entirely of digits
-    if (fnIsNumericString(name) === true){
-        return false;
-    }
-
-    // if "name" has more than two characters, all of them (except first and last) may be alphanumeric or hyphen
-    if (name.length > 2 && fnIsAlphanumericString(name.substring(1).slice(0, -1), true) !== true){
-        return false;
-    }
-
-    return true;
-}
-
-
-
-// FUNCTION: fnIsAsciiString()
-// INPUT: "str" is the string to check
-// OUTPUT: true in case "str" is a string made of only ASCII chars, otherwise false
-// PURPOSE: check if a string only contains ASCII characters
-function fnIsAsciiString(str){
-    // check that every char in "str" has a code between 0 and 127
-    let i = 0;
-    while (i < str.length){
-        if (str.charCodeAt(i) < 0 || str.charCodeAt(i) > 127){
-            return false;
-        }
-        i++;
-    }
-
-    return true;
-}
-
-
-
-// FUNCTION: fnIsAlphanumericString()
-// INPUT: "str" is the string to check; "includeHyphen" specifies if the string can contain hyphens
-// OUTPUT: true in case validation went well, otherwise false
-// PURPOSE: check if a string only contains alphanumeric characters; if "includeHyphen" is true, then "str" can also contain hyphens
-function fnIsAlphanumericString(str, includeHyphen = false){
-    // check that every char in "str" is between "a-z", between "A-Z" or between "0-9"
-    // if "includeHyphen" is true, then "str" can also include hyphens ("-")
-    const codes = { "a": 97, "z": 122, "A": 65, "Z": 90, "0": 48, "9": 57, "-": 45 };
-    let i = 0;
-    while (i < str.length){
-        if (
-            (str.charCodeAt(i) < codes["a"] || str.charCodeAt(i) > codes["z"]) &&
-            (str.charCodeAt(i) < codes["A"] || str.charCodeAt(i) > codes["Z"]) &&
-            (str.charCodeAt(i) < codes["0"] || str.charCodeAt(i) > codes["9"]) &&
-            ( (includeHyphen) ? (str.charCodeAt(i) !== codes["-"]) : true )
-        ){
-            return false;
-        }
-        i++;
-    }
-
-    return true;
-}
-
-
-
-// FUNCTION: fnIsNumericString()
-// INPUT: "str" is the string to check
-// OUTPUT: true in case "str" is a numeric string, otherwise false
-// PURPOSE: check if a string only contains numeric characters ("0"-"9")
-function fnIsNumericString(str){
-    // check that every char in "str" is between "0" and "9"
-    const codes = {"0": 48, "9": 57};
-    let i = 0;
-    while (i < str.length){
-        if (str.charCodeAt(i) < codes["0"] || str.charCodeAt(i) > codes["9"]){
-            return false;
-        }
-        i++;
-    }
-
-    return true;
-}
-
-
-
-// FUNCTION: fnCreateUsers()
-// INPUT: "users" object, as described in "/share/config.json"
-// OUTPUT: true in case of no errors, otherwise a string that describes the error
-// PURPOSE: add the users in the container's OS and in SAMBA
-function fnCreateUsers(users){
-    // for each "user" in "users" ...
-    let i = 0;
-    while (i < users.length){
-        
-        // add the user to the OS
-        // EXAMPLE: users[i] == { "name": "user1", "password": "123456" } --->
-        //   useradd user1
-        //   echo '123456' | passwd user1 --stdin
-        try {
-            if (fnUserExists(users[i]["name"]) === true){ throw "ERROR"; }
-            spawnSync("useradd", [users[i]["name"]], { stdio: [undefined, undefined, undefined] });
-            spawnSync("passwd", [users[i]["name"], "--stdin"], { input: users[i]["password"] + "\n", stdio: [undefined, undefined, undefined] });
-        }
-        catch (error){
-            return "USER '" + users[i]["name"] + "' COULD NOT BE ADDED TO OS";
-        }
-        
-        // add the user to SAMBA
-        // EXAMPLE: users[i] == { "name": "user1", "password": "123456" } --->
-        //   (echo '123456'; echo '123456') | smbpasswd -a user1 -s
-        try {
-            spawnSync("smbpasswd", ["-a", users[i]["name"], "-s"], { input: users[i]["password"] + "\n" + users[i]["password"] + "\n", stdio: [undefined, undefined, undefined] });
-        }
-        catch (error){
-            return "USER '" + users[i]["name"] + "' COULD NOT BE ADDED TO SAMBA";
-        }
-        
-        i++;
-    }
-
-    return true;
-}
-
-
-
-// FUNCTION: fnUserExists()
-// INPUT: "username" is the user to check
-// OUTPUT: true in case the user exists, otherwise false
-// PURPOSE: check if a given user exists in the OS
-// TODO: algorithm could be improved, but for now it should work for every future release of "centos:7" docker image
-function fnUserExists(username){
-    return (
-        username === "root" ||
-        fs.readFileSync("/etc/passwd", "utf8").includes("\n" + username + ":x")
-    );
-}
-
-
-
-// FUNCTION: fnCreateShares()
-// INPUT: "shares" object, as described in "/share/config.json"
-// OUTPUT: true in case of no errors, otherwise a string that describes the error
-// PURPOSE: create the shares (if they don't exist) and set the correct ACLs for them
-function fnCreateShares(shares){
-    // for each share ...
-    let i = 0;
-    while (i < shares.length){
-        
-        // if it doesn't exist on disk, create it
-        // TODO: could be improved
-        try {
-            if (fs.existsSync(shares[i]["path"]) !== true){
-                fs.mkdirSync(shares[i]["path"]);
-            }
-            if (fs.existsSync(shares[i]["path"]) !== true){ throw "ERROR"; }
-        }
-        catch (error){
-            return "SHARE '" + shares[i]["path"] + "' COULD NOT BE CREATED";
-        }
-        
-        // for each "user" of the share, generate the ACLs
-        // EXAMPLE: shares[i]["users"] == ["user1", "user2"] --->
-        //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx"
-        let j = 0;
-        let entries = ["u::rwx", "g::rwx", "o::x"];
-        while (j < shares[i]["users"].length){
-            entries.push("u:" + shares[i]["users"][j] + ":rwx,g:" + shares[i]["users"][j] + ":rwx");
-            j++;
-        }
-        entries = entries.join(",");
-        
-        // set the correct ACLs for the share
-        // EXAMPLE: shares[i]["path"] == "/share/public" --->
-        //   chown -R root:root '/share/public'
-        //   setfacl -R -m 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
-        //   setfacl -R -dm 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
-        try {
-            spawnSync("chown", ["-R", "root:root", shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
-            spawnSync("setfacl", ["-R", "-m", entries, shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
-            spawnSync("setfacl", ["-R", "-dm", entries, shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
-        }
-        catch (error){
-            return "PERMISSIONS FOR '" + shares[i]["path"] + "' COULD NOT BE SET";
-        }
-        
-        i++;
-    }
-
-    return true;
-}
-
-
-
-// TODO: review this function
-function fnCreateGuest(guestdir){
-    execSync("useradd guest");
-    execSync("echo 'guest' | passwd guest --stdin");
-
-    if (fs.existsSync(guestdir) !== true){
-        fs.mkdirSync(guestdir);
-    }
-
-    execSync("chown root:root '" + guestdir + "'");
-    execSync("setfacl -R -m 'u::rwx,g::rwx,o::rwx,u:guest:rwx,g:guest:rwx' '" + guestdir + "'");
-    execSync("setfacl -R -dm 'u::rwx,g::rwx,o::rwx,u:guest:rwx,g:guest:rwx' '" + guestdir + "'");
-}
-
-
-
-// FUNCTION: fnGenSmbConf()
-// INPUT: "domain": workgroup name; "guest": ignore for now; "shares": as in "/share/config.json"
-// OUTPUT: "/etc/samba/smb.conf" generated content
-// PURPOSE: generate "/etc/samba/smb.conf"
-// NOTE: this function is safe because both "domain" and "shares" have been validated early
-function fnGenSmbConf(domain, guest, shares){
-    // final result will be written into "result" variable
-    let result = "";
-    
-    // add the workgroup
-    // EXAMPLE: domain == "WORKGROUP" --->
-    //   result += "
-    //     [global]
-    //     workgroup = WORKGROUP
-    //     security = user
-    //   ";
-    result += "[global]\nworkgroup = " + domain + "\nsecurity = user\n\n";
-
-    // ignore for now
-    if (guest !== false){
-        result += "[guest]\npath = " + guest + "\nbrowsable = yes\nwritable = yes\nread only = no\nguest ok = yes\nforce user = guest\n\n";
-    }
-
-    // for each "share" in "shares" ...
-    let i = 0;
-    while (i < shares.length){
-        
-        // add the share in the configuration
-        // EXAMPLE: shares[i] == { "name": "public", "path": "/share/public", "users": ["user1", "user2"] } --->
-        //   result += "
-        //     [public]
-        //     path = /share/public
-        //     browsable = yes
-        //     writable = yes
-        //     read only = no
-        //     guest ok = no
-        //     valid users = user1 user2
-        //   ";
-        result += "[" + shares[i]["name"] + "]\npath = " + shares[i]["path"] + "\nbrowsable = yes\nwritable = yes\nread only = no\nguest ok = no\nvalid users = " + shares[i]["users"].join(" ") + "\n\n";
-        
-        i++;
-    }
-
-    return result;
-}
-
-
-
-// FUNCTION: fnSleep()
-// INPUT: "milliseconds" is the number of milliseconds to sleep
-// PURPOSE: sleep function based on setTimeout() and promises
-function fnSleep(milliseconds){
-    return new Promise((resolve, reject) => {
-        setTimeout(() => { resolve(); }, milliseconds);
-    });
-}
 
 
