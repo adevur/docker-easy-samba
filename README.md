@@ -1,6 +1,25 @@
 # easy-samba
 This image provides an easy-to-setup SAMBA server, based on CentOS 7.
 
+### Short description
+This SAMBA server takes a JSON configuration file as input and, based on that file, it sets up the container's environment. For example, here's what you can do:
+
+1) Write a configuration file, where:
+
+  - there are two users (`user1` and `user2`);
+
+  - there are two shared folders (`/share/public` and `/share/user2`);
+
+  - `/share/public` can be read and written by anyone;
+
+  - `/share/user2`, instead, can be accessed only by `user2`.
+
+2) After writing this configuration file, you start the docker image `adevur/easy-samba`.
+
+3) This image reads your configuration file, creates the two users, creates the folders (if they don't exist), and then configure their filesystem permissions accordingly to your configuration file.
+
+4) Now you can connect to your container using Windows or any other SAMBA client.
+
 ### Tags
 Available tags:
 
