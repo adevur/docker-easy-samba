@@ -54,7 +54,7 @@ For example, if we had written `["user1", "ro:user2"]`, instead, it would have m
 
 6) Now that we have our configuration file ready, we can start the SAMBA server itself:
 ```sh
-docker run --rm --network host -v /nas/share:/share --name samba adevur/easy-samba:latest
+docker run --rm -d --network host -v /nas/share:/share --name samba adevur/easy-samba:latest
 ```
 
 7) Let's analyze what this command mean:
@@ -63,6 +63,8 @@ docker run --rm --network host -v /nas/share:/share --name samba adevur/easy-sam
 
 - `--rm`: we tell docker that when this container stops, it should be automatically removed.
 You may remove this parameter at your will.
+
+- `-d`: we tell docker that this container should be started in the background as a daemon.
 
 - `--network host`: we tell docker that the container should be able to see our computer's networks.
 This parameter can also be changed to `--network bridge` or any other `--network` option.
