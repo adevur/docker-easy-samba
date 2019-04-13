@@ -20,6 +20,8 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 
 4) Now you can connect to your container using Windows or any other SAMBA client.
 
+See also the `Turorial` in order to get started.
+
 ### Tags
 Available tags:
 
