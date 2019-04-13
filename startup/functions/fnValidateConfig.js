@@ -59,7 +59,7 @@ function fnValidateConfig(config){
         if (config["guest"] === "/share/config.json"){
             return "GUEST SHARE PATH CANNOT BE '/share/config.json'";
         }
-        sharedb.paths.push(config["guest"]);
+        sharedb.paths.push(config["guest"]); // TODO: EXPLAIN
     }
 
     // check "users" property
@@ -97,7 +97,7 @@ function fnValidateConfig(config){
                 error = "USER '" + user["name"] + "' HAS BEEN DEFINED MORE THAN ONCE";
                 return false;
             }
-            sharedb.users.push(user["name"]);
+            sharedb.users.push(user["name"]); // TODO: EXPLAIN
             return true;
         });
         if (result !== true){
@@ -159,9 +159,9 @@ function fnValidateConfig(config){
                 return false;
             }
             // check share["access"]
-            // must be an array
-            if (fnIsArray(share["access"]) !== true){
-                error = "PROPERTY 'access' OF SHARE '" + share["name"] + "' IS NOT AN ARRAY";
+            // must be an array and it cannot be empty
+            if (fnIsArray(share["access"]) !== true || share["access"].length < 1){
+                error = "PROPERTY 'access' OF SHARE '" + share["name"] + "' MUST BE A NON-EMPTY ARRAY";
                 return false;
             }
             // must contain only users or groups defined early in config["users"] and config["groups"]
@@ -191,7 +191,7 @@ function fnValidateConfig(config){
             share["users"] = [];
             share["access"].forEach((access) => {
                 if (fnHas(sharedb.groups, (access.startsWith("ro:") || access.startsWith("rw:")) ? access.substring(3) : access)){
-                    const users = (fnHas(sharedb.groups, access)) ? sharedb.groups[access] : sharedb.groups[access.substring(3)];
+                    const users = (access.startsWith("ro:") || access.startsWith("rw:")) ? sharedb.groups[access.substring(3)] : sharedb.groups[access];
                     const perm = (access.startsWith("ro:")) ? "ro:" : "rw:";
                     users.forEach((user) => {
                         if (share["users"].indexOf("ro:" + user) >= 0){
