@@ -127,7 +127,7 @@ function fnValidateConfig(config){
         let error = "";
         const result = config["shares"].every((share) => {
             // "share" must have "name", "path" and "access" properties (and cannot have "users" property)
-            if (fnHas(share, ["name", "path", "access"]) !== true || fnHas(share, ["users"]) === true){
+            if (fnHas(share, ["name", "path", "access"]) !== true || fnHas(share, "users") === true){
                 error = "EVERY SHARE IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' PROPERTIES";
                 return false;
             }
