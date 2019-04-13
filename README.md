@@ -27,11 +27,13 @@ Available tags:
 
 - Latest stable release (1.0.0): `latest`.
 
-- Latest long-term release (1.0.0): `lts`.
+- Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
 - Latest development release: `devel`.
 
 See also chapters `Versioning` and `Branches` for more info.
+
+If you're looking for version history and changelogs, take a look at the `Changelog`.
 
 ### Versioning
 Versions are in this format: `x.y.z`. Where:
