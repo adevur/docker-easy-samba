@@ -138,7 +138,7 @@ mkdir /easy-samba
 2) Our first script will be `start.sh`, whose purpose is to start `easy-samba`. Let's `nano /easy-samba/start.sh` and copy
 this content into your script:
 ```sh
-&#35;!/bin/bash
+#!/bin/bash
 docker stop samba
 docker container rm samba
 docker run --network host -v /nas/share:/share --name samba local/easy-samba:latest
@@ -152,7 +152,7 @@ that would break our `systemd` service functionality.
 
 3) With `nano /easy-samba/stop.sh` let's instead create the script for stopping `easy-samba`:
 ```sh
-&#35;!/bin/bash
+#!/bin/bash
 docker stop samba
 docker container rm samba
 ```
