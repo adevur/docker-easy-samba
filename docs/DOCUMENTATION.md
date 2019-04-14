@@ -97,7 +97,7 @@ This section can also be an empty array. An element of `shares` array looks like
 - `name` is a unique name to identify the shared folder. It must be alphanumeric.
 
 - `path` is the location on disk of the shared folder. It must be a sub-directory of `/share` and it must follow all the
-validation rules described for anonymous shared folder path in `guest` section.
+validation rules described for anonymous shared folder path in [`guest` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section).
 
 - `access` is a non-empty array of strings that contains all the "access rules" for the shared folder.
 An access rule is a string that tells the SAMBA server who can access the shared folder, and with what permissions.
@@ -133,7 +133,8 @@ docker logs samba
 Where `samba` is the container's name or ID.
 
 NOTE: in case of errors, the container will stop. If you used the parameter `--rm` in the `docker run` command (when
-you first started the container), docker will remove the container after it stops, so you won't be able to retrieve
+you first [started the container](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options)),
+docker will remove the container after it stops, so you won't be able to retrieve
 logs about the error. In order to keep the container saved even after it stops, don't use parameter `--rm` in
 `docker run` command. This way, you will be able to use `docker logs samba` in case an error occurred and the
 container stopped.
@@ -158,16 +159,16 @@ and ACLs of `/share` have been successfully set, so that `/share` and all its ch
 
 6) `[LOG] guest share has been correctly created.`: this log informs the user that the anonymous shared folder has been
 successfully created (in case it didn't exist) and its filesystem permissions have been successfully set.
-This log only appears when you configured an anonymous shared folder in `guest` section of `config.json` file.
+This log only appears when you configured an anonymous shared folder in [`guest` section of `config.json` file](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section).
 
 7) `[LOG] guest share will not be created.`: this log informs the user that no anonymous shared folder will be created.
-This log only appears when `guest` property of `config.json` has been set to `false`.
+This log only appears when [`guest` property of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section) has been set to `false`.
 
 8) `[LOG] users have been correctly created.`: this log informs the user that all the users that you configured in
-`users` section of `config.json` have been correctly added to container's OS and to container's SAMBA server.
+[`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section) have been correctly added to container's OS and to container's SAMBA server.
 
 9) `[LOG] shares have been correctly created.`: this log informs the user that all the shared folders that you
-configured in `shares` section of `config.json` have been correctly created (in case they didn't exist), and all
+configured in [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section) have been correctly created (in case they didn't exist), and all
 the filesystem permissions and ACLs have been correctly set to them.
 
 10) `[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`: this log informs the user that the SAMBA
@@ -183,22 +184,23 @@ seconds before starting `/usr/sbin/smbd` process.
 This process is necessary for the SAMBA server to function properly.
 
 14) `[LOG] SAMBA server is now ready.`: this log informs the user that `easy-samba` completed its configuration without
-errors, so you can now connect to the container using a SAMBA client.
+errors, so you can now [connect to the container using a SAMBA client](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking).
 
 ### list of errors
 This is the list of possible logs, when an error occurs:
 
 1) `[ERROR] script has failed for unknown reasons.`: this is a generic error that occurs when `easy-samba` configuration
 process throws an error that it doesn't recognize. This error is usually followed by message `[DEBUG] DETAILS ABOUT THE ERROR: ...`,
-which gives you mostly debug information. If this error occurs, you should open an issue in the GitHub repository `adevur/docker-easy-samba`.
+which gives you mostly debug information. If this error occurs, you should open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 2) `[ERROR] '/share/config.json' could not be loaded or it is not in JSON format.`: this error occurs when the configuration
 file `/share/config.json` doesn't exist or it is not a valid JSON file.
 
 3) `[ERROR] '/share/config.json' syntax is not correct: ...`: this error occurs when `config.json` contains syntax or
 content errors (e.g. `guest` section is missing, one of the usernames is not a valid username, ...). This log also
-gives you detailed information about what is the error that's been found. See also `config.json` section of this
-`Documentation` in order to better understand the reported error.
+gives you detailed information about what is the error that's been found.
+See also [`config.json` section of this `Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson)
+in order to better understand the reported error.
 
 4) `[ERROR] permissions of '/share' could not be reset.`: this error occurs mostly if the underlying OS or the underlying
 filesystem that you're using on your computer don't support POSIX ACLs.
@@ -208,33 +210,34 @@ filesystem that you're using on your computer don't support POSIX ACLs.
 
 6) `[ERROR] guest share could not be created: ...`: this error occurs if `easy-samba` has not been able to create
 the anonymous shared folder. This log also gives you detailed information about what is the error that's been found.
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 7) `[ERROR] users could not be created: ...`: this error occurs if `easy-samba` has not been able to add the users
-(that you specified in `users` section of `config.json`) in the container's OS and in the SAMBA server.
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+(that you specified in [`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section))
+in the container's OS and in the SAMBA server.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 8) `[ERROR] shares could not be created: ...`: this error occurs if `easy-samba` has not been able to create
-the shared folders (that you specified in the `shares` section of `config.json`).
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+the shared folders (that you specified in the [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)).
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 9) `[ERROR] '/etc/samba/smb.conf' could not be generated or written.`: this error occurs mostly if `easy-samba` has
 not been able to write file `/etc/samba/smb.conf` inside the container.
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 10) `[ERROR] 'nmbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
 `/usr/sbin/nmbd` inside the container.
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 11) `[ERROR] 'nmbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/nmbd` has suddenly exited.
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 12) `[ERROR] 'smbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
 `/usr/sbin/smbd` inside the container.
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 13) `[ERROR] 'smbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/smbd` has suddenly exited.
-If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 
 
