@@ -41,6 +41,17 @@ async function fnMain(){
         process.exit();
     });
 
+    // display version information
+    try {
+        const versionFile = fs.readFileSync("/startup/version.txt", "utf8").split("\n");
+        const branch = versionFile[0].split("BRANCH: ")[1];
+        const version = versionFile[1].split("VERSION: ")[1];
+        console.log("[LOG] you're using easy-samba version '" + version + "' from '" + branch + "' branch.");
+    }
+    catch (error){
+        console.log("[WARNING] it's not been possible to display version information.");
+    }
+
     // now the script can start
     console.log("[LOG] SAMBA server configuration process has started.");
 

@@ -142,6 +142,9 @@ container stopped.
 ### list of logs
 This is the list of possible logs, when no error occurs:
 
+0) `[LOG] you're using easy-samba version '...' from '...' branch.`: this log informs the user about the current `easy-samba`
+version. E.g.: `[LOG] you're using easy-samba version '1.0.0' from 'stable' branch.`.
+
 1) `[LOG] SAMBA server configuration process has started.`: this log informs the user that `easy-samba` has started.
 
 2) `[LOG] '/share/config.json' has been correctly loaded.`: this log informs the user that configuration file
@@ -188,6 +191,11 @@ errors, so you can now [connect to the container using a SAMBA client](https://g
 
 ### list of errors
 This is the list of possible logs, when an error occurs:
+
+0) `[WARNING] it's not been possible to display version information.`: this is the only error that doesn't stop the container.
+It is not a real error, just a warning that `easy-samba` could not retrieve version information. This happens when file
+`/startup/version.txt` doesn't exist or it's not well-formatted. You should ignore this error since it's not caused by you.
+Moreover, you should open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 1) `[ERROR] script has failed for unknown reasons.`: this is a generic error that occurs when `easy-samba` configuration
 process throws an error that it doesn't recognize. This error is usually followed by message `[DEBUG] DETAILS ABOUT THE ERROR: ...`,
