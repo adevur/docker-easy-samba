@@ -8,6 +8,6 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## Version history
 
-### [STABLE] 1.0.0 (2019-04-13 UTC)
+### [STABLE] 1.0.0 (2019-04-14 UTC)
 Initial release.
 
