@@ -120,7 +120,73 @@ E.g.: `["ro:group1", "rw:user2"]` means that all users of `group1` have read per
 - If a user or a group are not included in the access rules of a shared folder, it means that they have no access at all
 to that shared folder.
 
+## understanding logs
+`easy-samba` uses logs in order to inform the user about the status of the SAMBA server. In case of errors, logs will
+give you detailed informations about what's going on.
 
+### how to get logs
+In order to retrieve logs of `easy-samba`, you can use this command:
+```sh
+docker logs samba
+```
+
+Where `samba` is the container's name or ID.
+
+NOTE: in case of errors, the container will stop. If you used the parameter `--rm` in the `docker run` command (when
+you first started the container), docker will remove the container after it stops, so you won't be able to retrieve
+logs about the error. In order to keep the container saved even after it stops, don't use parameter `--rm` in
+`docker run` command. This way, you will be able to use `docker logs samba` in case an error occurred and the
+container stopped.
+
+### list of logs
+This is the list of possible logs, when no error occurs:
+
+1) `[LOG] SAMBA server configuration process has started.`: this log informs the user that `easy-samba` has started.
+
+2) `[LOG] '/share/config.json' has been correctly loaded.`: this log informs the user that configuration file
+`/share/config.json` has been successfully read and parsed.
+
+3) `[LOG] '/share/config.json' syntax is correct.`: this log informs the user that the configuration file doesn't
+contain syntax errors or content errors (e.g. usernames are correct, shared folders' paths are valid, ...).
+
+4) `[LOG] permissions of '/share' have been correctly reset.`: this log informs the user that filesystem permissions
+and ACLs of `/share` have been cleared successfully.
+
+5) `[LOG] permissions of '/share' have been correctly set.`: this log informs the user that filesystem permissions
+and ACLs of `/share` have been successfully set, so that `/share` and all its children can only be accessed by
+`root`.
+
+6) `[LOG] guest share has been correctly created.`: this log informs the user that the anonymous shared folder has been
+successfully created (in case it didn't exist) and its filesystem permissions have been successfully set.
+This log only appears when you configured an anonymous shared folder in `guest` section of `config.json` file.
+
+7) `[LOG] guest share will not be created.`: this log informs the user that no anonymous shared folder will be created.
+This log only appears when `guest` property of `config.json` has been set to `false`.
+
+8) `[LOG] users have been correctly created.`: this log informs the user that all the users that you configured in
+`users` section of `config.json` have been correctly added to container's OS and to container's SAMBA server.
+
+9) `[LOG] shares have been correctly created.`: this log informs the user that all the shared folders that you
+configured in `shares` section of `config.json` have been correctly created (in case they didn't exist), and all
+the filesystem permissions and ACLs have been correctly set to them.
+
+10) `[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`: this log informs the user that the SAMBA
+server's configuration file `/etc/samba/smb.conf` has been successfully generated and written to disk.
+
+11) `[LOG] starting 'nmbd'...`: this log informs the user that `/usr/sbin/nmbd` process is about to being started.
+This process is necessary for the SAMBA server to function properly.
+
+12) `[LOG] waiting 2 seconds before starting 'smbd'...`: this log informs the user that `easy-samba` will wait 2
+seconds before starting `/usr/sbin/smbd` process.
+
+13) `[LOG] starting 'smbd'...`: this log informs the user that `/usr/sbin/smbd` process is about to being started.
+This process is necessary for the SAMBA server to function properly.
+
+14) `[LOG] SAMBA server is now ready.`: this log informs the user that `easy-samba` completed its configuration without
+errors, so you can now connect to the container using a SAMBA client.
+
+### list of errors
+This is the list of possible logs, when an error occurs:
 
 
 
