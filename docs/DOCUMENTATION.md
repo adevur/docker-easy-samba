@@ -2,42 +2,42 @@
 # easy-samba documentation
 `adevur/easy-samba`'s documentation is divided into these sections:
 
-- `config.json`: it describes in detail the structure of `easy-samba`'s configuration file,
+- (`config.json`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson]: it describes in detail the structure of `easy-samba`'s configuration file,
 and all the things you can do with it.
 
-- `docker options`: it describes what parameters you can pass to `docker run`.
+- (`docker options`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options]: it describes what parameters you can pass to `docker run`.
 
-- `networking`: it describes how you can set up networking, in order to connect to `easy-samba`'s containers
+- (`networking`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking]: it describes how you can set up networking, in order to connect to `easy-samba`'s containers
 from a SAMBA client.
 
-- `understanding logs`: it describes how you can retrieve logs for `easy-samba`, and how to read them.
+- (`understanding logs`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs]: it describes how you can retrieve logs for `easy-samba`, and how to read them.
 
-- `how easy-samba works`: it describes the inner mechanics of `easy-samba`, and how it works in detail.
+- (`how easy-samba works`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#how-easy-samba-works]: it describes the inner mechanics of `easy-samba`, and how it works in detail.
 
-- `current limitations`: it describes what are the current limitations of `easy-samba`.
+- (`current limitations`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#current-limitations]: it describes what are the current limitations of `easy-samba`.
 
 ## config.json
 Here we talk about the structure of the configuration file of `easy-samba` (i.e. `config.json`), and what you can do with it.
 This chapter is divided into these sections:
 
-- General structure of the file
+- (general structure of the file)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-the-file]
 
-- `domain` section
+- (`domain` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section]
 
-- `guest` section
+- (`guest` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section]
 
-- `users` section
+- (`users` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section]
 
-- `groups` section
+- (`groups` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#groups-section]
 
-- `shares` section
+- (`shares` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section]
 
-### General structure of the file
+### general structure of the file
 `config.json` is a file in JSON format. It is an object with these properties: `domain`, `guest`, `users`, `groups` (optional),
 and `shares`. `config.json` must be placed in the directory that will be mounted as `/share` in the container.
 
 ### `domain` section
-It's a string that contains the domain name of the SAMBA server. It must be a valid NetBIOS name that follows these rules:
+It's a string that contains the domain name of the SAMBA server. It must be a valid (NetBIOS name)[https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name] that follows these rules:
 
 - It must be an ASCII string.
 
@@ -188,7 +188,53 @@ errors, so you can now connect to the container using a SAMBA client.
 ### list of errors
 This is the list of possible logs, when an error occurs:
 
-1) 
+1) `[ERROR] script has failed for unknown reasons.`: this is a generic error that occurs when `easy-samba` configuration
+process throws an error that it doesn't recognize. This error is usually followed by message `[DEBUG] DETAILS ABOUT THE ERROR: ...`,
+which gives you mostly debug information. If this error occurs, you should open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+2) `[ERROR] '/share/config.json' could not be loaded or it is not in JSON format.`: this error occurs when the configuration
+file `/share/config.json` doesn't exist or it is not a valid JSON file.
+
+3) `[ERROR] '/share/config.json' syntax is not correct: ...`: this error occurs when `config.json` contains syntax or
+content errors (e.g. `guest` section is missing, one of the usernames is not a valid username, ...). This log also
+gives you detailed information about what is the error that's been found. See also `config.json` section of this
+`Documentation` in order to better understand the reported error.
+
+4) `[ERROR] permissions of '/share' could not be reset.`: this error occurs mostly if the underlying OS or the underlying
+filesystem that you're using on your computer don't support POSIX ACLs.
+
+5) `[ERROR] permissions of '/share' could not be set.`: this error occurs mostly if the underlying OS or the underlying
+filesystem that you're using on your computer don't support POSIX ACLs.
+
+6) `[ERROR] guest share could not be created: ...`: this error occurs if `easy-samba` has not been able to create
+the anonymous shared folder. This log also gives you detailed information about what is the error that's been found.
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+7) `[ERROR] users could not be created: ...`: this error occurs if `easy-samba` has not been able to add the users
+(that you specified in `users` section of `config.json`) in the container's OS and in the SAMBA server.
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+8) `[ERROR] shares could not be created: ...`: this error occurs if `easy-samba` has not been able to create
+the shared folders (that you specified in the `shares` section of `config.json`).
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+9) `[ERROR] '/etc/samba/smb.conf' could not be generated or written.`: this error occurs mostly if `easy-samba` has
+not been able to write file `/etc/samba/smb.conf` inside the container.
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+10) `[ERROR] 'nmbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
+`/usr/sbin/nmbd` inside the container.
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+11) `[ERROR] 'nmbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/nmbd` has suddenly exited.
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+12) `[ERROR] 'smbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
+`/usr/sbin/smbd` inside the container.
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
+
+13) `[ERROR] 'smbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/smbd` has suddenly exited.
+If you get this error, you should probably open an issue in the GitHub repository `adevur/docker-easy-samba`.
 
 
 
