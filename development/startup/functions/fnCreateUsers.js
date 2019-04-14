@@ -27,7 +27,7 @@ function fnCreateUsers(users){
         //   echo '123456' | passwd user1 --stdin
         try {
             spawnSync("useradd", ["-M", users[i]["name"]], { stdio: "ignore" });
-            spawnSync("passwd", [users[i]["name"], "--stdin"], { input: users[i]["password"] + "\n", stdio: "ignore" });
+            spawnSync("passwd", [users[i]["name"], "--stdin"], { input: users[i]["password"] + "\n", stdio: [undefined, "ignore", "ignore"] });
             if (fnUserExists(users[i]["name"]) !== true){ throw "ERROR"; }
         }
         catch (error){
@@ -38,7 +38,7 @@ function fnCreateUsers(users){
         // EXAMPLE: users[i] == { "name": "user1", "password": "123456" } --->
         //   (echo '123456'; echo '123456') | smbpasswd -a user1 -s
         try {
-            spawnSync("smbpasswd", ["-a", users[i]["name"], "-s"], { input: users[i]["password"] + "\n" + users[i]["password"] + "\n", stdio: "ignore" });
+            spawnSync("smbpasswd", ["-a", users[i]["name"], "-s"], { input: users[i]["password"] + "\n" + users[i]["password"] + "\n", stdio: [undefined, "ignore", "ignore"] });
         }
         catch (error){
             return "USER '" + users[i]["name"] + "' COULD NOT BE ADDED TO SAMBA";
