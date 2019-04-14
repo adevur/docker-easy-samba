@@ -188,6 +188,8 @@ errors, so you can now connect to the container using a SAMBA client.
 ### list of errors
 This is the list of possible logs, when an error occurs:
 
+1) 
+
 
 
 
