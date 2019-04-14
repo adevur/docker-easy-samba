@@ -10,6 +10,9 @@ and all the things you can do with it.
 - [`networking`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking): it describes how you can set up networking, in order to connect to `easy-samba`'s containers
 from a SAMBA client.
 
+- [`run easy-samba in production`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#run-easy-samba-in-production): it describes how you can set up `easy-samba` to run in a Linux server
+for production use (e.g. registering `easy-samba` as a `systemd` service, automatizing updates, ...).
+
 - [`understanding logs`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs): it describes how you can retrieve logs for `easy-samba`, and how to read them.
 
 - [`how easy-samba works`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#how-easy-samba-works): it describes the inner mechanics of `easy-samba`, and how it works in detail.
@@ -119,6 +122,73 @@ E.g.: `["ro:group1", "rw:user2"]` means that all users of `group1` have read per
 
 - If a user or a group are not included in the access rules of a shared folder, it means that they have no access at all
 to that shared folder.
+
+## run easy-samba in production
+This chapter will give you a couple of advices for running `easy-samba` in a production environment, like a Linux server.
+
+### writing a systemd unit
+It is important to register `easy-samba` as a service in your Linux system. This way, you'll be able to better control
+the status of the SAMBA server, and you will be able to start `easy-samba` automatically on boot. Let's begin:
+
+1) Create a folder in your system where all our `easy-samba` scripts will be saved.
+```sh
+mkdir /easy-samba
+```
+
+2) Our first script will be `start.sh`, whose purpose is to start `easy-samba`. Let's `nano /easy-samba/start.sh` and copy
+this content into your script:
+```sh
+&#35;!/bin/bash
+docker stop samba
+docker container rm samba
+docker run --network host -v /nas/share:/share --name samba local/easy-samba:latest
+```
+
+NOTE: the reason why we used `local/easy-samba:latest` instead of `adevur/easy-samba:latest` is because we're going
+to automatize updates of `easy-samba`, building it locally. This procedure is described further down.
+
+NOTE 2: `--network` parameter can be modified. Make sure not to include `-d` and `--restart always` parameters,
+that would break our `systemd` service functionality.
+
+3) With `nano /easy-samba/stop.sh` let's instead create the script for stopping `easy-samba`:
+```sh
+&#35;!/bin/bash
+docker stop samba
+docker container rm samba
+```
+
+4) Now, let's write our `systemd` service unit with `nano /etc/systemd/system/easy-samba.service`:
+```
+[Unit]
+Description=easy-samba
+After=docker.service
+
+[Service]
+Type=simple
+ExecStart=/easy-samba/start.sh
+ExecStop=/easy-samba/stop.sh
+
+[Install]
+WantedBy=multi-user.target
+```
+
+5) Now, run:
+```sh
+chmod 664 /etc/systemd/system/easy-samba.service
+systemctl daemon-reload
+```
+
+6) Okay, now our `systemd` service unit is ready. We can start the SAMBA server with:
+```sh
+systemctl start easy-samba.service
+```
+
+7) If you want `easy-samba` to start automatically on boot, run:
+```sh
+systemctl enable easy-samba.service
+```
+
+### automatizing `easy-samba`'s updates
 
 ## understanding logs
 `easy-samba` uses logs in order to inform the user about the status of the SAMBA server. In case of errors, logs will
