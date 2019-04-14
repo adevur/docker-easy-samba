@@ -23,7 +23,7 @@ function fnCreateShares(shares){
         
         // if it doesn't exist on disk, create it
         // TODO: could be improved
-        // TODO: if path exists on disk, check if it's a directory ---> this should be done by fnValidateConfig()
+        // TODO: if path exists on disk, check if it's a directory
         try {
             if (fs.existsSync(shares[i]["path"]) !== true){
                 fs.mkdirSync(shares[i]["path"]);
@@ -35,12 +35,14 @@ function fnCreateShares(shares){
         }
         
         // for each "user" of the share, generate the ACLs
-        // EXAMPLE: shares[i]["users"] == ["user1", "user2"] --->
-        //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx"
+        // EXAMPLE: shares[i]["users"] == ["rw:user1", "ro:user2"] --->
+        //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rx,g:user2:rx"
         let j = 0;
         let entries = ["u::rwx", "g::rwx", "o::x"];
         while (j < shares[i]["users"].length){
-            entries.push("u:" + shares[i]["users"][j] + ":rwx,g:" + shares[i]["users"][j] + ":rwx");
+            const user = shares[i]["users"][j].substring(3);
+            const perm = (shares[i]["users"][j].startsWith("ro:")) ? "rx" : "rwx";
+            entries.push("u:" + user + ":" + perm + ",g:" + user + ":" + perm);
             j++;
         }
         entries = entries.join(",");
@@ -51,9 +53,9 @@ function fnCreateShares(shares){
         //   setfacl -R -m 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
         //   setfacl -R -dm 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
         try {
-            spawnSync("chown", ["-R", "root:root", shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
-            spawnSync("setfacl", ["-R", "-m", entries, shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
-            spawnSync("setfacl", ["-R", "-dm", entries, shares[i]["path"]], { stdio: [undefined, undefined, undefined] });
+            spawnSync("chown", ["-R", "root:root", shares[i]["path"]], { stdio: "ignore" });
+            spawnSync("setfacl", ["-R", "-m", entries, shares[i]["path"]], { stdio: "ignore" });
+            spawnSync("setfacl", ["-R", "-dm", entries, shares[i]["path"]], { stdio: "ignore" });
         }
         catch (error){
             return "PERMISSIONS FOR '" + shares[i]["path"] + "' COULD NOT BE SET";
