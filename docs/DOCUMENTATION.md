@@ -2,42 +2,42 @@
 # easy-samba documentation
 `adevur/easy-samba`'s documentation is divided into these sections:
 
-- (`config.json`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson]: it describes in detail the structure of `easy-samba`'s configuration file,
+- [`config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson): it describes in detail the structure of `easy-samba`'s configuration file,
 and all the things you can do with it.
 
-- (`docker options`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options]: it describes what parameters you can pass to `docker run`.
+- [`docker options`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options): it describes what parameters you can pass to `docker run`.
 
-- (`networking`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking]: it describes how you can set up networking, in order to connect to `easy-samba`'s containers
+- [`networking`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking): it describes how you can set up networking, in order to connect to `easy-samba`'s containers
 from a SAMBA client.
 
-- (`understanding logs`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs]: it describes how you can retrieve logs for `easy-samba`, and how to read them.
+- [`understanding logs`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs): it describes how you can retrieve logs for `easy-samba`, and how to read them.
 
-- (`how easy-samba works`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#how-easy-samba-works]: it describes the inner mechanics of `easy-samba`, and how it works in detail.
+- [`how easy-samba works`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#how-easy-samba-works): it describes the inner mechanics of `easy-samba`, and how it works in detail.
 
-- (`current limitations`)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#current-limitations]: it describes what are the current limitations of `easy-samba`.
+- [`current limitations`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#current-limitations): it describes what are the current limitations of `easy-samba`.
 
 ## config.json
 Here we talk about the structure of the configuration file of `easy-samba` (i.e. `config.json`), and what you can do with it.
 This chapter is divided into these sections:
 
-- (general structure of the file)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-the-file]
+- [general structure of the file](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-the-file)
 
-- (`domain` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section]
+- [`domain` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section)
 
-- (`guest` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section]
+- [`guest` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section)
 
-- (`users` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section]
+- [`users` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section)
 
-- (`groups` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#groups-section]
+- [`groups` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#groups-section)
 
-- (`shares` section)[https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section]
+- [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
 
 ### general structure of the file
 `config.json` is a file in JSON format. It is an object with these properties: `domain`, `guest`, `users`, `groups` (optional),
 and `shares`. `config.json` must be placed in the directory that will be mounted as `/share` in the container.
 
 ### `domain` section
-It's a string that contains the domain name of the SAMBA server. It must be a valid (NetBIOS name)[https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name] that follows these rules:
+It's a string that contains the domain name of the SAMBA server. It must be a valid [NetBIOS name](https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name) that follows these rules:
 
 - It must be an ASCII string.
 
