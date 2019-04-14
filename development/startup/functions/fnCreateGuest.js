@@ -19,7 +19,7 @@ const { spawnSync } = require("child_process");
 function fnCreateGuest(guestdir){
     // if "guestdir" doesn't exist on disk, create it
     // TODO: could be improved
-    // TODO: if path exists on disk, check if it's a directory ---> this should be done by fnValidateConfig()
+    // TODO: if path exists on disk, check if it's a directory
     try {
         if (fs.existsSync(guestdir) !== true){
             fs.mkdirSync(guestdir);
@@ -36,9 +36,9 @@ function fnCreateGuest(guestdir){
     //   setfacl -R -m 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' ${guestdir}
     //   setfacl -R -dm 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' ${guestdir}
     try {
-        spawnSync("chown", ["-R", "nobody:nobody", guestdir], { stdio: [undefined, undefined, undefined] });
-        spawnSync("setfacl", ["-R", "-m", "u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx", guestdir], { stdio: [undefined, undefined, undefined] });
-        spawnSync("setfacl", ["-R", "-dm", "u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx", guestdir], { stdio: [undefined, undefined, undefined] });
+        spawnSync("chown", ["-R", "nobody:nobody", guestdir], { stdio: "ignore" });
+        spawnSync("setfacl", ["-R", "-m", "u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx", guestdir], { stdio: "ignore" });
+        spawnSync("setfacl", ["-R", "-dm", "u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx", guestdir], { stdio: "ignore" });
     }
     catch (error){
         return "PERMISSIONS FOR GUEST SHARE '" + guestdir + "' COULD NOT BE SET";

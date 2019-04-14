@@ -14,12 +14,6 @@ const fnValidateConfigShares = require("/startup/functions/fnValidateConfigShare
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
-const fnIsValidPath = require("/startup/functions/fnIsValidPath.js");
-const fnIsArray = require("/startup/functions/fnIsArray.js");
-const fnIsValidUsername = require("/startup/functions/fnIsValidUsername.js");
-const fnIsValidPassword = require("/startup/functions/fnIsValidPassword.js");
-const fnUserExists = require("/startup/functions/fnUserExists.js");
-const fnValidateString = require("/startup/functions/fnValidateString.js");
 
 
 

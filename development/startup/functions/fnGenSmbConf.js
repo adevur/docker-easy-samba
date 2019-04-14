@@ -12,7 +12,7 @@ module.exports = fnGenSmbConf;
 
 
 // FUNCTION: fnGenSmbConf()
-// INPUT: "domain": workgroup name; "guest": ignore for now; "shares": as in "/share/config.json"
+// INPUT: "domain": workgroup name; "guest": guest share path (or "false"); "shares": as in "/share/config.json"
 // OUTPUT: "/etc/samba/smb.conf" generated content
 // PURPOSE: generate "/etc/samba/smb.conf"
 function fnGenSmbConf(domain, guest, shares){
