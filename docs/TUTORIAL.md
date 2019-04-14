@@ -52,6 +52,8 @@ So, `/share/folder1` is `/nas/share/folder1` on our disk; and `/nas/share/config
 - NOTE ON ACCESS RULES: access rule `["user1"]` just means that `user1` has both read and write permissions on `folder1` shared folder.
 For example, if we had written `["user1", "ro:user2"]`, instead, it would have meant that `user1` has read-write permissions, but `user2` has only read permissions.
 
+- SEE ALSO: [`config.json` section of Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson).
+
 6) Now that we have our configuration file ready, we can start the SAMBA server itself:
 ```sh
 docker run --rm -d --network host -v /nas/share:/share --name samba adevur/easy-samba:latest
@@ -68,6 +70,7 @@ You may remove this parameter at your will.
 
 - `--network host`: we tell docker that the container should be able to see our computer's networks.
 This parameter can also be changed to `--network bridge` or any other `--network` option.
+SEE ALSO: [`networking` section of Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking).
 
 - `-v /nas/share:/share`: we tell docker to mount our local folder `/nas/share` so that the container will see it as `/share`.
 
@@ -76,6 +79,8 @@ This parameter is optional and you can choose whatever name you want for your co
 
 - `adevur/easy-samba:latest`: we tell docker that the image we want to use is `adevur/easy-samba` with tag `latest`
 (that in this case is the latest stable release of `adevur/easy-samba`).
+
+- SEE ALSO: [`docker options` section of Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options).
 
 8) Okay, now we have started our `easy-samba` container. But how do we check if everything went well?
 Run this command (in this case `samba` is just the name of the container that we chose earlier):
@@ -87,6 +92,11 @@ docker logs samba
 ```
 [LOG] SAMBA server is now ready.
 ```
+
+NOTE: you may want not to use `--rm` parameter in `docker run` command: this way, if an error occurs, the container won't be removed
+and you will be able to use command `docker logs samba` in order to see the logs of the stopped container.
+
+SEE ALSO: [`understanding logs` section of Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs).
 
 10) Now we can connect to the container's SAMBA server using a SAMBA client (for example, Windows' File Explorer).
 
@@ -106,5 +116,5 @@ your `/nas/share/folder1` directory will be left untouched.
 ### Now what?
 For further information about all the configuration options of `config.json`,
 and for more info about how to set up networking,
-you should read the `Documentation`.
+you should read the [`Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md).
 

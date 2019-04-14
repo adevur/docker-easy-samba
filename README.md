@@ -20,7 +20,7 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 
 4) Now you can connect to your container using Windows or any other SAMBA client.
 
-See also the `Tutorial` in order to get started.
+See also the [`Tutorial`](https://github.com/adevur/docker-easy-samba/blob/master/docs/TUTORIAL.md) in order to get started.
 
 ### Tags
 Available tags:
@@ -31,9 +31,10 @@ Available tags:
 
 - Latest development release: `devel`.
 
-See also chapters `Versioning` and `Branches` for more info.
+See also chapters [`Versioning`](https://github.com/adevur/docker-easy-samba/blob/master/README.md#versioning)
+and [`Branches`](https://github.com/adevur/docker-easy-samba/blob/master/README.md#branches) for more info.
 
-If you're looking for version history and changelogs, take a look at the `Changelog`.
+If you're looking for version history and changelogs, take a look at the [`Changelog`](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md).
 
 ### Versioning
 Versions are in this format: `x.y.z`. Where:
@@ -75,7 +76,7 @@ docker build --tag=easy-samba:1.0.0 ./stable/1.0.0
 ```
 
 ### Usage
-In order to use this image, you can have a look at the `Tutorial`.
+In order to use this image, you can have a look at the [`Tutorial`](https://github.com/adevur/docker-easy-samba/blob/master/docs/TUTORIAL.md).
 
-If you need more information for advanced use, have a look at the `Documentation`.
+If you need more information for advanced use, have a look at the [`Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md).
 
