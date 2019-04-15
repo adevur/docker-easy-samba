@@ -37,7 +37,7 @@ function fnValidateConfig(config){
     //   and easy-samba 1.0.x will know that it's a version that is not compatible with easy-samba 1.0.x
     // if "version" property is missing, easy-samba assumes it is equal to "1.0"
     if (fnHas(config, "version") === true && config["version"] !== "1.0"){
-        return "THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '" + config["version"] + "' OR NEWER";
+        return "THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '" + String(config["version"]) + "' OR NEWER";
     }
 
     // check "domain" property
