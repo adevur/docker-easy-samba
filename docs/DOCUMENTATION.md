@@ -188,7 +188,58 @@ systemctl start easy-samba.service
 systemctl enable easy-samba.service
 ```
 
-### automatizing `easy-samba`'s updates
+### automatizing easy-samba updates
+In order to automatize `easy-samba`'s updates, you can write a simple script that does this:
+
+1) Stop `easy-samba` and remove every docker image.
+
+2) Download up-to-date source code of `easy-samba` from GitHub.
+
+3) Build a new image based on the downloaded latest source code.
+
+4) Start `easy-samba`.
+
+The directory where we're going to keep the source code of `easy-samba` will be located at
+`/easy-samba/src`, so make sure to create this directory with command `mkdir /easy-samba/src`.
+
+Now, you can write the script with `nano /easy-samba/update.sh`:
+
+```sh
+#!/bin/bash
+
+# stop easy-samba service
+systemctl stop easy-samba.service
+
+# stop and remove every docker container and image
+docker stop $(docker container ls --all -q)
+docker container rm $(docker container ls --all -q)
+docker image rm $(docker image ls -q)
+
+# clean up "/easy-samba/src" directory
+rm -rf /easy-samba/src/docker-easy-samba-master
+rm -f /easy-samba/src/easy-samba.zip
+
+# download up-to-date source code from GitHub
+# and unzip it to "/easy-samba/src"
+curl -sL https://github.com/adevur/docker-easy-samba/archive/master.zip > /easy-samba/src/easy-samba.zip
+unzip -qq /easy-samba/src/easy-samba.zip -d /easy-samba/src
+
+# build the up-to-date image with docker
+# in this case, we're going to build from "stable" branch
+docker build --tag=local/easy-samba:latest /easy-samba/src/docker-easy-samba-master/stable/latest
+
+# clean up "/easy-samba/src" directory
+rm -rf /easy-samba/src/docker-easy-samba-master
+rm -f /easy-samba/src/easy-samba.zip
+
+# start easy-samba
+systemctl start easy-samba.service
+```
+
+Now, every time you want to update `easy-samba`, you just need to execute `/easy-samba/update.sh` script.
+
+NOTE: the reason why we build `easy-samba` locally and we don't just retrieve it from docker repository
+`adevur/easy-samba` is that, building locally, we'll always have container's packages updated to latest version.
 
 ## understanding logs
 `easy-samba` uses logs in order to inform the user about the status of the SAMBA server. In case of errors, logs will
