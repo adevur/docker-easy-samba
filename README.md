@@ -38,7 +38,7 @@ See also the [`Tutorial`](https://github.com/adevur/docker-easy-samba/blob/maste
 ### tags
 Available tags:
 
-- Latest stable release (1.0.0): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
+- Latest stable release (1.0.1): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
 
 - Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
