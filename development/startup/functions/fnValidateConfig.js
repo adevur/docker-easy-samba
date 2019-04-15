@@ -33,11 +33,11 @@ function fnValidateConfig(config){
 
     // check "version" property
     // EXPLAIN: this check is needed for forward-compatibility
-    //   this way, when version "2.0.0" of easy-samba will be released, its config.json files will have property "version: '2'"
-    //   and easy-samba 1.x.x will know that it's a version that is not compatible with easy-samba 1.x.x
-    // if "version" property is missing, easy-samba assumes it is equal to "1"
-    if (fnHas(config, "version") === true && config["version"] !== "1"){
-        return "THIS CONFIGURATION FILE USES FEATURES THAT THIS VERSION OF EASY-SAMBA DOESN'T SUPPORT";
+    //   this way, when version "1.1.0" of easy-samba will be released, its config.json files will have property "version: '1.1'"
+    //   and easy-samba 1.0.x will know that it's a version that is not compatible with easy-samba 1.0.x
+    // if "version" property is missing, easy-samba assumes it is equal to "1.0"
+    if (fnHas(config, "version") === true && config["version"] !== "1.0"){
+        return "THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '" + config["version"] + "' OR NEWER";
     }
 
     // check "domain" property
