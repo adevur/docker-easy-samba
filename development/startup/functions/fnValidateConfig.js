@@ -31,6 +31,15 @@ function fnValidateConfig(config){
         return "DOESN'T CONTAIN 'domain', 'guest', 'users' AND 'shares' PROPERTIES";
     }
 
+    // check "version" property
+    // EXPLAIN: this check is needed for forward-compatibility
+    //   this way, when version "2.0.0" of easy-samba will be released, its config.json files will have property "version: '2'"
+    //   and easy-samba 1.x.x will know that it's a version that is not compatible with easy-samba 1.x.x
+    // if "version" property is missing, easy-samba assumes it is equal to "1"
+    if (fnHas(config, "version") === true && config["version"] !== "1"){
+        return "THIS CONFIGURATION FILE USES FEATURES THAT THIS VERSION OF EASY-SAMBA DOESN'T SUPPORT";
+    }
+
     // check "domain" property
     // EXPLAIN: "domain" must be a valid NetBIOS name
     if (fnIsString(config["domain"]) !== true || fnCheckNetBIOSname(config["domain"]) !== true){
