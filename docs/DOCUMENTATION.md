@@ -371,9 +371,9 @@ If you get this error, you should probably open an issue in the GitHub repositor
 ## how easy-samba works
 This chapter describes in detail what `easy-samba` does inside its container in order to setup the SAMBA server. This chapter is divided into these sections:
 
-- general structure of `easy-samba`
+- [general structure of `easy-samba`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-easy-samba)
 
-- main script `/startup/index.js`
+- [main script `/startup/index.js`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#main-script-startupindexjs)
 
 ### general structure of `easy-samba`
 As you can see from the [`Dockerfile`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile), `easy-samba` docker image:
