@@ -2,7 +2,7 @@
 # easy-samba tutorial
 This tutorial will get you started with `adevur/easy-samba` docker image. It will show you how this docker image works, and how to get a simple SAMBA server quickly started.
 
-### Let's begin
+### let's begin
 1) Choose a folder in your computer where you will work. For example:
 ```sh
 mkdir /nas
@@ -64,7 +64,8 @@ docker run --rm -d --network host -v /nas/share:/share --name samba adevur/easy-
 - `docker run`: we tell docker to run a container.
 
 - `--rm`: we tell docker that when this container stops, it should be automatically removed.
-You may remove this parameter at your will.
+This parameter is useful, since when an `easy-samba` container stops, it cannot be restarted,
+and the only thing you can do is to remove it.
 
 - `-d`: we tell docker that this container should be started in the background as a daemon.
 
@@ -113,7 +114,7 @@ at location `/nas/share/folder1`. So, next time you start `easy-samba` container
 Even if you edit the `config.json` configuration file and you change the shared folder's path to something else,
 your `/nas/share/folder1` directory will be left untouched.
 
-### Now what?
+### now what?
 For further information about all the configuration options of `config.json`,
 and for more info about how to set up networking,
 you should read the [`Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md).

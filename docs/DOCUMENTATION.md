@@ -368,11 +368,87 @@ If you get this error, you should probably open an issue in the GitHub repositor
 13) `[ERROR] 'smbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/smbd` has suddenly exited.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
+## how easy-samba works
+This chapter describes in detail what `easy-samba` does inside its container in order to setup the SAMBA server. This chapter is divided into these sections:
 
+- general structure of `easy-samba`
 
+- main script `/startup/index.js`
 
+### general structure of `easy-samba`
+As you can see from the [`Dockerfile`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile), `easy-samba` docker image:
 
+1) downloads [CentOS 7 image `centos:7` from docker](https://hub.docker.com/_/centos),
 
+2) installs [Node.js 10.x.x LTS](https://nodejs.org) inside the container (using the procedure described at [NodeSource Node.js Binary Distributions](https://github.com/nodesource/distributions#rpm)),
+
+3) installs the SAMBA server (packages `samba`, `samba-common` and `samba-client`) inside the container,
+
+4) copies [`startup` folder](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/startup) inside the container,
+
+5) and finally starts [`easy-samba` main script `/startup/index.js`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/startup/index.js).
+
+### main script `/startup/index.js`
+`/startup/index.js` (which you can see [on GitHub](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/startup/index.js)) is a
+Node.js script, written in Javascript, whose main purpose is to configure and start the SAMBA server.
+Here's what it does:
+
+1) The script looks for the configuration file `/share/config.json`, reads it and parses it (from JSON to Javascript object).
+
+2) The script checks if `config.json` contains syntax errors, or any other error (e.g. you defined two users with the same username).
+This phase is very important, since the rest of this script will just assume that every single parameter of `config.json` is valid
+and has no conflicts with other parameters (because the configuration file has already been validated during this phase).
+Also, during this phase, `easy-samba` will evaluate the access rules defined in the `shares` property (see also
+[`shares` property of `config.json` in this Doumentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
+in order to understand how access rules get evaluated).
+
+3) The script will clear all filesystem permissions of `/share` using these commands:
+```sh
+setfacl -R -bn /share
+chmod -R a+rX /share
+```
+
+This phase is needed because `easy-samba` has to set its own permissions on `/share` (accordingly to `config.json`), so no
+other custom permission must be present on `/share`.
+
+4) The script will set the initial permissions of `/share`. In this phase, `/share` is set so that only `root` has access to it
+and its children. These commands are used:
+```sh
+chown -R root:root /share
+setfacl -R -m 'u::rwx,g::rwx,o::x' /share
+setfacl -R -dm 'u::rwx,g::rwx,o::x' /share
+```
+
+5) In case `guest` property of `config.json` is not `false`, the script will create the anonymous shared folder (in case it doesn't exist).
+In order to set the correct permissions on the anonymous shared folder, these commands are used (in this example, `/share/guest` will be the
+shared folder's path):
+```sh
+chown -R nobody:nobody /share/guest
+setfacl -R -m 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
+setfacl -R -dm 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
+```
+
+6) The script reads `users` property of `config.json` and adds every user into the container's OS and in the SAMBA server.
+The script uses these commands (in this example, there's only a user with name `user1` and password `123456`):
+```sh
+useradd -M user1
+echo '123456' | passwd user1 --stdin
+(echo '123456'; echo '123456') | smbpasswd -a user1 -s
+```
+
+7) The script reads `shares` property of `config.json` and, for each defined shared folder, it creates the directory (if it doesn't exist) and
+sets its permission accordingly to the access rules that have been evaluated during phase 2.
+
+8) The script writes a `/etc/samba/smb.conf` file, accordingly to the configuration parameters of `config.json`.
+Documentation about `/etc/samba/smb.conf` can be found [here](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html).
+
+9) The script starts the SAMBA server with these commands:
+```sh
+/usr/sbin/nmbd --foreground --no-process-group
+/usr/sbin/smbd --foreground --no-process-group
+```
+
+10) The script will now keep running until either `nmbd` or `smbd` stop.
 
 
 
