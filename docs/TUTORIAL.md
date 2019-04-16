@@ -32,7 +32,7 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
     }
     ```
 
-5) Let's analyze what this configuration file mean:
+5) Let's analyze what this configuration file means:
 
     - This file is a JSON object with 4 properties: `domain`, `guest`, `users` and `shares`.
 
@@ -59,7 +59,7 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
     docker run --rm -d --network host -v /nas/share:/share --name samba adevur/easy-samba:latest
     ```
 
-7) Let's analyze what this command mean:
+7) Let's analyze what this command means:
 
     - `docker run`: we tell docker to run a container.
 
