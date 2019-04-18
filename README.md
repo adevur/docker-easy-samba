@@ -1,5 +1,5 @@
 # easy-samba
-This image provides an easy-to-setup SAMBA server, based on CentOS 7.
+This docker image provides an easy-to-setup SAMBA server, based on CentOS 7.
 
 ### short description
 This SAMBA server takes a JSON configuration file as input and, based on that file, it sets up the container's environment. For example, here's what you can do:
