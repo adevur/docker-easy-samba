@@ -7,6 +7,7 @@ module.exports = fnValidateConfig;
 
 
 // dependencies
+const fnValidateConfigVersion = require("/startup/functions/fnValidateConfigVersion.js");
 const fnValidateConfigGuest = require("/startup/functions/fnValidateConfigGuest.js");
 const fnValidateConfigUsers = require("/startup/functions/fnValidateConfigUsers.js");
 const fnValidateConfigGroups = require("/startup/functions/fnValidateConfigGroups.js");
@@ -32,12 +33,9 @@ function fnValidateConfig(config){
     }
 
     // check "version" property
-    // EXPLAIN: this check is needed for forward-compatibility
-    //   this way, when version "1.1.0" of easy-samba will be released, its config.json files will have property "version: '1.1'"
-    //   and easy-samba 1.0.x will know that it's a version that is not compatible with easy-samba 1.0.x
-    // if "version" property is missing, easy-samba assumes it is equal to "1.0"
-    if (fnHas(config, "version") === true && config["version"] !== "1.0"){
-        return "THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '" + String(config["version"]) + "' OR NEWER";
+    const validateConfigVersion = fnValidateConfigVersion(config);
+    if (validateConfigVersion !== true){
+        return validateConfigVersion;
     }
 
     // check "domain" property
