@@ -28,7 +28,7 @@ function fnValidateConfigGuest(guestconf, sharedb){
 
         // guest share path must be a valid path
         if (fnIsValidPath(guestconf) !== true){
-            return "GUEST SHARE PATH MUST BE AN ALPHANUMERIC STRING";
+            return "GUEST SHARE PATH MUST BE A VALID PATH";
         }
 
         // guest share path cannot be "/share/config.json"

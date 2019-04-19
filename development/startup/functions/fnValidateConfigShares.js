@@ -55,7 +55,7 @@ function fnValidateConfigShares(shares, sharedb){
         }
         // "path" must be a valid path
         if (fnIsValidPath(share["path"]) !== true){
-            error = "SHARE PATHS MUST BE ALPHANUMERIC";
+            error = "SHARE PATHS MUST BE A VALID PATH";
             return false;
         }
         // check share["access"]
