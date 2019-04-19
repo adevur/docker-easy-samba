@@ -10,8 +10,7 @@ and all the things you can do with it.
 - [`networking`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking): it describes how you can set up networking, in order to connect to `easy-samba`'s containers
 from a SAMBA client.
 
-- [`run easy-samba in production`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#run-easy-samba-in-production): it describes how you can set up `easy-samba` to run in a Linux server
-for production use (e.g. registering `easy-samba` as a `systemd` service, automatizing updates, ...).
+- [`advanced use`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#advanced-use): it shows some tricks to improve `easy-samba` use (e.g. registering `easy-samba` as a `systemd` service, automatizing updates, ...).
 
 - [`understanding logs`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs): it describes how you can retrieve logs for `easy-samba`, and how to read them.
 
@@ -93,7 +92,7 @@ with the same name).
 
 ### `shares` section
 This is an array that contains all the shared folders to be created by the SAMBA server. The only shared folder that is
-not included in this array is the anonymous shared folder (that is instead defined in `guest` section of `config.json`).
+not included in this array is the anonymous shared folder (that is instead defined in [`guest` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section)).
 This section can also be an empty array. An element of `shares` array looks like this:
 `{ "name": "public", "path": "/share/public", "access": ["user1", "ro:group2", "rw:user3"] }`.
 
@@ -123,8 +122,12 @@ E.g.: `["ro:group1", "rw:user2"]` means that all users of `group1` have read per
 - If a user or a group are not included in the access rules of a shared folder, it means that they have no access at all
 to that shared folder.
 
-## run easy-samba in production
-This chapter will give you a couple of advices for running `easy-samba` in a production environment, like a Linux server.
+## advanced use
+This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
+
+- [`writing a systemd unit`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#writing-a-systemd-unit)
+
+- [`automatizing easy-samba updates`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#automatizing-easy-samba-updates)
 
 ### writing a systemd unit
 It is important to register `easy-samba` as a service in your Linux system. This way, you'll be able to better control
@@ -135,8 +138,7 @@ the status of the SAMBA server, and you will be able to start `easy-samba` autom
 mkdir /easy-samba
 ```
 
-2) Our first script will be `start.sh`, whose purpose is to start `easy-samba`. Let's `nano /easy-samba/start.sh` and copy
-this content into your script:
+2) Our first script will be `start.sh`, whose purpose is to start `easy-samba`. Create the script with `nano /easy-samba/start.sh` and copy this content into it:
 ```sh
 #!/bin/bash
 docker stop samba
@@ -145,10 +147,9 @@ docker run --network host -v /nas/share:/share --name samba local/easy-samba:lat
 ```
 
 NOTE: the reason why we used `local/easy-samba:latest` instead of `adevur/easy-samba:latest` is because we're going
-to automatize updates of `easy-samba`, building it locally. This procedure is described further down.
+to automatize updates of `easy-samba`, building it locally. This procedure is described in [section `automatizing easy-samba updates` of `advanced use` chapter](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#automatizing-easy-samba-updates).
 
-NOTE 2: `--network` parameter can be modified. Make sure not to include `-d` and `--restart always` parameters,
-that would break our `systemd` service functionality.
+NOTE 2: all parameters of `docker run` can be customized. Just take care of two things: parameters `-d` and `--restart always` must not be included in `docker run` command, since they would break our `systemd` service functionality.
 
 3) With `nano /easy-samba/stop.sh` let's instead create the script for stopping `easy-samba`:
 ```sh
@@ -202,7 +203,7 @@ In order to automatize `easy-samba`'s updates, you can write a simple script tha
 The directory where we're going to keep the source code of `easy-samba` will be located at
 `/easy-samba/src`, so make sure to create this directory with command `mkdir /easy-samba/src`.
 
-Now, you can write the script with `nano /easy-samba/update.sh`:
+Now, you can create the script with `nano /easy-samba/update.sh`:
 
 ```sh
 #!/bin/bash
