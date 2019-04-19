@@ -77,7 +77,7 @@ An element of `users` array looks like this: `{ "name": "user1", "password": "12
 and there cannot be a user and a group with the same name).
 
 - `password` is the user's password, with which the user will login to the SAMBA server.
-It must be a valid Linux user password.
+It must be a valid Linux user password (i.e. it must be a string of [printable ASCII characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters)).
 
 ### `groups` section
 This is an optional property of `config.json`. If you include it in your configuration file, `groups` must be an array
