@@ -20,18 +20,23 @@ module.exports = fnIsValidPath;
 //   also, "str" cannot be "." or ".."
 //   max length of directory name must be 255 chars
 function fnIsValidPath(str){
+    // "str" cannot be empty
+    if (str.length === 0){
+        return false;
+    }
+
     // "str" cannot contain "/" and "\0" chars
-    if (str.substring(7).includes("/") || str.substring(7).includes("\u0000")){
+    if (str.includes("/") || str.includes("\u0000")){
         return false;
     }
 
     // max length 255 chars
-    if (str.substring(7).length > 255){
+    if (str.length > 255){
         return false;
     }
 
-    // "str" cannot be "/share/." or "/share/.."
-    if (str === "/share/." || str === "/share/.."){
+    // "str" cannot be "." or ".."
+    if (str === "." || str === ".."){
         return false;
     }
 

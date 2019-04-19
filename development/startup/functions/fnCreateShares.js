@@ -23,7 +23,6 @@ function fnCreateShares(shares){
         
         // if it doesn't exist on disk, create it
         // TODO: could be improved
-        // TODO: if path exists on disk, check if it's a directory
         try {
             if (fs.existsSync(shares[i]["path"]) !== true){
                 fs.mkdirSync(shares[i]["path"]);

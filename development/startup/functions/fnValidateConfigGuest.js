@@ -13,7 +13,9 @@ const fnIsValidPath = require("/startup/functions/fnIsValidPath.js");
 
 
 // FUNCTION: fnValidateConfigGuest()
-// TODO: write a brief description of this function
+// INPUT: "guestconf" is "guest" property of "config.json"
+//   "sharedb" is the "sharedb" object of "fnValidateConfig()" function
+// OUTPUT: true in case of success, otherwise a string that describes the error
 function fnValidateConfigGuest(guestconf, sharedb){
     if (guestconf !== false){
         // guest share path must be a string
@@ -27,7 +29,7 @@ function fnValidateConfigGuest(guestconf, sharedb){
         }
 
         // guest share path must be a valid path
-        if (fnIsValidPath(guestconf) !== true){
+        if (fnIsValidPath(guestconf.substring(7)) !== true){
             return "GUEST SHARE PATH MUST BE A VALID PATH";
         }
 
@@ -36,7 +38,8 @@ function fnValidateConfigGuest(guestconf, sharedb){
             return "GUEST SHARE PATH CANNOT BE '/share/config.json'";
         }
 
-        sharedb.paths.push(guestconf); // TODO: EXPLAIN
+        // add guest share path to "sharedb"
+        sharedb.paths.push(guestconf);
 
         return true;
     }

@@ -31,6 +31,7 @@ function fnValidateConfigShares(shares, sharedb){
             error = "EVERY SHARE IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' PROPERTIES";
             return false;
         }
+
         // "name" must be a unique alphanumeric name of minimum 1 char length
         // "name" cannot be "global" or "guest"
         if (
@@ -42,22 +43,38 @@ function fnValidateConfigShares(shares, sharedb){
             error = "SHARE NAME MUST BE A UNIQUE ALPHANUMERIC NON-EMPTY STRING";
             return false;
         }
+
         // "path" must be a sub-directory of "/share"
         if (fnIsString(share["path"]) !== true || share["path"].startsWith("/share/") !== true || share["path"].length < 8){
             error = "SHARE PATH MUST BE A SUB-DIRECTORY OF '/share'";
             return false;
         }
-        // "path" must be unique
-        // "path" cannot be "/share/config.json"
-        if (sharedb.paths.includes(share["path"])){
-            error = "TWO OR MORE SHARES HAVE THE SAME PATH '" + share["path"] + "'";
-            return false;
-        }
+
         // "path" must be a valid path
-        if (fnIsValidPath(share["path"]) !== true){
-            error = "SHARE PATHS MUST BE A VALID PATH";
+        if (fnIsValidPath(share["path"].substring(7)) !== true){
+            error = "SHARE PATHS MUST BE VALID PATHS";
             return false;
         }
+
+        // "path" cannot be "/share/config.json"
+        if (share["path"] === "/share/config.json"){
+            error = "SHARE PATH '/share/config.json' CANNOT BE USED";
+            return false;
+        }
+
+        // "path" must be unique
+        if (sharedb.paths.includes(share["path"])){
+            error = "TWO OR MORE SHARES HAVE THE SAME PATH";
+            return false;
+        }
+
+        // if "path" already exists on disk, make sure it is a directory
+        // TODO: could be improved
+        if (fs.existsSync(share["path"]) && fs.lstatSync(share["path"]).isDirectory() !== true){
+            error = "SHARE PATH '" + share["path"] + "' IS NOT A DIRECTORY";
+            return false;
+        }
+
         // check share["access"]
         // must be an array and it cannot be empty
         if (fnIsArray(share["access"]) !== true || share["access"].length < 1){
@@ -84,8 +101,10 @@ function fnValidateConfigShares(shares, sharedb){
 
         // push shares' names
         sharedb.names.push(share["name"]);
+
         // push shares' paths
         sharedb.paths.push(share["path"]);
+
         // TODO: update share in order to include "users" property
         // TODO: EXPLAIN
         share["users"] = [];
