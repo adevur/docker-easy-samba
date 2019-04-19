@@ -19,7 +19,6 @@ const { spawnSync } = require("child_process");
 function fnCreateGuest(guestdir){
     // if "guestdir" doesn't exist on disk, create it
     // TODO: could be improved
-    // TODO: if path exists on disk, check if it's a directory
     try {
         if (fs.existsSync(guestdir) !== true){
             fs.mkdirSync(guestdir);
@@ -27,7 +26,7 @@ function fnCreateGuest(guestdir){
         if (fs.existsSync(guestdir) !== true){ throw "ERROR"; }
     }
     catch (error){
-        return "GUEST SHARE '" + guestdir + "' COULD NOT BE CREATED";
+        return `GUEST SHARE '${guestdir}' COULD NOT BE CREATED`;
     }
 
     // set guest share permissions and ACLs
@@ -41,7 +40,7 @@ function fnCreateGuest(guestdir){
         spawnSync("setfacl", ["-R", "-dm", "u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx", guestdir], { stdio: "ignore" });
     }
     catch (error){
-        return "PERMISSIONS FOR GUEST SHARE '" + guestdir + "' COULD NOT BE SET";
+        return `PERMISSIONS FOR GUEST SHARE '${guestdir}' COULD NOT BE SET`;
     }
 
     return true;

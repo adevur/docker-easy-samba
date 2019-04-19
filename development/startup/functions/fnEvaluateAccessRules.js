@@ -55,6 +55,10 @@ function fnIsGroup(name, sharedb){
 
 
 
+// EXAMPLE:
+//   fnGetPerm("rw:user1") === "rw:"
+//   fnGetPerm("ro:user2") === "ro:"
+//   fnGetPerm("user3") === "rw:"
 function fnGetPerm(rule){
     return (rule.startsWith("ro:")) ? "ro:" : "rw:";
 }

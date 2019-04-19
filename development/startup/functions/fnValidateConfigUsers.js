@@ -57,6 +57,8 @@ function fnValidateConfigUsers(users, sharedb){
             return false;
         }
 
+        // TODO: check that it doesn't exist in the OS a group with user["name"]
+
         // user must be unique in config.json
         if (sharedb.users.includes(user["name"])){
             error = "USER '" + user["name"] + "' HAS BEEN DEFINED MORE THAN ONCE";

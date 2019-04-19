@@ -26,7 +26,8 @@ function fnGenSmbConf(domain, guest, shares){
     //     workgroup = WORKGROUP
     //     security = user
     //   ";
-    result += "[global]\nworkgroup = " + domain + "\nsecurity = user\n\n";
+    // TODO: add "unix charset = UTF-8", "dos charset = CP850" and "mangled names = no"
+    result += `[global]\nworkgroup = ${domain}\nsecurity = user\n\n`;
 
     // add guest share
     // EXAMPLE: "guest" == "/share/guest" --->
@@ -40,15 +41,13 @@ function fnGenSmbConf(domain, guest, shares){
     //     force user = nobody
     //   ";
     if (guest !== false){
-        result += "[guest]\npath = " + guest + "\nbrowsable = yes\nwritable = yes\nread only = no\nguest ok = yes\nforce user = nobody\n\n";
+        result += `[guest]\npath = ${guest}\nbrowsable = yes\nwritable = yes\nread only = no\nguest ok = yes\nforce user = nobody\n\n`;
     }
 
     // for each "share" in "shares" ...
-    let i = 0;
-    while (i < shares.length){
-        
+    shares.forEach((share) => {
         // add the share in the configuration
-        // EXAMPLE: shares[i] == { "name": "public", "path": "/share/public", "users": ["rw:user1", "ro:user2"] } --->
+        // EXAMPLE: share == { "name": "public", "path": "/share/public", "users": ["rw:user1", "ro:user2"] } --->
         //   result += "
         //     [public]
         //     path = /share/public
@@ -59,13 +58,11 @@ function fnGenSmbConf(domain, guest, shares){
         //     valid users = user1 user2
         //   ";
         const users = [];
-        shares[i]["users"].forEach((user) => {
+        share["users"].forEach((user) => {
             users.push(user.substring(3));
         });
-        result += "[" + shares[i]["name"] + "]\npath = " + shares[i]["path"] + "\nbrowsable = yes\nwritable = yes\nread only = no\nguest ok = no\nvalid users = " + users.join(" ") + "\n\n";
-        
-        i++;
-    }
+        result += `[${share["name"]}]\npath = ${share["path"]}\nbrowsable = yes\nwritable = yes\nread only = no\nguest ok = no\nvalid users = ${users.join(" ")}\n\n`;
+    });
 
     return result;
 }

@@ -17,13 +17,8 @@ module.exports = fnIsAsciiString;
 // PURPOSE: check if a string only contains ASCII characters
 function fnIsAsciiString(str){
     // check that every char in "str" has a code between 0 and 127
-    let i = 0;
-    while (i < str.length){
-        if (str.charCodeAt(i) < 0 || str.charCodeAt(i) > 127){
-            return false;
-        }
-        i++;
-    }
-
-    return true;
+    return str.split("").every((c) => {
+        const charcode = c.charCodeAt(0);
+        return (charcode >= 0 && charcode <= 127);
+    });
 }

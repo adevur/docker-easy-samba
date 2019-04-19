@@ -18,33 +18,38 @@ const fnUserExists = require("/startup/functions/fnUserExists.js");
 // PURPOSE: add the users in the container's OS and in SAMBA
 function fnCreateUsers(users){
     // for each "user" in "users" ...
-    let i = 0;
-    while (i < users.length){
-        
+    let errorMsg = "";
+    const result = users.every((user) => {
         // add the user to the OS
-        // EXAMPLE: users[i] == { "name": "user1", "password": "123456" } --->
+        // EXAMPLE: user == { "name": "user1", "password": "123456" } --->
         //   useradd -M user1
         //   echo '123456' | passwd user1 --stdin
         try {
-            spawnSync("useradd", ["-M", users[i]["name"]], { stdio: "ignore" });
-            spawnSync("passwd", [users[i]["name"], "--stdin"], { input: users[i]["password"] + "\n", stdio: [undefined, "ignore", "ignore"] });
-            if (fnUserExists(users[i]["name"]) !== true){ throw "ERROR"; }
+            spawnSync("useradd", ["-M", user["name"]], { stdio: "ignore" });
+            spawnSync("passwd", [user["name"], "--stdin"], { input: `${user["password"]}\n`, stdio: [undefined, "ignore", "ignore"] });
+            if (fnUserExists(user["name"]) !== true){ throw "ERROR"; }
         }
         catch (error){
-            return "USER '" + users[i]["name"] + "' COULD NOT BE ADDED TO OS";
+            errorMsg = `USER '${user["name"]}' COULD NOT BE ADDED TO OS`;
+            return false;
         }
-        
+
         // add the user to SAMBA
-        // EXAMPLE: users[i] == { "name": "user1", "password": "123456" } --->
+        // EXAMPLE: user == { "name": "user1", "password": "123456" } --->
         //   (echo '123456'; echo '123456') | smbpasswd -a user1 -s
         try {
-            spawnSync("smbpasswd", ["-a", users[i]["name"], "-s"], { input: users[i]["password"] + "\n" + users[i]["password"] + "\n", stdio: [undefined, "ignore", "ignore"] });
+            spawnSync("smbpasswd", ["-a", user["name"], "-s"], { input: `${user["password"]}\n${user["password"]}\n`, stdio: [undefined, "ignore", "ignore"] });
         }
         catch (error){
-            return "USER '" + users[i]["name"] + "' COULD NOT BE ADDED TO SAMBA";
+            errorMsg = `USER '${user["name"]}' COULD NOT BE ADDED TO SAMBA`;
+            return false;
         }
-        
-        i++;
+
+        return true;
+    });
+
+    if (result !== true){
+        return errorMsg;
     }
 
     return true;
