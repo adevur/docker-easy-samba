@@ -12,6 +12,9 @@ const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsValidPath = require("/startup/functions/fnIsValidPath.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnValidateString = require("/startup/functions/fnValidateString.js");
+const fs = require("fs");
+const fnValidateConfigSharesAccess = require("/startup/functions/fnValidateConfigSharesAccess.js");
+const fnEvaluateAccessRules = require("/startup/functions/fnEvaluateAccessRules.js");
 
 
 
@@ -76,26 +79,9 @@ function fnValidateConfigShares(shares, sharedb){
         }
 
         // check share["access"]
-        // must be an array and it cannot be empty
-        if (fnIsArray(share["access"]) !== true || share["access"].length < 1){
-            error = "PROPERTY 'access' OF SHARE '" + share["name"] + "' MUST BE A NON-EMPTY ARRAY";
-            return false;
-        }
-        // must contain only users or groups defined early in config["users"] and config["groups"]
-        // users and groups can be prefixed with "rw:" or "ro:"
-        const temp = share["access"].every((access) => {
-            if ((access.startsWith("rw:") || access.startsWith("ro:")) && access.length > 3){
-                if (sharedb.users.includes(access.substring(3)) || fnHas(sharedb.groups, access.substring(3))){
-                    return true;
-                }
-            }
-            else if (sharedb.users.includes(access) || fnHas(sharedb.groups, access)){
-                return true;
-            }
-            return false;
-        });
-        if (temp !== true){
-            error = "ONE OR MORE ACCESS RULES OF SHARE '" + share["name"] + "' ARE NOT VALID";
+        const validateConfigSharesAccess = fnValidateConfigSharesAccess(share, sharedb);
+        if (validateConfigSharesAccess !== true){
+            error = validateConfigSharesAccess;
             return false;
         }
 
@@ -105,35 +91,9 @@ function fnValidateConfigShares(shares, sharedb){
         // push shares' paths
         sharedb.paths.push(share["path"]);
 
-        // TODO: update share in order to include "users" property
+        // evaluate access rules
         // TODO: EXPLAIN
-        share["users"] = [];
-        share["access"].forEach((access) => {
-            if (fnHas(sharedb.groups, (access.startsWith("ro:") || access.startsWith("rw:")) ? access.substring(3) : access)){
-                const users = (access.startsWith("ro:") || access.startsWith("rw:")) ? sharedb.groups[access.substring(3)] : sharedb.groups[access];
-                const perm = (access.startsWith("ro:")) ? "ro:" : "rw:";
-                users.forEach((user) => {
-                    if (share["users"].indexOf("ro:" + user) >= 0){
-                        share["users"].splice(share["users"].indexOf("ro:" + user), 1);
-                    }
-                    if (share["users"].indexOf("rw:" + user) >= 0){
-                        share["users"].splice(share["users"].indexOf("rw:" + user), 1);
-                    }
-                    share["users"].push(perm + user);
-                });
-            }
-            else {
-                const user = (access.startsWith("ro:") || access.startsWith("rw:")) ? access.substring(3) : access;
-                const perm = (access.startsWith("ro:")) ? "ro:" : "rw:";
-                if (share["users"].indexOf("ro:" + user) >= 0){
-                    share["users"].splice(share["users"].indexOf("ro:" + user), 1);
-                }
-                if (share["users"].indexOf("rw:" + user) >= 0){
-                    share["users"].splice(share["users"].indexOf("rw:" + user), 1);
-                }
-                share["users"].push(perm + user);
-            }
-        });
+        fnEvaluateAccessRules(share, sharedb);
 
         return true;
     });
