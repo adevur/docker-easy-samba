@@ -7,7 +7,7 @@ module.exports = fnIsValidPath;
 
 
 // dependencies
-// N/A
+const fnValidateString = require("/startup/functions/fnValidateString.js");
 
 
 
@@ -19,9 +19,15 @@ module.exports = fnIsValidPath;
 // EXPLAIN: a valid path is a string that can contain every Unicode char except for "/" and "\0"
 //   also, "str" cannot be "." or ".."
 //   max length of directory name must be 255 chars
+// FIXME: currently, only alphanumeric ASCII chars are permitted, due to problems with "/etc/samba/smb.conf" generation
 function fnIsValidPath(str){
     // "str" cannot be empty
     if (str.length === 0){
+        return false;
+    }
+
+    // FIXME: TEMPORARY
+    if (fnValidateString(str, ["az", "AZ", "09"]) !== true){
         return false;
     }
 
