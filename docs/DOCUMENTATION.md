@@ -134,60 +134,59 @@ It is important to register `easy-samba` as a service in your Linux system. This
 the status of the SAMBA server, and you will be able to start `easy-samba` automatically on boot. Let's begin:
 
 1) Create a folder in your system where all our `easy-samba` scripts will be saved.
-```sh
-mkdir /easy-samba
-```
+    ```sh
+    mkdir /easy-samba
+    ```
 
 2) Our first script will be `start.sh`, whose purpose is to start `easy-samba`. Create the script with `nano /easy-samba/start.sh` and copy this content into it:
-```sh
-#!/bin/bash
-docker stop samba
-docker container rm samba
-docker run --network host -v /nas/share:/share --name samba local/easy-samba:latest
-```
+    ```sh
+    #!/bin/bash
+    docker stop samba
+    docker container rm samba
+    docker run --network host -v /nas/share:/share --name samba local/easy-samba:latest
+    ```
 
-NOTE: the reason why we used `local/easy-samba:latest` instead of `adevur/easy-samba:latest` is because we're going
-to automatize updates of `easy-samba`, building it locally. This procedure is described in [section `automatizing easy-samba updates` of `advanced use` chapter](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#automatizing-easy-samba-updates).
+    > NOTE: the reason why we used `local/easy-samba:latest` instead of `adevur/easy-samba:latest` is because we're going to automatize updates of `easy-samba`, building it locally. This procedure is described in [section `automatizing easy-samba updates` of `advanced use` chapter](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#automatizing-easy-samba-updates).
 
-NOTE 2: all parameters of `docker run` can be customized. Just take care of two things: parameters `-d` and `--restart always` must not be included in `docker run` command, since they would break our `systemd` service functionality.
+    > NOTE 2: all parameters of `docker run` can be customized. Just take care of two things: parameters `-d` and `--restart always` must not be included in `docker run` command, since they would break our `systemd` service functionality.
 
 3) With `nano /easy-samba/stop.sh` let's instead create the script for stopping `easy-samba`:
-```sh
-#!/bin/bash
-docker stop samba
-docker container rm samba
-```
+    ```sh
+    #!/bin/bash
+    docker stop samba
+    docker container rm samba
+    ```
 
 4) Now, let's write our `systemd` service unit with `nano /etc/systemd/system/easy-samba.service`:
-```
-[Unit]
-Description=easy-samba
-After=docker.service
+    ```
+    [Unit]
+    Description=easy-samba
+    After=docker.service
 
-[Service]
-Type=simple
-ExecStart=/easy-samba/start.sh
-ExecStop=/easy-samba/stop.sh
+    [Service]
+    Type=simple
+    ExecStart=/easy-samba/start.sh
+    ExecStop=/easy-samba/stop.sh
 
-[Install]
-WantedBy=multi-user.target
-```
+    [Install]
+    WantedBy=multi-user.target
+    ```
 
 5) Now, run:
-```sh
-chmod 664 /etc/systemd/system/easy-samba.service
-systemctl daemon-reload
-```
+    ```sh
+    chmod 664 /etc/systemd/system/easy-samba.service
+    systemctl daemon-reload
+    ```
 
 6) Okay, now our `systemd` service unit is ready. We can start the SAMBA server with:
-```sh
-systemctl start easy-samba.service
-```
+    ```sh
+    systemctl start easy-samba.service
+    ```
 
 7) If you want `easy-samba` to start automatically on boot, run:
-```sh
-systemctl enable easy-samba.service
-```
+    ```sh
+    systemctl enable easy-samba.service
+    ```
 
 ### automatizing easy-samba updates
 In order to automatize `easy-samba`'s updates, you can write a simple script that does this:
@@ -237,9 +236,9 @@ rm -f /easy-samba/src/easy-samba.zip
 systemctl start easy-samba.service
 ```
 
-Now, every time you want to update `easy-samba`, you just need to execute `/easy-samba/update.sh` script.
+Every time you want to update `easy-samba`, you just need to execute `/easy-samba/update.sh` script.
 
-NOTE: the reason why we build `easy-samba` locally and we don't just retrieve it from docker repository
+> NOTE: the reason why we build `easy-samba` locally and we don't just retrieve it from docker repository
 `adevur/easy-samba` is that, building locally, we'll always have container's packages updated to latest version.
 
 ## understanding logs
@@ -252,14 +251,10 @@ In order to retrieve logs of `easy-samba`, you can use this command:
 docker logs samba
 ```
 
-Where `samba` is the container's name or ID.
+> Where `samba` is the container's name or ID.
 
-NOTE: in case of errors, the container will stop. If you used the parameter `--rm` in the `docker run` command (when
-you first [started the container](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options)),
-docker will remove the container after it stops, so you won't be able to retrieve
-logs about the error. In order to keep the container saved even after it stops, don't use parameter `--rm` in
-`docker run` command. This way, you will be able to use `docker logs samba` in case an error occurred and the
-container stopped.
+> NOTE: in case of errors, the container will stop. If you used the parameter `--rm` in the `docker run` command (when
+you first [started the container](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options)), docker will remove the container after it stops, so you won't be able to retrieve logs about the error. In order to keep the container saved even after it stops, don't use parameter `--rm` in `docker run` command. This way, you will be able to use `docker logs samba` in case an error occurred and the container stopped.
 
 ### list of logs
 This is the list of possible logs, when no error occurs:
@@ -397,45 +392,40 @@ Here's what it does:
 1) The script looks for the configuration file `/share/config.json`, reads it and parses it (from JSON to Javascript object).
 
 2) The script checks if `config.json` contains syntax errors, or any other error (e.g. you defined two users with the same username).
-This phase is very important, since the rest of this script will just assume that every single parameter of `config.json` is valid
-and has no conflicts with other parameters (because the configuration file has already been validated during this phase).
-Also, during this phase, `easy-samba` will evaluate the access rules defined in the `shares` property (see also
-[`shares` property of `config.json` in this Doumentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
-in order to understand how access rules get evaluated).
+
+    This phase is very important, since the rest of this script will just assume that every single parameter of `config.json` is valid and has no conflicts with other parameters (because the configuration file has already been validated during this phase).
+
+    Also, during this phase, `easy-samba` will evaluate the access rules defined in the `shares` property (see also [`shares` property of `config.json` in this Doumentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section) in order to understand how access rules get evaluated).
 
 3) The script will clear all filesystem permissions of `/share` using these commands:
-```sh
-setfacl -R -bn /share
-chmod -R a+rX /share
-```
+    ```sh
+    setfacl -R -bn /share
+    chmod -R a+rX /share
+    ```
 
-This phase is needed because `easy-samba` has to set its own permissions on `/share` (accordingly to `config.json`), so no
-other custom permission must be present on `/share`.
+    This phase is needed because `easy-samba` has to set its own permissions on `/share` (accordingly to `config.json`), so no other custom permission must be present on `/share`.
 
-4) The script will set the initial permissions of `/share`. In this phase, `/share` is set so that only `root` has access to it
-and its children. These commands are used:
-```sh
-chown -R root:root /share
-setfacl -R -m 'u::rwx,g::rwx,o::x' /share
-setfacl -R -dm 'u::rwx,g::rwx,o::x' /share
-```
+4) The script will set the initial permissions of `/share`. In this phase, `/share` is set so that only `root` has access to it and its children. These commands are used:
+    ```sh
+    chown -R root:root /share
+    setfacl -R -m 'u::rwx,g::rwx,o::x' /share
+    setfacl -R -dm 'u::rwx,g::rwx,o::x' /share
+    ```
 
-5) In case `guest` property of `config.json` is not `false`, the script will create the anonymous shared folder (in case it doesn't exist).
-In order to set the correct permissions on the anonymous shared folder, these commands are used (in this example, `/share/guest` will be the
-shared folder's path):
-```sh
-chown -R nobody:nobody /share/guest
-setfacl -R -m 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
-setfacl -R -dm 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
-```
+5) In case `guest` property of `config.json` is not `false`, the script will create the anonymous shared folder (in case it doesn't exist). In order to set the correct permissions on the anonymous shared folder, these commands are used (in this example, `/share/guest` will be the shared folder's path):
+    ```sh
+    chown -R nobody:nobody /share/guest
+    setfacl -R -m 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
+    setfacl -R -dm 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
+    ```
 
 6) The script reads `users` property of `config.json` and adds every user into the container's OS and in the SAMBA server.
 The script uses these commands (in this example, there's only a user with name `user1` and password `123456`):
-```sh
-useradd -M user1
-echo '123456' | passwd user1 --stdin
-(echo '123456'; echo '123456') | smbpasswd -a user1 -s
-```
+    ```sh
+    useradd -M user1
+    echo '123456' | passwd user1 --stdin
+    (echo '123456'; echo '123456') | smbpasswd -a user1 -s
+    ```
 
 7) The script reads `shares` property of `config.json` and, for each defined shared folder, it creates the directory (if it doesn't exist) and
 sets its permission accordingly to the access rules that have been evaluated during phase 2.
@@ -444,10 +434,10 @@ sets its permission accordingly to the access rules that have been evaluated dur
 Documentation about `/etc/samba/smb.conf` can be found [here](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html).
 
 9) The script starts the SAMBA server with these commands:
-```sh
-/usr/sbin/nmbd --foreground --no-process-group
-/usr/sbin/smbd --foreground --no-process-group
-```
+    ```sh
+    /usr/sbin/nmbd --foreground --no-process-group
+    /usr/sbin/smbd --foreground --no-process-group
+    ```
 
 10) The script will now keep running until either `nmbd` or `smbd` stop.
 
