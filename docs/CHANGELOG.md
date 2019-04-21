@@ -2,11 +2,31 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.0.2`
+### Current stable release: `1.0.3`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] 1.0.3 (2019-04-21 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Now, shared folders' path validation algorithm is less restrictive. Before this fix, a shared folder's path could only
+  contain alphanumeric ASCII characters; now, almost any Unicode character can be used.
+  Take a look at the [`config.json` section of `Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson) for more info about path validation.
+
+  - Anonymous shared folder now works properly. There was a bug in the generation of `/etc/samba/smb.conf` that
+  prevented guest login.
+
+  - Other improvements to `/etc/samba/smb.conf` generation algorithm.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [SECURITY] 1.0.2 (2019-04-18 UTC)
 - New features:

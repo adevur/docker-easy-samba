@@ -61,9 +61,13 @@ For example: `"/share/guest"`. To be a valid path, `guest` string must follow th
 
 - It must be a sub-directory of `/share`.
 
-- It must only contain alphanumeric chars (i.e. from "a" to "z", from "A" to "Z" or from "0" to "9").
+- It can contain whatever Unicode character, except for: `/`, `\`, `<`, `>`, `:`, `"`, `|`, `?`, `*`.
 
-- It cannot be equal to `"/share/config.json"`.
+- It cannot contain control characters (i.e. chars with a code between 0 and 31 or with a code of 127).
+
+- It cannot be equal to `"/share/config.json"`, to `"/share/."` or to `"/share/.."`.
+
+- It cannot be long more than 255 characters.
 
 - It cannot be equal to any of the paths that will be specified in the `shares` section of `config.json`.
 

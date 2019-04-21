@@ -38,7 +38,7 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 ### tags
 Available tags:
 
-- Latest stable release (1.0.2): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
+- Latest stable release (1.0.3): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
 
 - Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
