@@ -31,7 +31,7 @@ function fnGenSmbConf(domain, guest, shares){
     // add guest share
     if (guest !== false){
         result += `[guest]\n`;
-        result += `path = ${guest}\n`;
+        result += `path = "${guest}"\n`;
         result += `browsable = yes\n`;
         result += `writable = yes\n`;
         result += `read only = no\n`;
