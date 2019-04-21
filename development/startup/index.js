@@ -26,7 +26,6 @@ fnMain().catch((error) => {
 
 
 
-// FIXME: guest share implementation gives permission errors
 // TODO: implement "*" wildcard to match all users in config.json/shares/access
 //   HINT: a share object would look like this: { "name": "public", "path": "/share/public", "access": ["ro:*", "rw:user1"] }
 //     it means: share named "public" with path "/share/public" can be read by all users, and only "user1" has write permissions on it
