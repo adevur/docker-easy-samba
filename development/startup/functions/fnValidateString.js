@@ -7,7 +7,7 @@ module.exports = fnValidateString;
 
 
 // dependencies
-// N/A
+const fnIsString = require("/startup/functions/fnIsString.js");
 
 
 
@@ -20,6 +20,10 @@ module.exports = fnValidateString;
 //   fnValidateString("Hello-World", ["az", "AZ", "09", "-"]) === true
 //   fnValidateString("Hello World!", ["az", "AZ", "09", "-"]) === false
 function fnValidateString(str, chars){
+    if (fnIsString(str) !== true){
+        return false;
+    }
+
     return str.split("").every((c) => {
         let result = false;
 

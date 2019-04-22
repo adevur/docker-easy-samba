@@ -25,13 +25,11 @@ const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
 //   check if config file content is correct
 function fnValidateConfig(config){
     // TODO: document "sharedb"
-    // TODO: remove "/share/config.json" since it is now checked in fnValidateConfigGuest() and fnValidateConfigShares()
-    // TODO: add "homes" and "printers" to sharedb.names
-    const sharedb = { "users": [], "names": ["global", "guest"], "paths": ["/share/config.json"], "groups": {} };
+    const sharedb = { "users": [], "names": ["global", "homes", "printers", "guest"], "paths": [], "groups": {} };
 
     // "config" must contain "domain", "guest", "users" and "shares" properties
     if (fnHas(config, ["domain", "guest", "users", "shares"]) !== true){
-        return "DOESN'T CONTAIN 'domain', 'guest', 'users' AND 'shares' PROPERTIES";
+        return "MUST CONTAIN 'domain', 'guest', 'users' AND 'shares' PROPERTIES";
     }
 
     // check "version" property

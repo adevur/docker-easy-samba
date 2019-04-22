@@ -17,22 +17,13 @@ function fnEvaluateAccessRules(share, sharedb){
     share["users"] = [];
 
     share["access"].forEach((rule) => {
-        if (fnIsGroup(rule, sharedb)){
-            const users = sharedb.groups[fnGetRawName(rule)];
-            const perm = fnGetPerm(rule);
+        const users = (fnIsGroup(rule, sharedb)) ? sharedb.groups[fnGetRawName(rule)] : [fnGetRawName(rule)];
+        const perm = fnGetPerm(rule);
 
-            users.forEach((user) => {
-                fnDelUser(share, user);
-                share["users"].push(perm + user);
-            });
-        }
-        else {
-            const user = fnGetRawName(rule);
-            const perm = fnGetPerm(rule);
-
+        users.forEach((user) => {
             fnDelUser(share, user);
             share["users"].push(perm + user);
-        }
+        });
     });
 }
 

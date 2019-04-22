@@ -36,7 +36,7 @@ function fnValidateConfigShares(shares, sharedb){
         }
 
         // "name" must be a unique alphanumeric name of minimum 1 char length
-        // "name" cannot be "global" or "guest"
+        // "name" cannot be "global", "homes", "printers" or "guest"
         if (
             fnIsString(share["name"]) !== true
             || share["name"].length < 1

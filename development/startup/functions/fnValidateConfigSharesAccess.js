@@ -19,7 +19,7 @@ function fnValidateConfigSharesAccess(share, sharedb){
 
     // must be an array and it cannot be empty
     if (fnIsArray(access) !== true || access.length < 1){
-        return "PROPERTY 'access' OF SHARE '" + share["name"] + "' MUST BE A NON-EMPTY ARRAY";
+        return `PROPERTY 'access' OF SHARE '${share["name"]}' MUST BE A NON-EMPTY ARRAY`;
     }
 
     // must contain only users or groups defined early in config["users"] and config["groups"]
@@ -40,7 +40,7 @@ function fnValidateConfigSharesAccess(share, sharedb){
     });
 
     if (check !== true){
-        return "ONE OR MORE ACCESS RULES OF SHARE '" + share["name"] + "' ARE NOT VALID";
+        return `ONE OR MORE ACCESS RULES OF SHARE '${share["name"]}' ARE NOT VALID`;
     }
 
     return true;
