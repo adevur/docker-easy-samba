@@ -26,31 +26,30 @@ function fnValidateConfigVersion(config){
 
     // if config file does have "version" property, we make sure that its version is compatible
     //   with this version of easy-samba
-    if (fnHas(config, "version") === true){
-        const version = config["version"];
 
-        // "version" must be a string
-        if (fnIsString(version) !== true){
-            return `'version' PROPERTY MUST BE A STRING`;
-        }
+    const version = config["version"];
 
-        // "version" must be formatted as "x.y"
-        //   where "x" and "y" are both non-negative integers
-        const check = (str) => {
-            const temp = str.split(".");
-            return (temp.length === 2 && fnIsInteger(temp[0]) && fnIsInteger(temp[1]));
-        };
-        if (check(version) !== true){
-            return `'version' PROPERTY MUST BE A VALID CONFIGURATION FILE VERSION`;
-        }
-
-        // the current version of easy-samba supports only "1.0" config files
-        if (version !== "1.0"){
-            return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR NEWER`;
-        }
-
-        return true;
+    // "version" must be a string
+    if (fnIsString(version) !== true){
+        return `'version' PROPERTY MUST BE A STRING`;
     }
+
+    // "version" must be formatted as "x.y"
+    //   where "x" and "y" are both non-negative integers
+    const check = (str) => {
+        const temp = str.split(".");
+        return (temp.length === 2 && fnIsInteger(temp[0]) && fnIsInteger(temp[1]));
+    };
+    if (check(version) !== true){
+        return `'version' PROPERTY MUST BE A VALID CONFIGURATION FILE VERSION`;
+    }
+
+    // the current version of easy-samba supports only "1.0" config files
+    if (version !== "1.0"){
+        return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR NEWER`;
+    }
+
+    return true;
 }
 
 

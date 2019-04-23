@@ -21,7 +21,7 @@ const fnUserExists = require("/startup/functions/fnUserExists.js");
 function fnValidateConfigUsers(users, sharedb){
     // "users" must be an array (it can be empty)
     if (fnIsArray(users) !== true){
-        return "'users' MUST BE AN ARRAY";
+        return `'users' MUST BE AN ARRAY`;
     }
 
     let error = "";
@@ -29,31 +29,31 @@ function fnValidateConfigUsers(users, sharedb){
     const result = users.every((user) => {
         // "user" must have "name" and "password" properties
         if (fnHas(user, ["name", "password"]) !== true){
-            error = "USERS IN 'users' MUST HAVE 'name' AND 'password' PROPERTIES";
+            error = `USERS IN 'users' MUST HAVE 'name' AND 'password' PROPERTIES`;
             return false;
         }
 
         // "username" and "password" must be strings
         if (fnIsString(user["name"]) !== true || fnIsString(user["password"]) !== true){
-            error = "USER 'name' AND 'password' PROPERTIES MUST BE STRINGS";
+            error = `USER 'name' AND 'password' PROPERTIES MUST BE STRINGS`;
             return false;
         }
 
         // "username" must be a valid username
         if (fnIsValidUsername(user["name"]) !== true){
-            error = "THERE IS A USERNAME DEFINED IN 'users' THAT IS NOT VALID";
+            error = `THERE IS A USERNAME DEFINED IN 'users' THAT IS NOT VALID`;
             return false;
         }
 
         // "password" must be a valid password
         if (fnIsValidPassword(user["password"]) !== true){
-            error = "THERE IS A PASSWORD DEFINED IN 'users' THAT IS NOT VALID";
+            error = `THERE IS A PASSWORD DEFINED IN 'users' THAT IS NOT VALID`;
             return false;
         }
 
         // user must not exist in the OS
         if (fnUserExists(user["name"])){
-            error = "USER '" + user["name"] + "' ALREADY EXISTS IN THE OS";
+            error = `USER '${user["name"]}' ALREADY EXISTS IN THE OS`;
             return false;
         }
 
@@ -61,7 +61,7 @@ function fnValidateConfigUsers(users, sharedb){
 
         // user must be unique in config.json
         if (sharedb.users.includes(user["name"])){
-            error = "USER '" + user["name"] + "' HAS BEEN DEFINED MORE THAN ONCE";
+            error = `USER '${user["name"]}' HAS BEEN DEFINED MORE THAN ONCE`;
             return false;
         }
 
