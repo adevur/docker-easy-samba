@@ -13,6 +13,7 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnIsValidUsername = require("/startup/functions/fnIsValidUsername.js");
 const fnIsValidPassword = require("/startup/functions/fnIsValidPassword.js");
 const fnUserExists = require("/startup/functions/fnUserExists.js");
+const fnGroupExists = require("/startup/functions/fnGroupExists.js");
 
 
 
@@ -57,7 +58,11 @@ function fnValidateConfigUsers(users, sharedb){
             return false;
         }
 
-        // TODO: check that it doesn't exist in the OS a group with user["name"]
+        // user must not exist in the OS as a group
+        if (fnGroupExists(user["name"])){
+            error = `USERNAME '${user["name"]}' ALREADY EXISTS IN THE OS AS A GROUP`;
+            return false;
+        }
 
         // user must be unique in config.json
         if (sharedb.users.includes(user["name"])){
