@@ -27,7 +27,7 @@ function fnValidateConfigSharesAccess(share, sharedb){
     const check = access.every((rule) => {
         if (rule.startsWith("rw:") || rule.startsWith("ro:")){
             if (rule.length > 3){
-                if (sharedb.users.includes(rule.substring(3)) || fnHas(sharedb.groups, rule.substring(3))){
+                if (rule.substring(3) === "*" || sharedb.users.includes(rule.substring(3)) || fnHas(sharedb.groups, rule.substring(3))){
                     return true;
                 }
             }

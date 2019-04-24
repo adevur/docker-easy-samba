@@ -17,7 +17,16 @@ function fnEvaluateAccessRules(share, sharedb){
     share["users"] = [];
 
     share["access"].forEach((rule) => {
-        const users = (fnIsGroup(rule, sharedb)) ? sharedb.groups[fnGetRawName(rule)] : [fnGetRawName(rule)];
+        let users = undefined;
+        if (fnGetRawName(rule) === "*"){
+            users = sharedb.users;
+        }
+        else if (fnIsGroup(fnGetRawName(rule), sharedb)){
+            users = sharedb.groups[fnGetRawName(rule)];
+        }
+        else {
+            users = [fnGetRawName(rule)];
+        }
         const perm = fnGetPerm(rule);
 
         users.forEach((user) => {
