@@ -8,6 +8,21 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [STABLE] 1.0.4 (2019-04-24 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Implemented validation of `groups` property of `config.json`.
+
+  - Improvements to validation of `users` property of `config.json`.
+
+- Security fixes:
+
+  - N/A
+
 ### [STABLE] 1.0.3 (2019-04-21 UTC)
 - New features:
 
