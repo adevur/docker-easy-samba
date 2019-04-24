@@ -26,9 +26,9 @@ function fnValidateConfigGroups(config, sharedb){
 
     const groups = config["groups"];
 
-    // "groups" must be an array
-    if (fnIsArray(groups) !== true){
-        return `'groups' MUST BE AN ARRAY`;
+    // "groups" must be a non-empty array
+    if (fnIsArray(groups) !== true || groups.length < 1){
+        return `'groups' MUST BE A NON-EMPTY ARRAY`;
     }
 
     // foreach "group" in "groups"...
@@ -64,9 +64,9 @@ function fnValidateConfigGroups(config, sharedb){
             return false;
         }
 
-        // "users" must be an array
-        if (fnIsArray(group["users"]) !== true){
-            error = `'users' PROPERTY OF GROUP '${group["name"]}' MUST BE AN ARRAY`;
+        // "users" must be a non-empty array
+        if (fnIsArray(group["users"]) !== true || group["users"].length < 1){
+            error = `'users' PROPERTY OF GROUP '${group["name"]}' MUST BE A NON-EMPTY ARRAY`;
             return false;
         }
 
