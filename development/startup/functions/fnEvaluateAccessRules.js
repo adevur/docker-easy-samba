@@ -21,7 +21,7 @@ function fnEvaluateAccessRules(share, sharedb){
         if (fnGetRawName(rule) === "*"){
             users = sharedb.users;
         }
-        else if (fnIsGroup(fnGetRawName(rule), sharedb)){
+        else if (fnIsGroup(rule, sharedb)){
             users = sharedb.groups[fnGetRawName(rule)];
         }
         else {
@@ -31,7 +31,9 @@ function fnEvaluateAccessRules(share, sharedb){
 
         users.forEach((user) => {
             fnDelUser(share, user);
-            share["users"].push(perm + user);
+            if (perm !== "no:"){
+                share["users"].push(perm + user);
+            }
         });
     });
 }
@@ -39,7 +41,7 @@ function fnEvaluateAccessRules(share, sharedb){
 
 
 function fnGetRawName(rule){
-    if (rule.startsWith("ro:") || rule.startsWith("rw:")){
+    if (rule.startsWith("ro:") || rule.startsWith("rw:") || rule.startsWith("no:")){
         return rule.substring(3);
     }
     else {
@@ -58,9 +60,10 @@ function fnIsGroup(name, sharedb){
 // EXAMPLE:
 //   fnGetPerm("rw:user1") === "rw:"
 //   fnGetPerm("ro:user2") === "ro:"
-//   fnGetPerm("user3") === "rw:"
+//   fnGetPerm("no:user3") === "no:"
+//   fnGetPerm("user4") === "rw:"
 function fnGetPerm(rule){
-    return (rule.startsWith("ro:")) ? "ro:" : "rw:";
+    return (rule === fnGetRawName(rule)) ? "rw:" : rule.substring(0, 3);
 }
 
 

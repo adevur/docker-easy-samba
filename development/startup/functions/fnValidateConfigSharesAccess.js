@@ -23,16 +23,16 @@ function fnValidateConfigSharesAccess(share, sharedb){
     }
 
     // must contain only users or groups defined early in config["users"] and config["groups"]
-    // users and groups can be prefixed with "rw:" or "ro:"
+    // users and groups can be prefixed with "rw:", "ro:" or "no:"
     const check = access.every((rule) => {
-        if (rule.startsWith("rw:") || rule.startsWith("ro:")){
+        if (rule.startsWith("rw:") || rule.startsWith("ro:") || rule.startsWith("no:")){
             if (rule.length > 3){
                 if (rule.substring(3) === "*" || sharedb.users.includes(rule.substring(3)) || fnHas(sharedb.groups, rule.substring(3))){
                     return true;
                 }
             }
         }
-        else if (rule.length > 0 && (sharedb.users.includes(rule) || fnHas(sharedb.groups, rule))){
+        else if (rule.length > 0 && (rule === "*" || sharedb.users.includes(rule) || fnHas(sharedb.groups, rule))){
             return true;
         }
 
