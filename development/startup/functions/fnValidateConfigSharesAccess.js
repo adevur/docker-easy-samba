@@ -24,6 +24,7 @@ function fnValidateConfigSharesAccess(share, sharedb){
 
     // must contain only users or groups defined early in config["users"] and config["groups"]
     // users and groups can be prefixed with "rw:", "ro:" or "no:"
+    // access rule "*" means "all users" and it can be prefixed with "rw:", "ro:" or "no:"
     const check = access.every((rule) => {
         if (rule.startsWith("rw:") || rule.startsWith("ro:") || rule.startsWith("no:")){
             if (rule.length > 3){
