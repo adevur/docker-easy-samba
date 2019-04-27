@@ -22,10 +22,10 @@ function fnCreateUsers(users){
     const result = users.every((user) => {
         // add the user to the OS
         // EXAMPLE: user == { "name": "user1", "password": "123456" } --->
-        //   useradd -M user1
+        //   useradd -M -s /sbin/nologin user1
         //   echo '123456' | passwd user1 --stdin
         try {
-            spawnSync("useradd", ["-M", user["name"]], { stdio: "ignore" });
+            spawnSync("useradd", ["-M", "-s", "/sbin/nologin", user["name"]], { stdio: "ignore" });
             spawnSync("passwd", [user["name"], "--stdin"], { input: `${user["password"]}\n`, stdio: [undefined, "ignore", "ignore"] });
             if (fnUserExists(user["name"]) !== true){ throw "ERROR"; }
         }
