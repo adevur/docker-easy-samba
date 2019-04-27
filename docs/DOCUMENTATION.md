@@ -24,6 +24,8 @@ This chapter is divided into these sections:
 
 - [general structure of the file](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-the-file)
 
+- [`version` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#version-section)
+
 - [`domain` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section)
 
 - [`guest` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section)
