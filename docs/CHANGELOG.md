@@ -2,11 +2,33 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.0.4`
+### Current stable release: `1.1.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.1.0 (2019-04-27 UTC)
+- New features:
+
+  - In `access` property of shared folders defined in `config.json`, now it is possible to use `*` to indicate "all users
+  defined in `users` section of `config.json`" for an access rule. For example, if `access` property is equal to `["ro:*"]`,
+  it means that all users has read-only permissions on the shared folder.
+
+  - In `access` property of shared folders defined in `config.json`, now it is available a new type of permission, `no:`,
+  together with `rw:` and `ro:`. This new permission just means "no access at all". For example, if `access` property is
+  equal to `["rw:group1", "no:user1"]`, it means that all members of group `group1` has read and write permissions on the
+  shared folder, but `user1` has no access at all.
+
+- Bug fixes:
+
+  - Users added into the container's OS now cannot login into it (i.e. their shell is set to `/sbin/nologin`).
+
+  - Improvements to validation of `version` property of `config.json`.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] 1.0.4 (2019-04-24 UTC)
 - New features:

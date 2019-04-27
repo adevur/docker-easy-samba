@@ -35,8 +35,20 @@ This chapter is divided into these sections:
 - [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
 
 ### general structure of the file
-`config.json` is a file in JSON format. It is an object with these properties: `domain`, `guest`, `users`, `groups` (optional),
+`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `domain`, `guest`, `users`, `groups` (optional),
 and `shares`. `config.json` must be placed in the directory that will be mounted as `/share` in the container.
+
+### `version` section
+This section is optional and has purely informative purposes. It is a string that tells which is the mininum version of `easy-samba` required in order to
+use the current `config.json` file.
+
+For example, if you use features that have only been introduced in `easy-samba` version `1.1.x`, you could add
+`"version": "1.1"` into your `config.json`, so that if this config file is used in `easy-samba` version `1.0.x`, `easy-samba` will inform the user with
+this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '1.1' OR NEWER`.
+
+You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
+
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"` or `"1.1"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `domain` section
 It's a string that contains the domain name of the SAMBA server. It must be a valid [NetBIOS name](https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name) that follows these rules:
@@ -115,6 +127,11 @@ ACCESS RULE SYNTAX: these are the types of access rules supported:
 folder with full read and write permissions. E.g.: `["user1", "group1"]` means that both `user1` and `group1` have read
 and write permissions on the shared folder.
 
+- When an access rule is equal to `"*"`, it means that all users (that have been defined in `users` property of `config.json`)
+have access to the shared folder with full read and write permissions. Access rule `"*"` is equivalent to `"rw:*"`.
+
+    > The wildcard character `*` has been introduced in `easy-samba` version `1.1`.
+
 - When an access rule starts with `"rw:"` followed by a username or a group name, it means "read and write" permissions.
 E.g.: `"rw:group1"` is equivalent to `"group1"` and it means that users of `group1` have read and write permissions on
 the shared folder.
@@ -123,8 +140,29 @@ the shared folder.
 E.g.: `["ro:group1", "rw:user2"]` means that all users of `group1` have read permissions on the shared folder, but
 `user2` has also write permissions.
 
+- Access rule `"ro:*"` means that all users (that have been defined in `users` property of `config.json`)
+have read-only permissions on the shared folder. For example: `["ro:*", "rw:user1"]` means that all users
+have read-only permissions, but `user1` has also write permissions.
+
+    > The wildcard character `*` has been introduced in `easy-samba` version `1.1`.
+
+- When an access rule starts with `no:` followed by a username, a group name, or `*`, it means "no access at all".
+E.g.: `["rw:group1", "no:user1"]` means that all members of `group1` have read and write permissions on the shared folder,
+but `user1` has no access at all.
+
+    > Permission type `no:` has been introduced in `easy-samba` version `1.1`.
+
 - If a user or a group are not included in the access rules of a shared folder, it means that they have no access at all
 to that shared folder.
+
+> Access rules are evaluated from left to right. For example, let's say we have a group `group1` with `user1` and `user2` as members;
+`["ro:group1", "rw:user1"]` has a different meaning from
+`["rw:user1", "ro:group1"]`: in the first case, we first tell `easy-samba` to grant all members of `group1` read-only
+permissions, and then we give `user1` also
+write permissions; in the second case, we first tell `easy-samba` to give `user1` read and write permissions, but then
+we set read-only permissions for all members of `group1`, including `user1`, so `user1` loses its write permissions.
+In the end: `["ro:group1", "rw:user1"]` will be evaluated as `["ro:user2", "rw:user1"]`, while `["rw:user1", "ro:group1"]`
+will be evaluated as `["ro:user1", "ro:user2"]`.
 
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:

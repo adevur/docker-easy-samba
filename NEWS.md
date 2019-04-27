@@ -2,6 +2,13 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-04-27 UTC) easy-samba 1.1.0 released (with new features)
+Stable version 1.1.0 of `easy-samba` has been released.
+
+This version brings new features to `easy-samba`.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-110-2019-04-27-utc) for changelog.
+
 ### (2019-04-24 UTC) preview of easy-samba 1.1
 Stable version 1.1.0 of `easy-samba` will soon be released.
 This version will bring a couple of new features to `access` property of shared folders:
