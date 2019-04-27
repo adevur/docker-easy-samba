@@ -13,11 +13,11 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
   - In `access` property of shared folders defined in `config.json`, now it is possible to use `*` to indicate "all users
   defined in `users` section of `config.json`" for an access rule. For example, if `access` property is equal to `["ro:*"]`,
-  it means that all users has read-only permissions on the shared folder.
+  it means that all users have read-only permissions on the shared folder.
 
   - In `access` property of shared folders defined in `config.json`, now it is available a new type of permission, `no:`,
   together with `rw:` and `ro:`. This new permission just means "no access at all". For example, if `access` property is
-  equal to `["rw:group1", "no:user1"]`, it means that all members of group `group1` has read and write permissions on the
+  equal to `["rw:group1", "no:user1"]`, it means that all members of group `group1` have read and write permissions on the
   shared folder, but `user1` has no access at all.
 
 - Bug fixes:
