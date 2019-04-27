@@ -34,18 +34,18 @@ function fnValidateConfigVersion(config){
         return `'version' PROPERTY MUST BE A STRING`;
     }
 
-    // "version" must be formatted as "x.y"
+    // "version" must be formatted as "x" or "x.y" (e.g. "1", "1.1", "2", "3.2")
     //   where "x" and "y" are both non-negative integers
     const check = (str) => {
         const temp = str.split(".");
-        return (temp.length === 2 && fnIsInteger(temp[0]) && fnIsInteger(temp[1]));
+        return (str.length > 0 && fnIsInteger(str)) || (temp.length === 2 && temp[0].length > 0 && temp[1].length > 0 && fnIsInteger(temp[0]) && fnIsInteger(temp[1]));
     };
     if (check(version) !== true){
         return `'version' PROPERTY MUST BE A VALID CONFIGURATION FILE VERSION`;
     }
 
-    // the current version of easy-samba supports only "1.0" and "1.1" config files
-    if (version !== "1.0" && version !== "1.1"){
+    // the current version of easy-samba supports only "1", "1.0" and "1.1" config files
+    if (version !== "1" && version !== "1.0" && version !== "1.1"){
         return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR NEWER`;
     }
 
