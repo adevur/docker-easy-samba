@@ -466,7 +466,7 @@ Here's what it does:
 6) The script reads `users` property of `config.json` and adds every user into the container's OS and in the SAMBA server.
 The script uses these commands (in this example, there's only a user with name `user1` and password `123456`):
     ```sh
-    useradd -M user1
+    useradd -M -s /sbin/nologin user1
     echo '123456' | passwd user1 --stdin
     (echo '123456'; echo '123456') | smbpasswd -a user1 -s
     ```
