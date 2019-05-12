@@ -2,6 +2,22 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-05-12 UTC) roadmap for next versions of easy-samba
+A list of improvements that are coming to `easy-samba` 1.2:
+
+- It will be possible to restart a stopped container. At the moment (`easy-samba` 1.1.x), if you stop an `easy-samba`
+container, you cannot start it again, but you have to remove it and you have to run a new `easy-samba` container.
+
+- It will be possible to customize `[global]` section of `/etc/samba/smb.conf`, from within `easy-samba`'s `config.json`.
+
+Planned improvements for `easy-samba` 2.0:
+
+- Testing is in progress for using RHEL 8.0 as the container's OS. This is needed in order to prepare to migrate from CentOS 7 to CentOS 8, when the latter will be released. SAMBA version available in CentOS 7.6 is `4.8.3`, while in RHEL 8.0 is `4.9.1`. Migration from CentOS 7 to CentOS 8 is expected for `easy-samba` version 2.0.
+
+- When `easy-samba` version 2.0 will be released, `easy-samba` 1.x.x will become the new long-term version.
+
+- Since `easy-samba` version 1.x.x is going to be a long-term branch, some code cleanup has to be finished before the release of version 2.0. Also, documentation has to be finished, because there are still some missing chapters.
+
 ### (2019-04-27 UTC) easy-samba 1.1.0 released (with new features)
 Stable version 1.1.0 of `easy-samba` has been released.
 
