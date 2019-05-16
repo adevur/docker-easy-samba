@@ -26,6 +26,8 @@ This chapter is divided into these sections:
 
 - [`version` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#version-section)
 
+- [`global` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#global-section)
+
 - [`domain` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section)
 
 - [`guest` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section)
@@ -50,7 +52,20 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"` or `"1.1"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"` or `"1.2"`. Note that `"1"` and `"1.0"` are equivalent.
+
+### `global` section
+This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
+
+For example, if you add `"global": ["a", "b"]` to your `config.json`, the following `[global]` section will be written inside `/etc/samba/smb.conf`:
+```
+[global]
+...
+a
+b
+```
+
+> NOTE: `global` section has been introduced in `easy-samba` version `1.2`.
 
 ### `domain` section
 It's a string that contains the domain name of the SAMBA server. It must be a valid [NetBIOS name](https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name) that follows these rules:
@@ -406,6 +421,9 @@ If you get this error, you should probably open an issue in the GitHub repositor
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 13) `[ERROR] 'smbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/smbd` has suddenly exited.
+If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
+
+14) `[ERROR] it's not been possible to clean up existing users.`: this error occurs if `easy-samba` has not been able to clean up existing users during startup phase. This error has been added in version `1.2.0` of `easy-samba`.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 ## how easy-samba works
