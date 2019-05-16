@@ -7,7 +7,7 @@ module.exports = fnGenSmbConf;
 
 
 // dependencies
-// N/A
+const fnHas = require("/startup/functions/fnHas.js");
 
 
 
@@ -15,7 +15,11 @@ module.exports = fnGenSmbConf;
 // INPUT: "domain": workgroup name; "guest": guest share path (or "false"); "shares": as in "/share/config.json"
 // OUTPUT: "/etc/samba/smb.conf" generated content
 // PURPOSE: generate "/etc/samba/smb.conf"
-function fnGenSmbConf(domain, guest, shares){
+function fnGenSmbConf(config){
+    const domain = config["domain"];
+    const guest = config["guest"];
+    const shares = config["shares"];
+
     // final result will be written into "result" variable
     let result = "";
     
@@ -26,7 +30,13 @@ function fnGenSmbConf(domain, guest, shares){
     result += (guest !== false) ? `map to guest = Bad User\n` : `map to guest = Never\n`;
     result += `unix charset = UTF-8\n`;
     result += `dos charset = CP850\n`;
-    result += `mangled names = yes\n\n`;
+    result += `mangled names = yes\n`;
+
+    // add custom global entries from "global" property of "config.json"
+    if (fnHas(config, "global")){
+        result += config["global"].map((line) => { return (line + "\n"); }).join("");
+    }
+    result += "\n";
 
     // add guest share
     if (guest !== false){

@@ -146,7 +146,7 @@ async function fnMain(){
 
     // generate the SAMBA server configuration and write it to "/etc/samba/smb.conf"
     try {
-        const smbconf = fnGenSmbConf(config["domain"], config["guest"], config["shares"]);
+        const smbconf = fnGenSmbConf(config);
         fs.writeFileSync("/etc/samba/smb.conf", smbconf);
     }
     catch (error){
