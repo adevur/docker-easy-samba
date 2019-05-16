@@ -8,6 +8,29 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [STABLE] [FEATURE] 1.2.0 (2019-05-16 UTC)
+- New features:
+
+  - A new optional property has been added to `config.json`: `global` property. It is an array of strings that one can use
+  to specify custom lines to be added into `[global]` section of `/etc/samba/smb.conf`. For example, if you add `"global": ["a", "b"]`
+  to your `config.json`, `/etc/samba/smb.conf` will look like this:
+    ```
+    [global]
+    ...
+    a
+    b
+    ```
+
+  - Now you can stop and restart an `easy-samba` container multiple times, without the need to remove it first.
+
+- Bug fixes:
+
+  - Several code clean up and optimizations.
+
+- Security fixes:
+
+  - N/A
+
 ### [STABLE] [FEATURE] 1.1.0 (2019-04-27 UTC)
 - New features:
 
