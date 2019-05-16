@@ -18,7 +18,13 @@ const fs = require("fs");
 function fnListUsers(){
     const passwd = fs.readFileSync("/etc/passwd", "utf8");
 
-    return passwd.split("\n").map((e) => {
+    // delete all lines that are not valid (e.g. empty lines)
+    // TODO: not really correct, but it does work
+    const lines = passwd.split("\n").filter((line) => {
+        return line.includes(":");
+    });
+
+    return lines.map((e) => {
         return e.split(":")[0];
     });
 }

@@ -15,6 +15,7 @@ const fnCreateUsers = require("/startup/functions/fnCreateUsers.js");
 const fnCreateShares = require("/startup/functions/fnCreateShares.js");
 const fnGenSmbConf = require("/startup/functions/fnGenSmbConf.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
+const fnCleanUpUsers = require("/startup/functions/fnCleanUpUsers.js");
 
 
 
@@ -46,6 +47,18 @@ async function fnMain(){
 
     // now the script can start
     console.log(`[LOG] SAMBA server configuration process has started.`);
+
+    // remove all non-native users from container's OS and from SAMBA
+    //   EXPLAIN: non-native users are the users that aren't included
+    //     in a standard CentOS installation;
+    //     this is needed in case easy-samba container is restarted:
+    //     this way, we'll first clean up all users created by easy-samba earlier
+    const cleanUpUsers = fnCleanUpUsers();
+    if (cleanUpUsers !== true){
+        console.log(`[ERROR] it's not been possible to clean up existing users.`);
+        process.exitCode = 1;
+        return;
+    }
 
     // load configuration from JSON file "/share/config.json"
     const config = fnLoadConfig("/share/config.json");
