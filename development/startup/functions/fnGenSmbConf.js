@@ -31,6 +31,9 @@ function fnGenSmbConf(config){
     result += `unix charset = UTF-8\n`;
     result += `dos charset = CP850\n`;
     result += `mangled names = yes\n`;
+    result += `vfs objects = acl_xattr\n`;
+    result += `map acl inherit = yes\n`;
+    result += `store dos attributes = yes\n`;
 
     // add custom global entries from "global" property of "config.json"
     if (fnHas(config, "global")){
