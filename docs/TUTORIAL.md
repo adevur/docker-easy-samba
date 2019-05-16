@@ -13,7 +13,7 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
     mkdir /nas/share
     ```
 
-3) Let's create our configuration file: it must be named `config.json` and it must be in JSON format. Now create the file with your favorite text editor:
+3) Let's create our configuration file: it must be named `config.json` and it must be in JSON format. Use your favorite text editor:
     ```sh
     nano /nas/share/config.json
     ```
@@ -56,16 +56,12 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
 
 6) Now that we have our configuration file ready, we can start the SAMBA server itself:
     ```sh
-    docker run --rm -d --network host -v /nas/share:/share --name samba adevur/easy-samba:latest
+    docker run -d --network host -v /nas/share:/share --name samba adevur/easy-samba:latest
     ```
 
 7) Let's analyze what this command means:
 
     - `docker run`: we tell docker to run a container.
-
-    - `--rm`: we tell docker that when this container stops, it should be automatically removed.
-    This parameter is useful, since when an `easy-samba` container stops, it cannot be restarted,
-    and the only thing you can do is to remove it.
 
     - `-d`: we tell docker that this container should be started in the background as a daemon.
 
@@ -94,9 +90,6 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
     ```
     [LOG] SAMBA server is now ready.
     ```
-
-    > NOTE: you may want not to use `--rm` parameter in `docker run` command: this way, if an error occurs, the container won't be removed
-    and you will be able to use command `docker logs samba` in order to see the logs of the stopped container.
 
     > SEE ALSO: [`understanding logs` section of Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs).
 
