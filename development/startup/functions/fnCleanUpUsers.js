@@ -9,21 +9,28 @@ module.exports = fnCleanUpUsers;
 // dependencies
 const { spawnSync } = require("child_process");
 const fnListUsers = require("/startup/functions/fnListUsers.js");
+const fs = require("fs");
 
 
 
 // TODO: brief description
 function fnCleanUpUsers(){
-    // this is a list of standard CentOS users
-    // TODO: native users' list should be retrieved on container's first startup
-    //   they shouldn't be saved in a static array
-    const nativeUsers = ["root", "bin", "daemon", "adm", "lp", "sync", "shutdown", "halt", "mail", "operator", "games", "ftp", "nobody", "systemd-network", "dbus"];
-
-    // get current users' list
-    const currentUsers = fnListUsers();
-
-    // delete each user not included in 'nativeUsers', both from OS and from SAMBA
     try {
+        // in case of first startup, save a list of container's OS native users
+        // NOTE: no clean up needed on first startup
+        if (fs.existsSync("/startup/first_startup") === true){
+            fs.writeFileSync("/startup/native_users.json", JSON.stringify(fnListUsers()));
+            fs.unlinkSync("/startup/first_startup");
+            return true;
+        }
+
+        // retrieve the list of CentOS native users from file "/startup/native_users.json", created on first startup
+        const nativeUsers = JSON.parse(fs.readFileSync("/startup/native_users.json", "utf8"));
+
+        // get current users' list
+        const currentUsers = fnListUsers();
+
+        // delete each user not included in 'nativeUsers', both from OS and from SAMBA
         currentUsers.forEach((user) => {
             if (nativeUsers.includes(user) !== true){
                 spawnSync("smbpasswd", ["-x", user], { stdio: "ignore" });
