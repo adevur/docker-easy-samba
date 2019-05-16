@@ -22,7 +22,7 @@ function fnCleanUpUsers(){
     // get current users' list
     const currentUsers = fnListUsers();
 
-    // delete each user not included in 'nativeUser', both from OS and from SAMBA
+    // delete each user not included in 'nativeUsers', both from OS and from SAMBA
     try {
         currentUsers.forEach((user) => {
             if (nativeUsers.includes(user) !== true){
