@@ -39,7 +39,7 @@ This chapter is divided into these sections:
 - [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
 
 ### general structure of the file
-`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `domain`, `guest`, `users`, `groups` (optional),
+`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `global` (optional), `domain`, `guest`, `users`, `groups` (optional),
 and `shares`. `config.json` must be placed in the directory that will be mounted as `/share` in the container.
 
 ### `version` section
