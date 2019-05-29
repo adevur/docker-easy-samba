@@ -16,14 +16,14 @@
     users.addArray()
     users.remove()
     users.get()
-    users.forEach()
+    users.getAll()
     users.setPassword()
 
     groups.add()
     groups.addArray()
     groups.remove()
     groups.get()
-    groups.forEach()
+    groups.getAll()
     groups.addUser()
     groups.removeUser()
     groups.addUsers()
@@ -33,7 +33,7 @@
     shares.addArray()
     shares.remove()
     shares.get()
-    shares.forEach()
+    shares.getAll()
     shares.addRule()
     shares.removeRule()
     shares.addRules()
@@ -146,10 +146,13 @@ const ConfigGen = class {
                 return JSON.parse(JSON.stringify(this["$users"][index]));
             },
 
-            forEach: (cb) => {
-                this["$users"].forEach((user) => {
-                    cb(JSON.parse(JSON.stringify(user)));
+            getAll: () => {
+                const result = [];
+                const elems = this.users.get();
+                elems.forEach((elem) => {
+                    result.push(this.users.get(elem));
                 });
+                return result;
             },
 
             setPassword: (username, password) => {
@@ -255,10 +258,13 @@ const ConfigGen = class {
                 return JSON.parse(JSON.stringify(this["$groups"][index]));
             },
 
-            forEach: (cb) => {
-                this["$groups"].forEach((group) => {
-                    cb(JSON.parse(JSON.stringify(group)));
+            getAll: () => {
+                const result = [];
+                const elems = this.groups.get();
+                elems.forEach((elem) => {
+                    result.push(this.groups.get(elem));
                 });
+                return result;
             },
 
             addUser: (groupname, username) => {
@@ -417,10 +423,13 @@ const ConfigGen = class {
                 return JSON.parse(JSON.stringify(this["$shares"][index]));
             },
 
-            forEach: (cb) => {
-                this["$shares"].forEach((share) => {
-                    cb(JSON.parse(JSON.stringify(share)));
+            getAll: () => {
+                const result = [];
+                const elems = this.shares.get();
+                elems.forEach((elem) => {
+                    result.push(this.shares.get(elem));
                 });
+                return result;
             },
 
             addRule: (sharename, rule) => {
