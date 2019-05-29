@@ -2,6 +2,13 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-05-29 UTC) upcoming feature `ConfigGen`
+An upcoming feature will be soon implemented (not sure in which future version of `easy-samba`), called `ConfigGen`.
+
+`ConfigGen` is a simple stand-alone Javascript library, capable of generating a `config.json` configuration file dynamically, using Javascript as the scripting language. This will help automatizing and scripting repetitive operations in the writing of a `config.json` file.
+
+More info will be released in the next days.
+
 ### (2019-05-29 UTC) roadmap for easy-samba 1.3
 A list of planned features that are coming to `easy-samba` version 1.3:
 
