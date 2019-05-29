@@ -60,16 +60,9 @@ async function fnMain(){
         return;
     }
 
-    // if there's a "/share/config.gen.js" file, delete "/share/config.json" and
-    //   generate the new config.json from "config.gen.js"
-    if (fs.existsSync("/share/config.gen.js")){
-        try {
-            fs.unlinkSync("/share/config.json");
-        }
-        catch (error){
-            // ignore errors in case config.json doesn't exist
-        }
-
+    // if there's a "/share/config.gen.js" file, and "/share/config.json" is missing,
+    //   generate the new config.json running "node /share/config.gen.js"
+    if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true){
         console.log(`[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`);
         spawnSync("node", ["/share/config.gen.js"], { stdio: "ignore" });
     }
