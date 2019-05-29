@@ -60,6 +60,20 @@ async function fnMain(){
         return;
     }
 
+    // if there's a "/share/config.gen.js" file, delete "/share/config.json" and
+    //   generate the new config.json from "config.gen.js"
+    if (fs.existsSync("/share/config.gen.js")){
+        try {
+            fs.unlinkSync("/share/config.json");
+        }
+        catch (error){
+            // ignore errors in case config.json doesn't exist
+        }
+
+        console.log(`[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`);
+        spawnSync("node", ["/share/config.gen.js"], { stdio: "ignore" });
+    }
+
     // load configuration from JSON file "/share/config.json"
     const config = fnLoadConfig("/share/config.json");
     
