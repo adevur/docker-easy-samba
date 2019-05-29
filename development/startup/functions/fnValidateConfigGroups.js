@@ -70,17 +70,29 @@ function fnValidateConfigGroups(config, sharedb){
             return false;
         }
 
-        // all elements of group["users"] must have been defined earlier in config["users"]
+        // all elements of group["users"] must have been defined earlier in config["users"] or in config["groups"]
         const check = group["users"].every((user) => {
-            return (fnIsString(user) && sharedb.users.includes(user));
+            return (fnIsString(user) && (sharedb.users.includes(user) || fnHas(sharedb.groups, user)));
         });
         if (check !== true){
-            error = `GROUP '${group["name"]}' CONTAINS USERS THAT HAVE NOT BEEN DEFINED IN 'config.json'`;
+            error = `GROUP '${group["name"]}' CONTAINS USERS OR GROUPS THAT HAVE NOT BEEN DEFINED IN 'config.json'`;
             return false;
         }
 
+        // calculate all the members of group
+        // in case an element of group["users"] is a group, retrieve all the members of that group
+        let members = [];
+        group["users"].forEach((member) => {
+            if (sharedb.users.includes(member)){
+                members.push(member);
+            }
+            else if (fnHas(sharedb.groups, member)){
+                members = members.concat(sharedb.groups[member]);
+            }
+        });
+
         // put group into sharedb
-        sharedb.groups[group["name"]] = group["users"]; // TODO: EXPLAIN
+        sharedb.groups[group["name"]] = members; // TODO: EXPLAIN
 
         return true;
     });
