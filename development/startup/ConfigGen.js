@@ -44,16 +44,27 @@
 
 
 
+// dependencies
 const fs = require("fs");
 
+
+
+// local utility functions
+
+// fnIsArray()
+//   checks if a given "input" is a valid Javascript array
 const fnIsArray = (input) => {
     return Array.isArray(input);
 };
 
+// fnIsString()
+//   checks if a given "input" is a valid Javascript string
 const fnIsString = (input) => {
     return (input === String(input));
 };
 
+// fnHas()
+//   checks if a given Javascript object "obj" has one or more specified properties
 const fnHas = (obj, keys) => {
     const has = (obj, key) => { return Object.prototype.hasOwnProperty.call(obj, key); };
 
@@ -65,10 +76,19 @@ const fnHas = (obj, keys) => {
     }
 };
 
+
+
+// ConfigGen
+//   this is the main class of the ConfigGen.js library
+//   that is later exported
 const ConfigGen = class {
+    // this is the constructor
+    //   it doesn't accept any parameters
     constructor(){
+        // in order to know which ConfigGen.js version we're using
         this.easysambaVersion = "1.3";
 
+        // internal variables used by an instance of ConfigGen
         this["$domain"] = undefined;
         this["$guest"] = undefined;
         this["$version"] = undefined;
@@ -77,7 +97,10 @@ const ConfigGen = class {
         this["$groups"] = [];
         this["$shares"] = [];
 
+        // "users" namespace
+        //   where functions like "config.users.add(...)" are located
         this.users = {
+            // users.add()
             add: (username, password) => {
                 if (fnIsString(username) !== true || fnIsString(password) !== true){
                     throw "ERROR: USERNAME AND PASSWORD MUST BE STRINGS";
@@ -91,6 +114,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // users.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
                     throw "ERROR: INPUT MUST BE AN ARRAY";
@@ -123,6 +147,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // users.get()
             get: (username = undefined) => {
                 if (username === undefined){
                     const result = [];
@@ -146,6 +171,7 @@ const ConfigGen = class {
                 return JSON.parse(JSON.stringify(this["$users"][index]));
             },
 
+            // users.getAll()
             getAll: () => {
                 const result = [];
                 const elems = this.users.get();
@@ -155,6 +181,7 @@ const ConfigGen = class {
                 return result;
             },
 
+            // users.setPassword()
             setPassword: (username, password) => {
                 if (fnIsString(password) !== true){
                     throw "ERROR: PASSWORD MUST BE A STRING";
@@ -177,7 +204,10 @@ const ConfigGen = class {
             }
         };
 
+        // "groups" namespace
+        //   where functions like "config.groups.add(...)" are located
         this.groups = {
+            // groups.add()
             add: (groupname, users) => {
                 if (fnIsString(groupname) !== true){
                     throw "ERROR: GROUP NAME MUST BE A STRING";
@@ -203,6 +233,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // groups.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
                     throw "ERROR: INPUT MUST BE AN ARRAY";
@@ -218,6 +249,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // groups.remove()
             remove: (groupname = undefined) => {
                 let index = undefined;
                 this["$groups"].forEach((group, i) => {
@@ -235,6 +267,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // groups.get()
             get: (groupname = undefined) => {
                 if (groupname === undefined){
                     const result = [];
@@ -258,6 +291,7 @@ const ConfigGen = class {
                 return JSON.parse(JSON.stringify(this["$groups"][index]));
             },
 
+            // groups.getAll()
             getAll: () => {
                 const result = [];
                 const elems = this.groups.get();
@@ -267,6 +301,7 @@ const ConfigGen = class {
                 return result;
             },
 
+            // groups.addUser()
             addUser: (groupname, username) => {
                 if (fnIsString(username) !== true){
                     throw "ERROR: USERNAME MUST BE A STRING";
@@ -290,6 +325,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // groups.addUsers()
             addUsers: (groupname, users) => {
                 if (fnIsArray(users) !== true){
                     throw "ERROR: USERS MUST BE AN ARRAY";
@@ -302,6 +338,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // groups.removeUsers()
             removeUser: (groupname, username) => {
                 if (fnIsString(username) !== true){
                     throw "ERROR: USERNAME MUST BE A STRING";
@@ -325,6 +362,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // groups.removeUsers()
             removeUsers: (groupname, users) => {
                 if (fnIsArray(users) !== true){
                     throw "ERROR: USERS MUST BE AN ARRAY";
@@ -338,7 +376,10 @@ const ConfigGen = class {
             }
         };
 
+        // "shares" namespace
+        //   where functions like "config.shares.add(...)" are located
         this.shares = {
+            // shares.add()
             add: (sharename, path, rules) => {
                 if (fnIsString(sharename) !== true){
                     throw "ERROR: SHARE NAME MUST BE A STRING";
@@ -368,6 +409,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
                     throw "ERROR: INPUT MUST BE AN ARRAY";
@@ -383,6 +425,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.remove()
             remove: (sharename = undefined) => {
                 let index = undefined;
                 this["$shares"].forEach((share, i) => {
@@ -400,6 +443,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.get()
             get: (sharename = undefined) => {
                 if (sharename === undefined){
                     const result = [];
@@ -423,6 +467,7 @@ const ConfigGen = class {
                 return JSON.parse(JSON.stringify(this["$shares"][index]));
             },
 
+            // shares.getAll()
             getAll: () => {
                 const result = [];
                 const elems = this.shares.get();
@@ -432,6 +477,7 @@ const ConfigGen = class {
                 return result;
             },
 
+            // shares.addRule()
             addRule: (sharename, rule) => {
                 if (fnIsString(rule) !== true){
                     throw "ERROR: RULE MUST BE A STRING";
@@ -453,6 +499,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.addRules()
             addRules: (sharename, rules) => {
                 if (fnIsArray(rules) !== true){
                     throw "ERROR: RULES MUST BE AN ARRAY";
@@ -465,6 +512,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.removeRule()
             removeRule: (sharename, rule) => {
                 if (fnIsString(rule) !== true){
                     throw "ERROR: RULE MUST BE A STRING";
@@ -488,6 +536,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.removeRules()
             removeRules: (sharename, rules) => {
                 if (fnIsArray(rules) !== true){
                     throw "ERROR: RULES MUST BE AN ARRAY";
@@ -500,6 +549,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.setPath()
             setPath: (sharename, path) => {
                 if (fnIsString(path) !== true){
                     throw "ERROR: PATH MUST BE A STRING";
@@ -525,6 +575,7 @@ const ConfigGen = class {
         return this;
     }
 
+    // ConfigGen.fromObject()
     static fromObject(input){
         const result = new this();
 
@@ -559,10 +610,12 @@ const ConfigGen = class {
         return result;
     }
 
+    // ConfigGen.fromJson()
     static fromJson(input){
         return this.fromObject(JSON.parse(input));
     }
 
+    // saveToFile()
     saveToFile(path = undefined){
         try {
             fs.writeFileSync(path, this.saveToJson());
@@ -574,6 +627,7 @@ const ConfigGen = class {
         return this;
     }
 
+    // saveToJson()
     saveToJson(){
         const result = {};
 
@@ -606,6 +660,7 @@ const ConfigGen = class {
         return JSON.stringify(result);
     }
 
+    // domain()
     domain(input = undefined){
         if (input === undefined){
             return this["$domain"];
@@ -619,6 +674,7 @@ const ConfigGen = class {
         throw "ERROR: DOMAIN NAME MUST BE A STRING";
     }
 
+    // guest()
     guest(input = undefined){
         if (input === undefined){
             return this["$guest"];
@@ -632,6 +688,7 @@ const ConfigGen = class {
         throw "ERROR: GUEST MUST BE A STRING OR false";
     }
 
+    // version()
     version(input = undefined){
         if (input === undefined){
             return this["$version"];
@@ -645,6 +702,7 @@ const ConfigGen = class {
         throw "ERROR: VERSION MUST BE A STRING";
     }
 
+    // global()
     global(input = undefined){
         if (input === undefined){
             return this["$global"];
@@ -664,6 +722,9 @@ const ConfigGen = class {
     }
 };
 
+
+
+// exports
 module.exports = ConfigGen;
 
 
