@@ -2,6 +2,11 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-05-29 UTC) roadmap for easy-samba 1.3
+A list of planned features that are coming to `easy-samba` version 1.3:
+
+- In the `groups` section of `config.json`, at the moment one can only specify usernames to be included in a group (e.g. `"groups": [{ "name": "group1", "users": ["user1", "user2", "user3"] }]`). In version 1.3 of `easy-samba`, it will be possible to also specify groups to be included in the group (e.g. `{ "name": "group2", "users": ["group1", "user4"] }` means that `group2` contains all the users in `group1` plus `user4`).
+
 ### (2019-05-16 UTC) easy-samba 1.2.0 released (with new features)
 Stable version 1.2.0 of `easy-samba` has been released.
 
