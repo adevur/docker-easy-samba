@@ -67,7 +67,7 @@ const fnHas = (obj, keys) => {
 
 const ConfigGen = class {
     constructor(){
-        this.easysambaVersion = "1.4";
+        this.easysambaVersion = "1.3";
 
         this["$domain"] = undefined;
         this["$guest"] = undefined;
