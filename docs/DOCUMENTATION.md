@@ -337,9 +337,9 @@ This is a list of all available methods of `ConfigGen.js` library:
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
 
-- PARAMETERS: "input"
+- PARAMETERS: `input`
 
-- PARAMETER "input": a string that contains the configuration file in JSON format
+- PARAMETER `input`: a string that contains the configuration file in JSON format
 
 - OUTPUT: an instance of ConfigGen
 
@@ -360,9 +360,9 @@ config.saveToFile("./new-config.json");
 ### `ConfigGen.fromObject()` static method
 This is a static method that can be used in order to import an existing raw configuration object, that can be later modified and re-saved.
 
-- PARAMETERS: "input"
+- PARAMETERS: `input`
 
-- PARAMETER "input": a Javascript object that contains an `easy-samba` configuration
+- PARAMETER `input`: a Javascript object that contains an `easy-samba` configuration
 
 - OUTPUT: an instance of ConfigGen
 
