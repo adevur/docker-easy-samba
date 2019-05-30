@@ -77,7 +77,7 @@ const fnHas = (obj, keys) => {
 };
 
 const fnIsInteger = (input) => {
-    return ( input === parseInt(String(input), 10) );
+    return ( input !== undefined && input === parseInt(String(input), 10) );
 };
 
 
@@ -570,8 +570,8 @@ const ConfigGen = class {
                 }
 
                 rulesToDelete.forEach((ruleToDelete) => {
-                    while (config.shares.get(sharename)["access"].includes(ruleToDelete) === true){
-                        config.shares.removeRule(sharename, ruleToDelete);
+                    while (this.shares.get(sharename)["access"].includes(ruleToDelete) === true){
+                        this.shares.removeRule(sharename, ruleToDelete);
                     }
                 });
 
