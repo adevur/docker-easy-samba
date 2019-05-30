@@ -20,10 +20,7 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 function fnHas(obj, keys){
     const has = (obj, key) => { return Object.prototype.hasOwnProperty.call(obj, key); };
 
-    if (fnIsArray(keys)){
-        return keys.every((key) => { return has(obj, key); });
-    }
-    else {
-        return has(obj, keys);
-    }
+    const temp = (fnIsArray(keys)) ? keys : [keys];
+
+    return temp.every((key) => { return has(obj, key); });
 }
