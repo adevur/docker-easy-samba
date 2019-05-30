@@ -231,6 +231,8 @@ Full documentation of `ConfigGen.js` can be found in [`ConfigGen.js library` sec
 ## `ConfigGen.js` library
 This is a library written in Javascript, that one can use to generate `config.json` files using a Javascript script. It is usually used in `config.gen.js` files, so it is recommended to first read [`config.gen.js` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
 
+> NOTE: `ConfigGen.js` library has been introduced in `easy-samba` version `1.3`.
+
 This library is located inside an `easy-samba` container at path `/startup/ConfigGen.js`. But, since it is a stand-alone one-file library, it can be downloaded and used also locally.
 
 To get started, download `ConfigGen.js` on your local computer:
@@ -265,6 +267,8 @@ This is a list of all available methods of `ConfigGen.js` library:
 - [`ConfigGen.fromJson()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromjson-static-method)
 
 - [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromobject-static-method)
+
+- [`config.easysambaVersion` property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configeasysambaversion-property)
 
 - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
 
@@ -383,6 +387,22 @@ config.domain("NEWDOMAIN");
 config.users.add("new-user", "123456");
 
 config.saveToFile("./new-config.json");
+```
+
+### `config.easysambaVersion` property
+This is a property of an instance of `ConfigGen`. Its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
+
+This can be useful in case you don't know if you can use a specific feature of `easy-samba` in your `config.gen.js` script. Reading `config.easysambaVersion` property, you can check if this `ConfigGen.js` library is aware of the new changes made in `easy-samba` (e.g. in order to know if the current `ConfigGen.js` library knows about new sections introduced in `easy-samba` configuration files).
+
+> NOTE: `ConfigGen.js` has been introduced in `easy-samba` version `1.3`, therefore its `config.easysambaVersion` property will always be at least `1.3`.
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+console.log( config.easysambaVersion ); // 1.3
 ```
 
 ### `config.domain()` method
