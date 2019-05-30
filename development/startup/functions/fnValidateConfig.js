@@ -28,9 +28,9 @@ function fnValidateConfig(config){
     // TODO: document "sharedb"
     const sharedb = { "users": [], "names": ["global", "homes", "printers", "guest"], "paths": [], "groups": {} };
 
-    // "config" must contain "domain", "guest", "users" and "shares" properties
+    // "config" must contain "domain", "users" and "shares" properties
     if (fnHas(config, ["domain", "guest", "users", "shares"]) !== true){
-        return "MUST CONTAIN 'domain', 'guest', 'users' AND 'shares' PROPERTIES";
+        return "MUST CONTAIN 'domain', 'users' AND 'shares' PROPERTIES";
     }
 
     // check "version" property
@@ -52,8 +52,12 @@ function fnValidateConfig(config){
     }
 
     // check "guest" property
+    // if this property is missing, its value is false
     // EXPLAIN: "guest" can be either "false" or the path to the guest share (e.g. "/share/guest")
     //   "guest" cannot be "/share/config.json"
+    if (fnHas(config, "guest") !== true){
+        config["guest"] = false;
+    }
     const validateConfigGuest = fnValidateConfigGuest(config["guest"], sharedb);
     if (validateConfigGuest !== true){
         return validateConfigGuest;

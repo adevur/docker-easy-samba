@@ -90,7 +90,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
-        this.easysambaVersion = "1.3";
+        this.easysambaVersion = "1.4";
 
         // internal variables used by an instance of ConfigGen
         this["$domain"] = undefined;
@@ -689,10 +689,9 @@ const ConfigGen = class {
         }
         result["domain"] = this["$domain"];
 
-        if (this["$guest"] !== false && fnIsString(this["$guest"]) !== true){
-            throw "ERROR: GUEST SECTION IS MISSING";
+        if (this["$guest"] === false || fnIsString(this["$guest"]) === true){
+            result["guest"] = this["$guest"];
         }
-        result["guest"] = this["$guest"];
 
         if (fnIsString(this["$version"])){
             result["version"] = this["$version"];
