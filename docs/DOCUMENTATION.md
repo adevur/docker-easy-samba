@@ -326,9 +326,11 @@ config.saveToFile("./new-config.json");
 ### `config.domain()` method
 This is a method that can be used in order to set the `domain` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `domain` section, if used without parameters.
 
-- PARAMETERS: "name" (optional)
+> NOTE: setting a value for `domain` is mandatory in order to later generate a configuration file.
 
-- PARAMETER "name": a string that contains the `domain` name to set
+- PARAMETERS: `input` (optional)
+
+- PARAMETER `input`: a string that contains the `domain` name to set
 
 - OUTPUT: in case no parameters are passed, it returns the current value of `domain`
 
@@ -341,6 +343,51 @@ const config = new ConfigGen();
 console.log( config.domain() ); // undefined
 config.domain("WORKGROUP");
 console.log( config.domain() ); // WORKGROUP
+```
+
+### `config.guest()` method
+This is a method that can be used in order to set the `guest` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `guest` section, if used without parameters.
+
+> NOTE: setting a value for `guest` is mandatory in order to later generate a configuration file.
+
+- PARAMETERS: `input` (optional)
+
+- PARAMETER `input`: it can be either `false` or a string that contains the `guest` value to set
+
+- OUTPUT: in case no parameters are passed, it returns the current value of `guest`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+console.log( config.guest() ); // undefined
+config.guest("/share/guest");
+console.log( config.guest() ); // /share/guest
+```
+
+### `config.global()` method
+This is a method that can be used in order to set the `global` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `global` section, if used without parameters.
+
+- PARAMETERS: `input` (optional)
+
+- PARAMETER `input`: it is a Javascript array of strings that contains the `global` value to set
+
+- OUTPUT: in case no parameters are passed, it returns the current value of `global`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+console.log( config.global() ); // undefined
+config.global(["a", "b"]);
+console.log( config.global() ); // ["a", "b"]
+
+// since "global" section is optional, you can also remove it this way:
+config.global([]);
 ```
 
 ## advanced use
