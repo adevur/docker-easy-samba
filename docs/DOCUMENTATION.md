@@ -659,6 +659,77 @@ config.groups.add("group1", ["user1", "user2"]);
 config.groups.add("group2", ["group1", "user3"]);
 ```
 
+### `config.groups.remove()` method
+This is a method that can be used in order to remove a group from the `groups` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `groupname`
+
+- PARAMETER `groupname`: it is a string that contains the name of the group to remove
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.addArray([
+    { "name": "group1", "users": ["user1", "user2"] },
+    { "name": "group2", "users": ["group1", "user3"] }
+]);
+
+console.log( config.groups.get() ); // ["group1", "group2"]
+
+config.groups.remove("group1");
+
+console.log( config.groups.get() ); // ["group2"]
+```
+
+### `config.groups.get()` method
+This is a method that can be used in order to retrieve the list of all groups from the `groups` section of an instance of `ConfigGen`, or it can be used in order to retrieve information about a specific group.
+
+- PARAMETERS: `groupname` (optional)
+
+- PARAMETER `groupname`: it is a string that contains the name of the group to retrieve information about
+
+- OUTPUT: in case no parameters are passed, it returns an array with all the group names of the `groups` section; in case `groupname` parameter is passed, it returns a Javascript object like this: `{ "name": "group1", "users": ["user1", "user2"] }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.addArray([
+    { "name": "group1", "users": ["user1", "user2"] },
+    { "name": "group2", "users": ["group1", "user3"] }
+]);
+
+console.log( config.groups.get() ); // ["group1", "group2"]
+
+console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+```
+
+### `config.groups.getAll()` method
+This is a method that can be used in order to retrieve detailed information about all groups from the `groups` section of an instance of `ConfigGen`.
+
+- PARAMETERS: N/A
+
+- OUTPUT: it returns an array of Javascript objects; every element of the array looks like this: `{ "name": "group1", "users": ["user1", "user2"] }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.addArray([
+    { "name": "group1", "users": ["user1", "user2"] },
+    { "name": "group2", "users": ["group1", "user3"] }
+]);
+
+console.log( config.groups.getAll() ); // [{ "name": "group1", "users": ["user1", "user2"] },{ "name": "group2", "users": ["group1", "user3"] }]
+```
+
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
 
