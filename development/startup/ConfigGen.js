@@ -130,6 +130,7 @@ const ConfigGen = class {
                 return this;
             },
 
+            // users.remove()
             remove: (username = undefined) => {
                 let index = undefined;
                 this["$users"].forEach((user, i) => {

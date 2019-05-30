@@ -278,6 +278,36 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`config.users.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersadd-method)
 
+    - [`config.users.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersaddarray-method)
+
+    - [`config.users.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersremove-method)
+
+    - [`config.users.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersget-method)
+
+    - [`config.users.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersgetall-method)
+
+    - [`config.users.setPassword()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configuserssetpassword-method)
+
+- `config.groups` methods:
+
+    - [`config.groups.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadd-method)
+
+    - [`config.groups.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddarray-method)
+
+    - [`config.groups.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremove-method)
+
+    - [`config.groups.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsget-method)
+
+    - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetall-method)
+
+    - [`config.groups.addUser()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadduser-method)
+
+    - [`config.groups.addUsers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddusers-method)
+
+    - [`config.groups.removeUser()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveuser-method)
+
+    - [`config.groups.removeUsers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveusers-method)
+
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
 
