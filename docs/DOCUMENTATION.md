@@ -272,6 +272,8 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
 
+- [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
+
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
 
@@ -343,6 +345,8 @@ const config = new ConfigGen();
 console.log( config.domain() ); // undefined
 config.domain("WORKGROUP");
 console.log( config.domain() ); // WORKGROUP
+
+> NOTE: `config.domain(undefined)` is equivalent to `config.domain()`.
 ```
 
 ### `config.guest()` method
@@ -367,6 +371,8 @@ config.guest("/share/guest");
 console.log( config.guest() ); // /share/guest
 ```
 
+> NOTE: `config.guest(undefined)` is equivalent to `config.guest()`.
+
 ### `config.global()` method
 This is a method that can be used in order to set the `global` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `global` section, if used without parameters.
 
@@ -389,6 +395,33 @@ console.log( config.global() ); // ["a", "b"]
 // since "global" section is optional, you can also remove it this way:
 config.global([]);
 ```
+
+> NOTE: `config.global(undefined)` is equivalent to `config.global()`.
+
+### `config.version()` method
+This is a method that can be used in order to set the `version` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `version` section, if used without parameters.
+
+- PARAMETERS: `input` (optional)
+
+- PARAMETER `input`: it is a string that contains the `version` value to set
+
+- OUTPUT: in case no parameters are passed, it returns the current value of `version`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+console.log( config.version() ); // undefined
+config.version("1.3");
+console.log( config.version() ); // "1.3"
+
+// since "version" section is optional, you can also remove it this way:
+config.version(0);
+```
+
+> NOTE: `config.version(undefined)` is equivalent to `config.version()`.
 
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
