@@ -183,6 +183,49 @@ we set read-only permissions for all members of `group1`, including `user1`, so 
 In the end: `["ro:group1", "rw:user1"]` will be evaluated as `["ro:user2", "rw:user1"]`, while `["rw:user1", "ro:group1"]`
 will be evaluated as `["ro:user1", "ro:user2"]`.
 
+## config.gen.js
+An alternative way of writing a configuration file in `easy-samba` is writing a `config.gen.js` script instead of a `config.json` file.
+
+> NOTE: `config.gen.js` has been introduced in `easy-samba` version `1.3`.
+
+A `config.gen.js` file is a Javascript script that you put inside the directory that will be mounted as `/share` inside the container (so, you put a `config.gen.js` file inside the same directory where you would put a `config.json` file).
+
+`easy-samba`'s default behavior is to use the `/share/config.json` file, if it finds it. But, in case `config.json` file is missing, it will look for a `config.gen.js` file, and it will run it using command `node /share/config.gen.js`.
+
+Therefore, the purpose of the `config.gen.js` script is to write a `config.json` file, in case the latter is missing. That's it.
+
+This is the simplest example of `config.gen.js` file that you can write:
+```js
+const fs = require("fs");
+const config = {
+    "domain": "WORKGROUP",
+    "guest": false,
+    "users": [ { "name": "user1", "password": "123456" } ],
+    "shares": [ { "name": "folder1", "path": "/share/folder1", "access": ["user1"] } ]
+};
+fs.writeFileSync("/share/config.json", JSON.stringify(config));
+```
+
+It does its job: i.e. generating a `config.json` file in a dynamic and scripted way. But it's not practical to write configuration files this way. Fortunately, `easy-samba` containers also include a Javascript library, located at `/startup/ConfigGen.js`, that helps generating `config.json` files using Javascript. Here's an example:
+```js
+const ConfigGen = require("/startup/ConfigGen.js");
+const config = new ConfigGen();
+
+config.domain("WORKGROUP");
+config.guest(false);
+
+config.users.add("user1", "123456");
+config.shares.add("folder1", "/share/folder1", ["user1"]);
+
+config.saveToFile("/share/config.json");
+```
+
+`ConfigGen.js` is a stand-alone one-file library, which has several methods and features that helps generating `config.json` files. Although it can be found already inside an `easy-samba` container, it can be downloaded and used outside of `easy-samba` (e.g. for testing purposes).
+
+Full documentation of `ConfigGen.js` can be found in [`ConfigGen.js` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs).
+
+> NOTE: `config.gen.js` files should be maintained as minimal as possible, so avoid using too many external dependencies. Moreover, remember that the only purpose of a `config.gen.js` script is writing a `/share/config.json` file.
+
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
 
