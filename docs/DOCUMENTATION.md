@@ -641,7 +641,7 @@ console.log( config.users.get("user1")["password"] ); // aaabbb
 ```
 
 ### `config.groups.add()` method
-This is a method that can be used in order to add a group to the `group` section of an instance of `ConfigGen`.
+This is a method that can be used in order to add a group to the `groups` section of an instance of `ConfigGen`.
 
 - PARAMETERS: `groupname` and `users`
 
@@ -850,6 +850,245 @@ config.groups.removeUsers("group1", ["user1", "user2"]);
 console.log( config.groups.get("group1")["users"] ); // []
 ```
 
+### `config.shares.add()` method
+This is a method that can be used in order to add a share to the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `sharename`, `path` and `access`
+
+- PARAMETER `sharename`: it is a string that contains the name of the new share
+
+- PARAMETER `path`: it is a string that contains the path of the new share
+
+- PARAMETER `access`: it is an array of strings that contains the list of access rules of the share
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
+```
+
+### `config.shares.addArray()` method
+This is a method that can be used in order to add one or more shares to the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `input`
+
+- PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.addArray([
+    { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
+    { "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }
+]);
+// this is equivalent to writing:
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
+config.shares.add("user3", "/share/user3", ["rw:user3"]);
+```
+
+### `config.shares.remove()` method
+This is a method that can be used in order to remove a share from the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `sharename`
+
+- PARAMETER `sharename`: it is a string that contains the name of the share to remove
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.addArray([
+    { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
+    { "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }
+]);
+
+console.log( config.shares.get() ); // ["public", "user3"]
+
+config.shares.remove("user3");
+
+console.log( config.shares.get() ); // ["public"]
+```
+
+### `config.shares.get()` method
+This is a method that can be used in order to retrieve the list of all shares from the `shares` section of an instance of `ConfigGen`, or it can be used in order to retrieve information about a specific share.
+
+- PARAMETERS: `sharename` (optional)
+
+- PARAMETER `sharename`: it is a string that contains the name of the share to retrieve information about
+
+- OUTPUT: in case no parameters are passed, it returns an array with all the share names of the `shares` section; in case `sharename` parameter is passed, it returns a Javascript object like this: `{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.addArray([
+    { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
+    { "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }
+]);
+
+console.log( config.shares.get() ); // ["public", "user3"]
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
+```
+
+> NOTE: `config.shares.get(undefined)` is equivalent to `config.shares.get()`.
+
+### `config.shares.getAll()` method
+This is a method that can be used in order to retrieve detailed information about all shares from the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: N/A
+
+- OUTPUT: it returns an array of Javascript objects; every element of the array looks like this: `{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.addArray([
+    { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
+    { "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }
+]);
+
+console.log( config.shares.getAll() ); // [{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },{ "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }]
+```
+
+### `config.shares.addRule()` method
+This is a method that can be used in order to add an access rule to an existing share of the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `sharename` and `rule`
+
+- PARAMETER `sharename`: it is a string that contains the name of the share
+
+- PARAMETER `rule`: it is a string that contains the access rule to add to the specified share
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
+
+config.shares.addRule("public", "rw:user3");
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3"]
+```
+
+### `config.shares.addRules()` method
+This is a method that can be used in order to add one or more access rules to an existing share of the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `sharename` and `rules`
+
+- PARAMETER `sharename`: it is a string that contains the name of the share
+
+- PARAMETER `rules`: it is an array of strings that contains all the access rules to add to the specified share
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
+
+config.shares.addRules("public", ["rw:user3", "ro:user4"]);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3", "ro:user4"]
+```
+
+### `config.shares.removeRule()` method
+This is a method that can be used in order to remove a rule from an existing share of the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `sharename` and `rule`
+
+- PARAMETER `sharename`: it is a string that contains the name of the share
+
+- PARAMETER `rule`: it is a string that contains the access rule to remove from the specified share
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
+
+config.shares.removeRule("public", "rw:user1");
+
+console.log( config.shares.get("public")["access"] ); // ["ro:user2"]
+
+// NOTE: config.shares.removeRule() will only remove the first occurency of the specified access rule
+// EXAMPLE:
+config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
+config.shares.removeRule("test", "rw:user1");
+console.log( config.shares.get("test")["access"] ); // ["ro:user2", "rw:user1"]
+
+// HINT: if you want to delete all access rules equal to "rw:user1", a while loop will do the trick:
+const ruleToDelete = "rw:user1";
+while (config.shares.get("test")["access"].includes(ruleToDelete) === true){
+    config.shares.removeRule("test", ruleToDelete);
+}
+console.log( config.shares.get("test")["access"] ); // ["ro:user2"]
+```
+
+### `config.shares.removeRules()` method
+This is a method that can be used in order to remove one or more access rules from an existing share of the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `sharename` and `rules`
+
+- PARAMETER `sharename`: it is a string that contains the name of the share
+
+- PARAMETER `rules`: it is an array of strings that contains all the access rules to remove from the specified share
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
+
+config.shares.removeRules("public", ["rw:user1", "ro:user2"]);
+
+console.log( config.shares.get("public")["access"] ); // []
+
+// NOTE: config.shares.removeRules() will only remove the first occurency of each one of the specified access rules
+// EXAMPLE:
+config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
+config.shares.removeRules("test", ["rw:user1", "ro:user2"]);
+console.log( config.shares.get("test")["access"] ); // ["rw:user1"]
+
+// HINT: if you want to delete all the occurrencies of the specified access rules, a while loop will do the trick:
+const rulesToDelete = ["rw:user1", "ro:user2"];
+rulesToDelete.forEach((ruleToDelete) => {
+    while (config.shares.get("test")["access"].includes(ruleToDelete) === true){
+        config.shares.removeRule("test", ruleToDelete);
+    }
+});
+console.log( config.shares.get("test")["access"] ); // []
+```
+
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
 
@@ -1034,7 +1273,7 @@ This process is necessary for the SAMBA server to function properly.
 14) `[LOG] SAMBA server is now ready.`: this log informs the user that `easy-samba` completed its configuration without
 errors, so you can now [connect to the container using a SAMBA client](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking).
 
-15) `[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`: this log informs the user that `/share/config.json` configuration file is missing, but `/share/config.gen.js` script has been found, so the latter will be used to generate the missing `config.json` file.
+15) `[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`: this log informs the user that `/share/config.json` configuration file is missing, but `/share/config.gen.js` script has been found, so the latter will be used to generate the missing `config.json` file. This log has been added in `easy-samba` version `1.3.0`.
 
 ### list of errors
 This is the list of possible logs, when an error occurs:
