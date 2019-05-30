@@ -64,7 +64,12 @@ async function fnMain(){
     //   generate the new config.json running "node /share/config.gen.js"
     if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true){
         console.log(`[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`);
-        spawnSync("node", ["/share/config.gen.js"], { stdio: "ignore" });
+        try {
+            spawnSync("node", ["/share/config.gen.js"], { stdio: "ignore" });
+        }
+        catch (error){
+            // ignore errors
+        }
     }
 
     // load configuration from JSON file "/share/config.json"
