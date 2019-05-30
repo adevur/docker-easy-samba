@@ -274,6 +274,10 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
 
+- `config.users` methods:
+
+    - [`config.users.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersadd-method)
+
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
 
@@ -422,6 +426,24 @@ config.version(0);
 ```
 
 > NOTE: `config.version(undefined)` is equivalent to `config.version()`.
+
+### `config.users.add()` method
+This is a method that can be used in order to add a user to the `users` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `username` and `password`
+
+- PARAMETER `username`: it is a string that contains the username of the new user
+
+- PARAMETER `password`: it is a string that contains the password of the new user
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.add("user1", "123456");
+```
 
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
