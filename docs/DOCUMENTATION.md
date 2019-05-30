@@ -7,6 +7,8 @@ and all the things you can do with it.
 
 - [`config.gen.js`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenjs): it describes in detail how to write a dynamic configuration script in Javascript, that is used to generate `config.json` files in an automated and dynamic way.
 
+- [`ConfigGen.js library`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library): it describes in detail how to use `ConfigGen.js` Javascript library, whose purpose is to generate `config.json` files. It is usually used in `config.gen.js` scripts.
+
 - [`docker options`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options): it describes what parameters you can pass to `docker run`.
 
 - [`networking`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking): it describes how you can set up networking, in order to connect to `easy-samba`'s containers
@@ -222,9 +224,124 @@ config.saveToFile("/share/config.json");
 
 `ConfigGen.js` is a stand-alone one-file library, which has several methods and features that helps generating `config.json` files. Although it can be found already inside an `easy-samba` container, it can be downloaded and used outside of `easy-samba` (e.g. for testing purposes).
 
-Full documentation of `ConfigGen.js` can be found in [`ConfigGen.js` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs).
+Full documentation of `ConfigGen.js` can be found in [`ConfigGen.js library` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
 
-> NOTE: `config.gen.js` files should be maintained as minimal as possible, so avoid using too many external dependencies. Moreover, remember that the only purpose of a `config.gen.js` script is writing a `/share/config.json` file.
+> NOTE: `config.gen.js` files should be kept as minimal as possible, avoiding using too many external dependencies. Moreover, remember that the only purpose of a `config.gen.js` script is writing a `/share/config.json` file.
+
+## `ConfigGen.js` library
+This is a library written in Javascript, that one can use to generate `config.json` files using a Javascript script. It is usually used in `config.gen.js` files, so it is recommended to first read [`config.gen.js` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
+
+This library is located inside an `easy-samba` container at path `/startup/ConfigGen.js`. But, since it is a stand-alone one-file library, it can be downloaded and used also locally.
+
+To get started, download `ConfigGen.js` on your local computer:
+```sh
+curl -sL https://raw.githubusercontent.com/adevur/docker-easy-samba/master/stable/latest/startup/ConfigGen.js > ./ConfigGen.js
+```
+
+Now, write a sample `config.gen.js` file with command `nano ./config.gen.js`:
+```js
+const ConfigGen = require("./ConfigGen.js");
+```
+
+You can create a new configuration object using:
+```js
+const config = new ConfigGen();
+```
+
+Then, you can modify that object using `ConfigGen.js` instance methods. For example, in order to set `domain` field, write:
+```js
+config.domain("WORKGROUP");
+```
+
+When you finished your configuration object, you can save it, for example, to file:
+```js
+config.saveToFile("./config.json");
+```
+
+> NOTE: when you write `config.gen.js` files that have to be placed inside an `easy-samba` container, remember to use `require("/startup/ConfigGen.js")` in order to include this library, and remember to use `config.saveToFile("/share/config.json")` when you later generate the `config.json` file. Using other paths is recommended only for testing purposes outside of an `easy-samba` container.
+
+This is a list of all available methods of `ConfigGen.js` library:
+
+- [`ConfigGen.fromJson()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromjson-static-method)
+
+- [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromobject-static-method)
+
+- [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
+
+- [`config.guest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configguest-method)
+
+- [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
+
+### `ConfigGen.fromJson()` static method
+This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
+
+- PARAMETERS: "input"
+
+- PARAMETER "input": a string that contains the configuration file in JSON format
+
+- OUTPUT: an instance of ConfigGen
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+const fs = require("fs");
+
+const json = fs.readFileSync("./sample-config.json", "utf8");
+const config = ConfigGen.fromJson(json);
+
+config.domain("NEWDOMAIN");
+config.users.add("new-user", "123456");
+
+config.saveToFile("./new-config.json");
+```
+
+### `ConfigGen.fromObject()` static method
+This is a static method that can be used in order to import an existing raw configuration object, that can be later modified and re-saved.
+
+- PARAMETERS: "input"
+
+- PARAMETER "input": a Javascript object that contains an `easy-samba` configuration
+
+- OUTPUT: an instance of ConfigGen
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const raw = {
+    "domain": "WORKGROUP",
+    "guest": false,
+    "users": [ { "name": "user1", "password": "123456" } ],
+    "shares": [ { "name": "folder1", "path": "/share/folder1", "access": ["user1"] } ]
+};
+
+const config = ConfigGen.fromObject(raw);
+
+config.domain("NEWDOMAIN");
+config.users.add("new-user", "123456");
+
+config.saveToFile("./new-config.json");
+```
+
+### `config.domain()` method
+This is a method that can be used in order to set the `domain` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `domain` section, if used without parameters.
+
+- PARAMETERS: "name" (optional)
+
+- PARAMETER "name": a string that contains the `domain` name to set
+
+- OUTPUT: in case no parameters are passed, it returns the current value of `domain`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+console.log( config.domain() ); // undefined
+config.domain("WORKGROUP");
+console.log( config.domain() ); // WORKGROUP
+```
 
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
