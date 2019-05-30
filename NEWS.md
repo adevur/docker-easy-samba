@@ -2,6 +2,13 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-05-30 UTC) easy-samba 1.3.0 released (with new features)
+Stable version 1.3.0 of `easy-samba` has been released.
+
+This version brings new features to `easy-samba`.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-130-2019-05-30-utc) for changelog.
+
 ### (2019-05-29 UTC) upcoming feature `ConfigGen`
 An upcoming feature will be soon implemented (not sure in which future version of `easy-samba`), called `ConfigGen`.
 

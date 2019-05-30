@@ -5,6 +5,8 @@
 - [`config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson): it describes in detail the structure of `easy-samba`'s configuration file,
 and all the things you can do with it.
 
+- [`config.gen.js`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenjs): it describes in detail how to write a dynamic configuration script in Javascript, that is used to generate `config.json` files in an automated and dynamic way.
+
 - [`docker options`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options): it describes what parameters you can pass to `docker run`.
 
 - [`networking`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking): it describes how you can set up networking, in order to connect to `easy-samba`'s containers
@@ -52,7 +54,7 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"` or `"1.2"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"` or `"1.3"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `global` section
 This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
@@ -121,7 +123,7 @@ which contains all the groups of users that you want to create. An element of `g
 and it must be unique (so there cannot be two or more groups with the same name, and there cannot be a user and a group
 with the same name).
 
-- `users` is an array that contains all the usernames of the members of the group. It cannot be empty.
+- `users` is an array that contains all the usernames of the members of the group. It cannot be empty. Also, starting with `easy-samba` version `1.3`, it is possible to specify group names together with usernames (e.g. `{ "name": "group2", "users": ["group1", "user4"] }` means that `group2` contains all the users in `group1` plus `user4`).
 
 ### `shares` section
 This is an array that contains all the shared folders to be created by the SAMBA server. The only shared folder that is
@@ -364,6 +366,8 @@ This process is necessary for the SAMBA server to function properly.
 
 14) `[LOG] SAMBA server is now ready.`: this log informs the user that `easy-samba` completed its configuration without
 errors, so you can now [connect to the container using a SAMBA client](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking).
+
+15) `[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`: this log informs the user that `/share/config.json` configuration file is missing, but `/share/config.gen.js` script has been found, so the latter will be used to generate the missing `config.json` file.
 
 ### list of errors
 This is the list of possible logs, when an error occurs:

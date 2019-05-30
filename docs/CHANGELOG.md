@@ -2,11 +2,26 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.2.0`
+### Current stable release: `1.3.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.3.0 (2019-05-30 UTC)
+- New features:
+
+  - A new alternative way of writing configuration files has been added to `easy-samba`: `config.gen.js`. This is a Javascript script that you can write instead of `config.json`, in order to dynamically write configuration files, as an alternative to writing manually a `config.json` yourself. `config.gen.js` uses a stand-alone Javascript library called `ConfigGen.js`, that is already located inside `easy-samba` containers, and is ready to use. For more info, take a look at the [`Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md).
+
+  - In the `groups` section of `config.json`, it is now possible to also specify groups to be included in a group (e.g. `{ "name": "group2", "users": ["group1", "user4"] }` means that `group2` contains all the users in `group1` plus `user4`).
+
+- Bug fixes:
+
+  - N/A
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.2.0 (2019-05-16 UTC)
 - New features:
