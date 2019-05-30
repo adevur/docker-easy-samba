@@ -2,6 +2,17 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-05-30 UTC) roadmap update
+Today, `easy-samba` version `1.3.0` has been released, with two new important features: `config.gen.js` and `ConfigGen.js`. Documentation of these new features is almost complete.
+
+In the next days, new improvements will be made to `ConfigGen.js` API, as well as other improvements to `easy-samba` itself:
+
+- `guest` section of `config.json` will become optional. If a `guest` section is not present in `config.json`, `easy-samba` will assume that its value is `false`.
+
+- Work is in progress about making `easy-samba` more responsive to configuration changes: at the moment (`easy-samba` version `1.3.x`), after you change some parameters in your `config.json` file, you need to stop the `easy-samba` container, and then start it again, in order to update `easy-samba`'s running configuration. This can take several seconds, and all the clients connected to your SAMBA server will probably get disconnected quickly. In the future, you will be able to edit the `config.json` file in your `easy-samba` container, and `easy-samba` will automatically update its configuration based on the new file (hoping that this will not disconnect your current clients).
+
+- You'll also have the option to edit the `config.json` file through an always-running `config.gen.js` script: at the moment, `config.gen.js` script must terminate after it generated the new `config.json` file. In the future, your `config.gen.js` script will have also the possibility to never terminate, and constantly update the `config.json` file; and `easy-samba` will then constantly update its running configuration automatically.
+
 ### (2019-05-30 UTC) easy-samba 1.3.0 released (with new features)
 Stable version 1.3.0 of `easy-samba` has been released.
 
