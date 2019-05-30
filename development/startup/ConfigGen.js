@@ -76,6 +76,10 @@ const fnHas = (obj, keys) => {
     }
 };
 
+const fnIsInteger = (input) => {
+    return ( input === parseInt(String(input), 10) );
+};
+
 
 
 // ConfigGen
@@ -546,6 +550,54 @@ const ConfigGen = class {
                 rules.forEach((rule) => {
                     this.shares.removeRule(sharename, rule);
                 });
+
+                return this;
+            },
+
+            // shares.removeAllRules()
+            removeAllRules: (sharename, rules = undefined) => {
+                if (this.shares.get().includes(sharename) !== true){
+                    throw "ERROR: SHARE NOT FOUND";
+                }
+
+                let rulesToDelete = undefined;
+
+                if (fnIsArray(rules) !== true){
+                    rulesToDelete = this.shares.get(sharename)["access"];
+                }
+                else {
+                    rulesToDelete = rules;
+                }
+
+                rulesToDelete.forEach((ruleToDelete) => {
+                    while (config.shares.get(sharename)["access"].includes(ruleToDelete) === true){
+                        config.shares.removeRule(sharename, ruleToDelete);
+                    }
+                });
+
+                return this;
+            },
+
+            // shares.removeRuleAt()
+            removeRuleAt: (sharename, ruleIndex) => {
+                if (fnIsInteger(ruleIndex) !== true || ruleIndex < 0){
+                    throw "ERROR: RULE INDEX MUST BE A POSITIVE INTEGER";
+                }
+
+                let index = undefined;
+                this["$shares"].forEach((share, i) => {
+                    if (share["name"] === sharename){
+                        index = i;
+                    }
+                });
+
+                if (index === undefined){
+                    throw "ERROR: SHARE NOT FOUND";
+                }
+
+                if (this["$shares"][index]["access"].length > ruleIndex){
+                    this["$shares"][index]["access"].splice(ruleIndex, 1);
+                }
 
                 return this;
             },
