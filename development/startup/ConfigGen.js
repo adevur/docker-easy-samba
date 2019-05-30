@@ -303,9 +303,9 @@ const ConfigGen = class {
             },
 
             // groups.addUser()
-            addUser: (groupname, username) => {
-                if (fnIsString(username) !== true){
-                    throw "ERROR: USERNAME MUST BE A STRING";
+            addUser: (groupname, member) => {
+                if (fnIsString(member) !== true){
+                    throw "ERROR: MEMBER MUST BE A STRING";
                 }
 
                 let index = undefined;
@@ -319,30 +319,30 @@ const ConfigGen = class {
                     throw "ERROR: GROUP NOT FOUND";
                 }
 
-                if (this["$groups"][index]["users"].includes(username) !== true){
-                    this["$groups"][index]["users"].push(username);
+                if (this["$groups"][index]["users"].includes(member) !== true){
+                    this["$groups"][index]["users"].push(member);
                 }
 
                 return this;
             },
 
             // groups.addUsers()
-            addUsers: (groupname, users) => {
-                if (fnIsArray(users) !== true){
-                    throw "ERROR: USERS MUST BE AN ARRAY";
+            addUsers: (groupname, members) => {
+                if (fnIsArray(members) !== true){
+                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
                 }
 
-                users.forEach((user) => {
-                    this.groups.addUser(groupname, user);
+                members.forEach((member) => {
+                    this.groups.addUser(groupname, member);
                 });
 
                 return this;
             },
 
             // groups.removeUser()
-            removeUser: (groupname, username) => {
-                if (fnIsString(username) !== true){
-                    throw "ERROR: USERNAME MUST BE A STRING";
+            removeUser: (groupname, member) => {
+                if (fnIsString(member) !== true){
+                    throw "ERROR: MEMBER MUST BE A STRING";
                 }
 
                 let index = undefined;
@@ -356,21 +356,21 @@ const ConfigGen = class {
                     throw "ERROR: GROUP NOT FOUND";
                 }
 
-                if (this["$groups"][index]["users"].includes(username) === true){
-                    this["$groups"][index]["users"].splice(this["$groups"][index]["users"].indexOf(username), 1);
+                if (this["$groups"][index]["users"].includes(member) === true){
+                    this["$groups"][index]["users"].splice(this["$groups"][index]["users"].indexOf(member), 1);
                 }
 
                 return this;
             },
 
             // groups.removeUsers()
-            removeUsers: (groupname, users) => {
-                if (fnIsArray(users) !== true){
-                    throw "ERROR: USERS MUST BE AN ARRAY";
+            removeUsers: (groupname, members) => {
+                if (fnIsArray(members) !== true){
+                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
                 }
 
-                users.forEach((user) => {
-                    this.groups.removeUser(groupname, user);
+                members.forEach((member) => {
+                    this.groups.removeUser(groupname, member);
                 });
 
                 return this;

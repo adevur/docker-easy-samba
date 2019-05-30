@@ -405,9 +405,9 @@ const config = new ConfigGen();
 console.log( config.domain() ); // undefined
 config.domain("WORKGROUP");
 console.log( config.domain() ); // WORKGROUP
+```
 
 > NOTE: `config.domain(undefined)` is equivalent to `config.domain()`.
-```
 
 ### `config.guest()` method
 This is a method that can be used in order to set the `guest` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `guest` section, if used without parameters.
@@ -573,6 +573,8 @@ console.log( config.users.get() ); // ["user1", "user2"]
 console.log( config.users.get("user1")["password"] ); // 123456
 ```
 
+> NOTE: `config.users.get(undefined)` is equivalent to `config.users.get()`.
+
 ### `config.users.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all users from the `users` section of an instance of `ConfigGen`.
 
@@ -709,6 +711,8 @@ console.log( config.groups.get() ); // ["group1", "group2"]
 console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
 ```
 
+> NOTE: `config.groups.get(undefined)` is equivalent to `config.groups.get()`.
+
 ### `config.groups.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all groups from the `groups` section of an instance of `ConfigGen`.
 
@@ -728,6 +732,102 @@ config.groups.addArray([
 ]);
 
 console.log( config.groups.getAll() ); // [{ "name": "group1", "users": ["user1", "user2"] },{ "name": "group2", "users": ["group1", "user3"] }]
+```
+
+### `config.groups.addUser()` method
+This is a method that can be used in order to add a member to an existing group of the `groups` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `groupname` and `member`
+
+- PARAMETER `groupname`: it is a string that contains the name of the group
+
+- PARAMETER `member`: it is a string that contains the username or the groupname of the member to add to the specified group
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.add("group1", ["user1", "user2"]);
+
+console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+
+config.groups.addUser("group1", "user3");
+
+console.log( config.groups.get("group1")["users"] ); // ["user1", "user2", "user3"]
+```
+
+### `config.groups.addUsers()` method
+This is a method that can be used in order to add one or more members to an existing group of the `groups` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `groupname` and `members`
+
+- PARAMETER `groupname`: it is a string that contains the name of the group
+
+- PARAMETER `members`: it is an array of strings that contains all the members to add to the specified group
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.add("group1", ["user1", "user2"]);
+
+console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+
+config.groups.addUsers("group1", ["user3", "user4"]);
+
+console.log( config.groups.get("group1")["users"] ); // ["user1", "user2", "user3", "user4"]
+```
+
+### `config.groups.removeUser()` method
+This is a method that can be used in order to remove a member from an existing group of the `groups` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `groupname` and `member`
+
+- PARAMETER `groupname`: it is a string that contains the name of the group
+
+- PARAMETER `member`: it is a string that contains the username or the groupname of the member to remove from the specified group
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.add("group1", ["user1", "user2"]);
+
+console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+
+config.groups.removeUser("group1", "user1");
+
+console.log( config.groups.get("group1")["users"] ); // ["user2"]
+```
+
+### `config.groups.removeUsers()` method
+This is a method that can be used in order to remove one or more members from an existing group of the `groups` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `groupname` and `members`
+
+- PARAMETER `groupname`: it is a string that contains the name of the group
+
+- PARAMETER `members`: it is an array of strings that contains all the members to remove from the specified group
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.add("group1", ["user1", "user2"]);
+
+console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+
+config.groups.removeUsers("group1", ["user1", "user2"]);
+
+console.log( config.groups.get("group1")["users"] ); // []
 ```
 
 ## advanced use
