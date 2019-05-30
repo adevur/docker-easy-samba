@@ -274,6 +274,10 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
 
+- [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetojson-method)
+
+- [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
+
 - `config.users` methods:
 
     - [`config.users.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersadd-method)
@@ -307,6 +311,28 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`config.groups.removeUser()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveuser-method)
 
     - [`config.groups.removeUsers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveusers-method)
+
+- `config.shares` methods:
+
+    - [`config.shares.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesadd-method)
+
+    - [`config.shares.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddarray-method)
+
+    - [`config.shares.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremove-method)
+
+    - [`config.shares.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesget-method)
+
+    - [`config.shares.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetall-method)
+
+    - [`config.shares.addRule()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrule-method)
+
+    - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrules-method)
+
+    - [`config.shares.removeRule()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverule-method)
+
+    - [`config.shares.removeRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverules-method)
+
+    - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetpath-method)
 
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
@@ -473,6 +499,164 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.users.add("user1", "123456");
+```
+
+### `config.users.addArray()` method
+This is a method that can be used in order to add one or more users to the `users` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `input`
+
+- PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "user1", "password": "123456" }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.addArray([
+    { "name": "user1", "password": "123456" },
+    { "name": "user2", "password": "aaabbb" }
+]);
+// this is equivalent to writing:
+config.users.add("user1", "123456");
+config.users.add("user2", "aaabbb");
+```
+
+### `config.users.remove()` method
+This is a method that can be used in order to remove a user from the `users` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `username`
+
+- PARAMETER `username`: it is a string that contains the username of the user to remove
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.addArray([
+    { "name": "user1", "password": "123456" },
+    { "name": "user2", "password": "aaabbb" }
+]);
+
+console.log( config.users.get() ); // ["user1", "user2"]
+
+config.users.remove("user1");
+
+console.log( config.users.get() ); // ["user2"]
+```
+
+### `config.users.get()` method
+This is a method that can be used in order to retrieve the list of all users from the `users` section of an instance of `ConfigGen`, or it can be used in order to retrieve information about a specific user.
+
+- PARAMETERS: `username` (optional)
+
+- PARAMETER `username`: it is a string that contains the username of the user to retrieve information about
+
+- OUTPUT: in case no parameters are passed, it returns an array with all the usernames of the `users` section; in case `username` parameter is passed, it returns a Javascript object like this: `{ "name": "user1", "password": "123456" }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.addArray([
+    { "name": "user1", "password": "123456" },
+    { "name": "user2", "password": "aaabbb" }
+]);
+
+console.log( config.users.get() ); // ["user1", "user2"]
+
+console.log( config.users.get("user1")["password"] ); // 123456
+```
+
+### `config.users.getAll()` method
+This is a method that can be used in order to retrieve detailed information about all users from the `users` section of an instance of `ConfigGen`.
+
+- PARAMETERS: N/A
+
+- OUTPUT: it returns an array of Javascript objects; every element of the array looks like this: `{ "name": "user1", "password": "123456" }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.addArray([
+    { "name": "user1", "password": "123456" },
+    { "name": "user2", "password": "aaabbb" }
+]);
+
+console.log( config.users.getAll() ); // [{ "name": "user1", "password": "123456" },{ "name": "user2", "password": "aaabbb" }]
+```
+
+### `config.users.setPassword()` method
+This is a method that can be used in order to change the password of an existing user of the `users` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `username` and `password`
+
+- PARAMETER `username`: it is a string that contains the username of the user
+
+- PARAMETER `password`: it is a string that contains the new password of the specified user
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.add("user1", "123456");
+
+console.log( config.users.get("user1")["password"] ); // 123456
+
+config.users.setPassword("user1", "aaabbb");
+
+console.log( config.users.get("user1")["password"] ); // aaabbb
+```
+
+### `config.groups.add()` method
+This is a method that can be used in order to add a group to the `group` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `groupname` and `users`
+
+- PARAMETER `groupname`: it is a string that contains the name of the new group
+
+- PARAMETER `users`: it is an array of strings that contains the list of members of the group
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.add("group1", ["user1", "user2"]);
+config.groups.add("group2", ["group1", "user3"]);
+```
+
+### `config.groups.addArray()` method
+This is a method that can be used in order to add one or more groups to the `groups` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `input`
+
+- PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "group1", "users": ["user1", "user2"] }`
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.groups.addArray([
+    { "name": "group1", "users": ["user1", "user2"] },
+    { "name": "group2", "users": ["group1", "user3"] }
+]);
+// this is equivalent to writing:
+config.groups.add("group1", ["user1", "user2"]);
+config.groups.add("group2", ["group1", "user3"]);
 ```
 
 ## advanced use

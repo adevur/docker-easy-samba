@@ -339,7 +339,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // groups.removeUsers()
+            // groups.removeUser()
             removeUser: (groupname, username) => {
                 if (fnIsString(username) !== true){
                     throw "ERROR: USERNAME MUST BE A STRING";
