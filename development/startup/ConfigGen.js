@@ -210,28 +210,28 @@ const ConfigGen = class {
         //   where functions like "config.groups.add(...)" are located
         this.groups = {
             // groups.add()
-            add: (groupname, users) => {
+            add: (groupname, members) => {
                 if (fnIsString(groupname) !== true){
                     throw "ERROR: GROUP NAME MUST BE A STRING";
                 }
 
-                if (fnIsArray(users) !== true){
-                    throw "ERROR: USERS MUST BE AN ARRAY";
+                if (fnIsArray(members) !== true){
+                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
                 }
 
-                const users_safe = [];
-                users.forEach((user) => {
-                    if (fnIsString(user) !== true){
-                        throw "ERROR: USERS MUST BE AN ARRAY OF STRINGS";
+                const members_safe = [];
+                members.forEach((member) => {
+                    if (fnIsString(member) !== true){
+                        throw "ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS";
                     }
-                    users_safe.push(user);
+                    members_safe.push(member);
                 });
 
                 if (this.groups.get().includes(groupname)){
                     throw "ERROR: GROUP ALREADY EXISTS";
                 }
 
-                this["$groups"].push({ "name": groupname, "users": users_safe });
+                this["$groups"].push({ "name": groupname, "members": members_safe });
                 return this;
             },
 
@@ -242,10 +242,16 @@ const ConfigGen = class {
                 }
 
                 input.forEach((elem) => {
-                    if (fnHas(elem, ["name", "users"]) !== true){
+                    if (fnHas(elem, "name") !== true || (fnHas(elem, "members") !== true && fnHas(elem, "users") !== true)){
                         throw "ERROR: INPUT IS NOT VALID";
                     }
-                    this.groups.add(elem["name"], elem["users"]);
+                    if (fnHas(elem, "users")){
+                        console.log(`[WARNING] 'users' property of a group is deprecated, rename it to 'members' instead`);
+                        this.groups.add(elem["name"], elem["users"]);
+                    }
+                    else {
+                        this.groups.add(elem["name"], elem["members"]);
+                    }
                 });
 
                 return this;
@@ -303,8 +309,8 @@ const ConfigGen = class {
                 return result;
             },
 
-            // groups.addUser()
-            addUser: (groupname, member) => {
+            // groups.addMember()
+            addMember: (groupname, member) => {
                 if (fnIsString(member) !== true){
                     throw "ERROR: MEMBER MUST BE A STRING";
                 }
@@ -320,28 +326,40 @@ const ConfigGen = class {
                     throw "ERROR: GROUP NOT FOUND";
                 }
 
-                if (this["$groups"][index]["users"].includes(member) !== true){
-                    this["$groups"][index]["users"].push(member);
+                if (this["$groups"][index]["members"].includes(member) !== true){
+                    this["$groups"][index]["members"].push(member);
                 }
+
+                return this;
+            },
+
+            // groups.addUser()
+            addUser: (groupname, member) => {
+                console.log(`[WARNING] function 'config.groups.addUser()' is deprecated, use 'config.groups.addMember()' instead`);
+                return this.groups.addMember(groupname, member);
+            },
+
+            // groups.addMembers()
+            addMembers: (groupname, members) => {
+                if (fnIsArray(members) !== true){
+                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
+                }
+
+                members.forEach((member) => {
+                    this.groups.addMember(groupname, member);
+                });
 
                 return this;
             },
 
             // groups.addUsers()
             addUsers: (groupname, members) => {
-                if (fnIsArray(members) !== true){
-                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
-                }
-
-                members.forEach((member) => {
-                    this.groups.addUser(groupname, member);
-                });
-
-                return this;
+                console.log(`[WARNING] function 'config.groups.addUsers()' is deprecated, use 'config.groups.addMembers()' instead`);
+                return this.groups.addMembers(groupname, members);
             },
 
-            // groups.removeUser()
-            removeUser: (groupname, member) => {
+            // groups.removeMember()
+            removeMember: (groupname, member) => {
                 if (fnIsString(member) !== true){
                     throw "ERROR: MEMBER MUST BE A STRING";
                 }
@@ -357,24 +375,36 @@ const ConfigGen = class {
                     throw "ERROR: GROUP NOT FOUND";
                 }
 
-                if (this["$groups"][index]["users"].includes(member) === true){
-                    this["$groups"][index]["users"].splice(this["$groups"][index]["users"].indexOf(member), 1);
+                if (this["$groups"][index]["members"].includes(member) === true){
+                    this["$groups"][index]["members"].splice(this["$groups"][index]["members"].indexOf(member), 1);
                 }
+
+                return this;
+            },
+
+            // groups.removeUser()
+            removeUser: (groupname, member) => {
+                console.log(`[WARNING] function 'config.groups.removeUser()' is deprecated, use 'config.groups.removeMember()' instead`);
+                return this.groups.removeMember(groupname, member);
+            },
+
+            // groups.removeMembers()
+            removeMembers: (groupname, members) => {
+                if (fnIsArray(members) !== true){
+                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
+                }
+
+                members.forEach((member) => {
+                    this.groups.removeMember(groupname, member);
+                });
 
                 return this;
             },
 
             // groups.removeUsers()
             removeUsers: (groupname, members) => {
-                if (fnIsArray(members) !== true){
-                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
-                }
-
-                members.forEach((member) => {
-                    this.groups.removeUser(groupname, member);
-                });
-
-                return this;
+                console.log(`[WARNING] function 'config.groups.removeUsers()' is deprecated, use 'config.groups.removeMembers()' instead`);
+                return this.groups.removeMembers(groupname, members);
             }
         };
 
