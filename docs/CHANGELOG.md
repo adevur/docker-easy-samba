@@ -11,7 +11,7 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 ### [STABLE] [FEATURE] 1.4.0 (2019-05-31 UTC)
 - New features:
 
-  - `guest` section of `config.json` is now optional. If this section is missing, its value is set to `false`. In order to remove this section in a `config.gen.js` script, use this line of code: `config.guest(0);`.
+  - `guest` section of `config.json` is now optional. If this section is missing, its value is set to `false`.
 
   - In `groups` section of `config.json`, `users` property of a group has been renamed to `members`. For example, `"groups": [{ "name": "group1", "users": ["user1", "user2"] }]` is now `"groups": [{ "name": "group1", "members": ["user1", "user2"] }]`. Old name `users` can still be used for retro-compatibility purposes, but it will be dropped in a future version of `easy-samba`.
 

@@ -448,6 +448,8 @@ console.log( config.domain() ); // WORKGROUP
 ### `config.guest()` method
 This is a method that can be used in order to set the `guest` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `guest` section, if used without parameters.
 
+> NOTE: since `easy-samba` version `1.4`, `guest` section is optional.
+
 - PARAMETERS: `input` (optional)
 
 - PARAMETER `input`: it can be either `false` or a string that contains the `guest` value to set
@@ -463,10 +465,6 @@ const config = new ConfigGen();
 console.log( config.guest() ); // undefined
 config.guest("/share/guest");
 console.log( config.guest() ); // /share/guest
-
-// NOTE: since easy-samba 1.4, "guest" section is optional
-// you can remove it from a configuration object this way:
-config.guest(0);
 ```
 
 > NOTE: `config.guest(undefined)` is equivalent to `config.guest()`.
@@ -514,9 +512,6 @@ const config = new ConfigGen();
 console.log( config.version() ); // undefined
 config.version("1.3");
 console.log( config.version() ); // "1.3"
-
-// since "version" section is optional, you can also remove it this way:
-config.version(0);
 ```
 
 > NOTE: `config.version(undefined)` is equivalent to `config.version()`.
