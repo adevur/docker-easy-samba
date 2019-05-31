@@ -32,12 +32,31 @@ function fnValidateConfigGroups(config, sharedb){
     }
 
     // foreach "group" in "groups"...
+    let deprecation_flag = false;
     let error = "";
     const result = groups.every((group) => {
-        // "group" must have "name" and "users" properties
-        if (fnHas(group, ["name", "users"]) !== true){
-            error = `GROUPS IN 'groups' MUST HAVE 'name' AND 'users' PROPERTIES`;
+        // "group" must have "name" property
+        if (fnHas(group, "name") !== true){
+            error = `GROUPS IN 'groups' MUST HAVE 'name' PROPERTY`;
             return false;
+        }
+
+        // "group" must have "members" or "users" properties
+        if (fnHas(group, "members") !== true && fnHas(group, "users") !== true){
+            error = `GROUPS IN 'groups' MUST HAVE 'members' OR 'users' PROPERTIES`;
+            return false;
+        }
+
+        // "group" cannot have both "members" and "users" properties
+        if (fnHas(group, ["members", "users"])){
+            error = `GROUPS IN 'groups' CANNOT HAVE BOTH 'members' AND 'users' PROPERTIES`;
+            return false;
+        }
+
+        let MEMBERS = "members";
+        if (fnHas(group, "users")){
+            deprecation_flag = true;
+            MEMBERS = "users";
         }
 
         // "name" must be a valid group name (it follows the same validation rules of usernames)
@@ -64,15 +83,15 @@ function fnValidateConfigGroups(config, sharedb){
             return false;
         }
 
-        // "users" must be a non-empty array
-        if (fnIsArray(group["users"]) !== true || group["users"].length < 1){
-            error = `'users' PROPERTY OF GROUP '${group["name"]}' MUST BE A NON-EMPTY ARRAY`;
+        // "members" must be a non-empty array
+        if (fnIsArray(group[MEMBERS]) !== true || group[MEMBERS].length < 1){
+            error = `'members' PROPERTY OF GROUP '${group["name"]}' MUST BE A NON-EMPTY ARRAY`;
             return false;
         }
 
-        // all elements of group["users"] must have been defined earlier in config["users"] or in config["groups"]
-        const check = group["users"].every((user) => {
-            return (fnIsString(user) && (sharedb.users.includes(user) || fnHas(sharedb.groups, user)));
+        // all elements of group["members"] must have been defined earlier in config["users"] or in config["groups"]
+        const check = group[MEMBERS].every((member) => {
+            return (fnIsString(member) && (sharedb.users.includes(member) || fnHas(sharedb.groups, member)));
         });
         if (check !== true){
             error = `GROUP '${group["name"]}' CONTAINS USERS OR GROUPS THAT HAVE NOT BEEN DEFINED IN 'config.json'`;
@@ -80,9 +99,9 @@ function fnValidateConfigGroups(config, sharedb){
         }
 
         // calculate all the members of group
-        // in case an element of group["users"] is a group, retrieve all the members of that group
+        // in case an element of group["members"] is a group, retrieve all the members of that group
         let members = [];
-        group["users"].forEach((member) => {
+        group[MEMBERS].forEach((member) => {
             if (sharedb.users.includes(member)){
                 members.push(member);
             }
@@ -99,6 +118,10 @@ function fnValidateConfigGroups(config, sharedb){
 
     if (result !== true){
         return error;
+    }
+
+    if (deprecation_flag){
+        console.log(`[WARNING] 'users' property of a group is deprecated, rename it to 'members' instead.`);
     }
 
     return true;
