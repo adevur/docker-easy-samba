@@ -43,7 +43,7 @@ This chapter is divided into these sections:
 - [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
 
 ### general structure of the file
-`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `global` (optional), `domain`, `guest`, `users`, `groups` (optional),
+`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `global` (optional), `domain`, `guest` (optional since `easy-samba` version `1.4`), `users`, `groups` (optional),
 and `shares`. `config.json` must be placed in the directory that will be mounted as `/share` in the container.
 
 ### `version` section
@@ -56,7 +56,7 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"` or `"1.3"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"` or `"1.4"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `global` section
 This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
@@ -104,6 +104,8 @@ For example: `"/share/guest"`. To be a valid path, `guest` string must follow th
 
 - It cannot be equal to any of the paths that will be specified in the `shares` section of `config.json`.
 
+Since `easy-samba` version `1.4`, `guest` section is optional. If it is not present in a `config.json` file, `easy-samba` assumes that its value is `false`.
+
 ### `users` section
 It is an array that contains all the users that will be created and used by the SAMBA server. These users are created only
 inside the container's OS. Note that, optionally, you can leave this array empty (i.e. `"users": []`).
@@ -119,13 +121,15 @@ It must be a valid Linux user password (i.e. it must be a string of [printable A
 ### `groups` section
 This is an optional property of `config.json`. If you include it in your configuration file, `groups` must be an array
 which contains all the groups of users that you want to create. An element of `groups` array looks like this:
-`{ "name": "group1", "users": ["user1", "user2"] }`.
+`{ "name": "group1", "members": ["user1", "user2"] }`.
 
 - `name` is the group's name. It must be a valid Linux group name, it must not exist in the container's OS already,
 and it must be unique (so there cannot be two or more groups with the same name, and there cannot be a user and a group
 with the same name).
 
-- `users` is an array that contains all the usernames of the members of the group. It cannot be empty. Also, starting with `easy-samba` version `1.3`, it is possible to specify group names together with usernames (e.g. `{ "name": "group2", "users": ["group1", "user4"] }` means that `group2` contains all the users in `group1` plus `user4`).
+- `members` is an array that contains all the usernames of the members of the group. It cannot be empty. Also, starting with `easy-samba` version `1.3`, it is possible to specify group names together with usernames (e.g. `{ "name": "group2", "members": ["group1", "user4"] }` means that `group2` contains all the users in `group1` plus `user4`).
+
+> NOTE: starting with `easy-samba` version `1.4`, `users` property of a group has been renamed to `members`.
 
 ### `shares` section
 This is an array that contains all the shared folders to be created by the SAMBA server. The only shared folder that is
@@ -308,13 +312,21 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetall-method)
 
-    - [`config.groups.addUser()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadduser-method)
+    - [`config.groups.addMember()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmember-method)
 
-    - [`config.groups.addUsers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddusers-method)
+    - [`config.groups.addUser()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadduser-method-deprecated)
 
-    - [`config.groups.removeUser()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveuser-method)
+    - [`config.groups.addMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmembers-method)
 
-    - [`config.groups.removeUsers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveusers-method)
+    - [`config.groups.addUsers()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddusers-method-deprecated)
+
+    - [`config.groups.removeMember()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremovemember-method)
+
+    - [`config.groups.removeUser()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveuser-method-deprecated)
+
+    - [`config.groups.removeMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremovemembers-method)
+
+    - [`config.groups.removeUsers()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveusers-method-deprecated)
 
 - `config.shares` methods:
 
@@ -335,6 +347,10 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`config.shares.removeRule()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverule-method)
 
     - [`config.shares.removeRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverules-method)
+
+    - [`config.shares.removeRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveruleat-method)
+
+    - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveallrules-method)
 
     - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetpath-method)
 
@@ -390,7 +406,7 @@ config.saveToFile("./new-config.json");
 ```
 
 ### `config.easysambaVersion` property
-This is a property of an instance of `ConfigGen`. Its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
+This is a property of an instance of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
 
 This can be useful in case you don't know if you can use a specific feature of `easy-samba` in your `config.gen.js` script. Reading `config.easysambaVersion` property, you can check if this `ConfigGen.js` library is aware of the new changes made in `easy-samba` (e.g. in order to know if the current `ConfigGen.js` library knows about new sections introduced in `easy-samba` configuration files).
 
@@ -432,8 +448,6 @@ console.log( config.domain() ); // WORKGROUP
 ### `config.guest()` method
 This is a method that can be used in order to set the `guest` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `guest` section, if used without parameters.
 
-> NOTE: setting a value for `guest` is mandatory in order to later generate a configuration file.
-
 - PARAMETERS: `input` (optional)
 
 - PARAMETER `input`: it can be either `false` or a string that contains the `guest` value to set
@@ -449,6 +463,10 @@ const config = new ConfigGen();
 console.log( config.guest() ); // undefined
 config.guest("/share/guest");
 console.log( config.guest() ); // /share/guest
+
+// NOTE: since easy-samba 1.4, "guest" section is optional
+// you can remove it from a configuration object this way:
+config.guest(0);
 ```
 
 > NOTE: `config.guest(undefined)` is equivalent to `config.guest()`.
@@ -643,11 +661,11 @@ console.log( config.users.get("user1")["password"] ); // aaabbb
 ### `config.groups.add()` method
 This is a method that can be used in order to add a group to the `groups` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `groupname` and `users`
+- PARAMETERS: `groupname` and `members`
 
 - PARAMETER `groupname`: it is a string that contains the name of the new group
 
-- PARAMETER `users`: it is an array of strings that contains the list of members of the group
+- PARAMETER `members`: it is an array of strings that contains the list of members of the group
 
 EXAMPLE:
 ```js
@@ -673,8 +691,8 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.groups.addArray([
-    { "name": "group1", "users": ["user1", "user2"] },
-    { "name": "group2", "users": ["group1", "user3"] }
+    { "name": "group1", "members": ["user1", "user2"] },
+    { "name": "group2", "members": ["group1", "user3"] }
 ]);
 // this is equivalent to writing:
 config.groups.add("group1", ["user1", "user2"]);
@@ -695,8 +713,8 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.groups.addArray([
-    { "name": "group1", "users": ["user1", "user2"] },
-    { "name": "group2", "users": ["group1", "user3"] }
+    { "name": "group1", "members": ["user1", "user2"] },
+    { "name": "group2", "members": ["group1", "user3"] }
 ]);
 
 console.log( config.groups.get() ); // ["group1", "group2"]
@@ -722,13 +740,13 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.groups.addArray([
-    { "name": "group1", "users": ["user1", "user2"] },
-    { "name": "group2", "users": ["group1", "user3"] }
+    { "name": "group1", "members": ["user1", "user2"] },
+    { "name": "group2", "members": ["group1", "user3"] }
 ]);
 
 console.log( config.groups.get() ); // ["group1", "group2"]
 
-console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 ```
 
 > NOTE: `config.groups.get(undefined)` is equivalent to `config.groups.get()`.
@@ -747,15 +765,17 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.groups.addArray([
-    { "name": "group1", "users": ["user1", "user2"] },
-    { "name": "group2", "users": ["group1", "user3"] }
+    { "name": "group1", "members": ["user1", "user2"] },
+    { "name": "group2", "members": ["group1", "user3"] }
 ]);
 
-console.log( config.groups.getAll() ); // [{ "name": "group1", "users": ["user1", "user2"] },{ "name": "group2", "users": ["group1", "user3"] }]
+console.log( config.groups.getAll() ); // [{ "name": "group1", "members": ["user1", "user2"] },{ "name": "group2", "members": ["group1", "user3"] }]
 ```
 
-### `config.groups.addUser()` method
+### `config.groups.addMember()` method
 This is a method that can be used in order to add a member to an existing group of the `groups` section of an instance of `ConfigGen`.
+
+> NOTE: this function has been introduced in `easy-samba` version `1.4`.
 
 - PARAMETERS: `groupname` and `member`
 
@@ -771,15 +791,31 @@ const config = new ConfigGen();
 
 config.groups.add("group1", ["user1", "user2"]);
 
-console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 
-config.groups.addUser("group1", "user3");
+config.groups.addMember("group1", "user3");
 
-console.log( config.groups.get("group1")["users"] ); // ["user1", "user2", "user3"]
+console.log( config.groups.get("group1")["members"] ); // ["user1", "user2", "user3"]
 ```
 
-### `config.groups.addUsers()` method
+### `config.groups.addUser()` method [DEPRECATED]
+This method is now deprecated. It is just an alias for `config.groups.addMember()`. Don't use it, as it will be removed in a future version of `easy-samba`.
+
+EXAMPLE:
+```js
+// ...
+
+config.groups.addUser("group1", "user3");
+// is equivalent to
+config.groups.addMember("group1", "user3");
+
+// ...
+```
+
+### `config.groups.addMembers()` method
 This is a method that can be used in order to add one or more members to an existing group of the `groups` section of an instance of `ConfigGen`.
+
+> NOTE: this function has been introduced in `easy-samba` version `1.4`.
 
 - PARAMETERS: `groupname` and `members`
 
@@ -795,15 +831,31 @@ const config = new ConfigGen();
 
 config.groups.add("group1", ["user1", "user2"]);
 
-console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 
-config.groups.addUsers("group1", ["user3", "user4"]);
+config.groups.addMembers("group1", ["user3", "user4"]);
 
-console.log( config.groups.get("group1")["users"] ); // ["user1", "user2", "user3", "user4"]
+console.log( config.groups.get("group1")["members"] ); // ["user1", "user2", "user3", "user4"]
 ```
 
-### `config.groups.removeUser()` method
+### `config.groups.addUsers()` method [DEPRECATED]
+This method is now deprecated. It is just an alias for `config.groups.addMembers()`. Don't use it, as it will be removed in a future version of `easy-samba`.
+
+EXAMPLE:
+```js
+// ...
+
+config.groups.addUsers("group1", ["user3", "user4"]);
+// is equivalent to
+config.groups.addMembers("group1", ["user3", "user4"]);
+
+// ...
+```
+
+### `config.groups.removeMember()` method
 This is a method that can be used in order to remove a member from an existing group of the `groups` section of an instance of `ConfigGen`.
+
+> NOTE: this function has been introduced in `easy-samba` version `1.4`.
 
 - PARAMETERS: `groupname` and `member`
 
@@ -819,15 +871,31 @@ const config = new ConfigGen();
 
 config.groups.add("group1", ["user1", "user2"]);
 
-console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 
-config.groups.removeUser("group1", "user1");
+config.groups.removeMember("group1", "user1");
 
-console.log( config.groups.get("group1")["users"] ); // ["user2"]
+console.log( config.groups.get("group1")["members"] ); // ["user2"]
 ```
 
-### `config.groups.removeUsers()` method
+### `config.groups.removeUser()` method [DEPRECATED]
+This method is now deprecated. It is just an alias for `config.groups.removeMember()`. Don't use it, as it will be removed in a future version of `easy-samba`.
+
+EXAMPLE:
+```js
+// ...
+
+config.groups.removeUser("group1", "user3");
+// is equivalent to
+config.groups.removeMember("group1", "user3");
+
+// ...
+```
+
+### `config.groups.removeMembers()` method
 This is a method that can be used in order to remove one or more members from an existing group of the `groups` section of an instance of `ConfigGen`.
+
+> NOTE: this function has been introduced in `easy-samba` version `1.4`.
 
 - PARAMETERS: `groupname` and `members`
 
@@ -843,11 +911,25 @@ const config = new ConfigGen();
 
 config.groups.add("group1", ["user1", "user2"]);
 
-console.log( config.groups.get("group1")["users"] ); // ["user1", "user2"]
+console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 
-config.groups.removeUsers("group1", ["user1", "user2"]);
+config.groups.removeMembers("group1", ["user1", "user2"]);
 
-console.log( config.groups.get("group1")["users"] ); // []
+console.log( config.groups.get("group1")["members"] ); // []
+```
+
+### `config.groups.removeUsers()` method [DEPRECATED]
+This method is now deprecated. It is just an alias for `config.groups.removeMembers()`. Don't use it, as it will be removed in a future version of `easy-samba`.
+
+EXAMPLE:
+```js
+// ...
+
+config.groups.removeUsers("group1", ["user3", "user4"]);
+// is equivalent to
+config.groups.removeMembers("group1", ["user3", "user4"]);
+
+// ...
 ```
 
 ### `config.shares.add()` method

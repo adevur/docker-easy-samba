@@ -2,11 +2,30 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.3.0`
+### Current stable release: `1.4.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.4.0 (2019-05-31 UTC)
+- New features:
+
+  - `guest` section of `config.json` is now optional. If this section is missing, its value is set to `false`. In order to remove this section in a `config.gen.js` script, use this line of code: `config.guest(0);`.
+
+  - In `groups` section of `config.json`, `users` property of a group has been renamed to `members`. For example, `"groups": [{ "name": "group1", "users": ["user1", "user2"] }]` is now `"groups": [{ "name": "group1", "members": ["user1", "user2"] }]`. Old name `users` can still be used for retro-compatibility purposes, but it will be dropped in a future version of `easy-samba`.
+
+  - `ConfigGen.js` library now has two more methods: `config.shares.removeAllRules()` and `config.shares.removeRuleAt()`.
+
+  - In `ConfigGen.js` library, methods `config.groups.addUser()`, `config.groups.addUsers()`, `config.groups.removeUser()` and `config.groups.removeUsers()` have been renamed to `config.groups.addMember()`, `config.groups.addMembers()`, `config.groups.removeMember()` and `config.groups.removeMembers()`. Old names of these functions will still be kept for retro-compatibility purposes, but they will be removed in a future version of `easy-samba`.
+
+- Bug fixes:
+
+  - Some code cleanup.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.3.0 (2019-05-30 UTC)
 - New features:
