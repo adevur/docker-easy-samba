@@ -44,8 +44,8 @@ function fnValidateConfigVersion(config){
         return `'version' PROPERTY MUST BE A VALID CONFIGURATION FILE VERSION`;
     }
 
-    // the current version of easy-samba supports only "1", "1.0", "1.1", "1.2" and "1.3" config files
-    if (version !== "1" && version !== "1.0" && version !== "1.1" && version !== "1.2" && version !== "1.3"){
+    // the current version of easy-samba supports only "1", "1.0", "1.1", "1.2", "1.3" and "1.4" config files
+    if (version !== "1" && version !== "1.0" && version !== "1.1" && version !== "1.2" && version !== "1.3" && version !== "1.4"){
         return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR NEWER`;
     }
 
