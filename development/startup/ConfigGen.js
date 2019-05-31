@@ -24,10 +24,14 @@
     groups.remove()
     groups.get()
     groups.getAll()
-    groups.addUser()
-    groups.removeUser()
-    groups.addUsers()
-    groups.removeUsers()
+    groups.addMember()
+    groups.addUser() [DEPRECATED]
+    groups.removeMember()
+    groups.removeUser() [DEPRECATED]
+    groups.addMembers()
+    groups.addUsers() [DEPRECATED]
+    groups.removeMembers()
+    groups.removeUsers() [DEPRECATED]
 
     shares.add()
     shares.addArray()
@@ -38,6 +42,8 @@
     shares.removeRule()
     shares.addRules()
     shares.removeRules()
+    shares.removeRuleAt()
+    shares.removeAllRules()
     shares.setPath()
 
 */
