@@ -2,6 +2,13 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-05-31 UTC) roadmap update
+New improvements are coming to `easy-samba` (probably in future version `1.5.0`):
+
+- At the moment (`easy-samba` version `1.3.x`), one can create only one anonymous shared folder (setting `guest` property of `config.json` to the path of the anonymous shared folder). In the future, it will be possible to create multiple anonymous shared folders, using `shares` section of `config.json`: for example, `"shares": [{ "name": "folder1", "path": "/share/folder1", "access": ["rw:*"] }, { "name": "folder2", "path": "/share/folder2", "guest": "rw" }]` will create two shared folders: `folder1` is a regular shared folder (which every user can write and read), and `folder2` is an anonymous shared folder (that can be read and written without login).
+
+- In `groups` section of `config.json`, `users` property will be renamed to `members`. Also in `ConfigGen.js` library, `config.groups.addUser()` and the other methods will be renamed to `config.groups.addMember()` etc. For example, `"groups": [{ "name": "group1", "users": ["user1", "user2"] }]` will become `"groups": [{ "name": "group1", "members": ["user1", "user2"] }]`.
+
 ### (2019-05-30 UTC) roadmap update
 Today, `easy-samba` version `1.3.0` has been released, with two new important features: `config.gen.js` and `ConfigGen.js`. Documentation of these new features is almost complete.
 
