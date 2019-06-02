@@ -4,13 +4,18 @@
     [static] fromObject()
     [static] fromJson()
 
+    [property] easysambaVersion
+
     saveToJson()
     saveToFile()
 
     domain()
     guest()
+    unsetGuest()
     version()
+    unsetVersion()
     global()
+    unsetGlobal()
 
     users.add()
     users.addArray()
@@ -245,16 +250,10 @@ const ConfigGen = class {
                 }
 
                 input.forEach((elem) => {
-                    if (fnHas(elem, "name") !== true || (fnHas(elem, "members") !== true && fnHas(elem, "users") !== true)){
+                    if (fnHas(elem, ["name", "members"]) !== true){
                         throw "ERROR: INPUT IS NOT VALID";
                     }
-                    if (fnHas(elem, "users")){
-                        console.log(`[WARNING] 'users' property of a group is deprecated, rename it to 'members' instead`);
-                        this.groups.add(elem["name"], elem["users"]);
-                    }
-                    else {
-                        this.groups.add(elem["name"], elem["members"]);
-                    }
+                    this.groups.add(elem["name"], elem["members"]);
                 });
 
                 return this;
