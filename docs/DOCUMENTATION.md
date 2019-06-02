@@ -463,6 +463,31 @@ config.unsetGuest();
 
 > NOTE: `config.guest(undefined)` is equivalent to `config.guest()`.
 
+### `config.unsetGuest()` method
+This is a method that can be used in order to remove `guest` section from an instance of `ConfigGen`.
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
+
+PARAMETERS: N/A
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+// this is needed because "domain" section is mandatory in order to generate a "config.json" file
+config.domain("WORKGROUP");
+
+config.guest("/share/guest");
+
+console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "guest": "/share/guest", "users": [], "shares": []}
+
+config.unsetGuest();
+
+console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "shares": []}
+```
+
 ### `config.global()` method
 This is a method that can be used in order to set the `global` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `global` section, if used without parameters.
 
@@ -489,6 +514,31 @@ config.unsetGlobal();
 
 > NOTE: `config.global(undefined)` is equivalent to `config.global()`.
 
+### `config.unsetGlobal()` method
+This is a method that can be used in order to remove `global` section from an instance of `ConfigGen`.
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
+
+PARAMETERS: N/A
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+// this is needed because "domain" section is mandatory in order to generate a "config.json" file
+config.domain("WORKGROUP");
+
+config.global(["a", "b"]);
+
+console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "global": ["a", "b"], "users": [], "shares": []}
+
+config.unsetGlobal();
+
+console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "shares": []}
+```
+
 ### `config.version()` method
 This is a method that can be used in order to set the `version` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `version` section, if used without parameters.
 
@@ -514,6 +564,31 @@ config.unsetVersion();
 ```
 
 > NOTE: `config.version(undefined)` is equivalent to `config.version()`.
+
+### `config.unsetVersion()` method
+This is a method that can be used in order to remove `version` section from an instance of `ConfigGen`.
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
+
+PARAMETERS: N/A
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+// this is needed because "domain" section is mandatory in order to generate a "config.json" file
+config.domain("WORKGROUP");
+
+config.version("1.5");
+
+console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "version": "1.5", "users": [], "shares": []}
+
+config.unsetVersion();
+
+console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "shares": []}
+```
 
 ### `config.users.add()` method
 This is a method that can be used in order to add a user to the `users` section of an instance of `ConfigGen`.
