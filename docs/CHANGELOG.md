@@ -2,11 +2,34 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.4.0`
+### Current stable release: `1.5.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.5.0 (2019-06-02 UTC)
+- New features:
+
+  - The following deprecated functions have been removed from `ConfigGen.js` library: `config.groups.addUser()`, `config.groups.addUsers()`, `config.groups.removeUser()` and `config.groups.removeUsers()`. This breaks compatibility with older `config.gen.js` files.
+
+  - The following functions have been removed from `ConfigGen.js` library for code-cleaning purposes: `config.groups.addMember()`, `config.groups.removeMember()`, `config.shares.addRule()` and `config.shares.removeRule()`. This breaks compatibility with older `config.gen.js` files.
+
+  - In `ConfigGen.js` library, the following functions have extended their functionalities, without breaking compatibility with older `config.gen.js` files: `config.users.remove()`, `config.groups.remove()` and `config.shares.remove()`.
+
+  - The following functions have been added to `ConfigGen.js` library: `config.unsetVersion()`, `config.unsetGuest()` and `config.unsetGlobal()`.
+
+  - In `config.json`, in `groups` section, `users` property of a group is not supported anymore. Use `members` instead of `users`. This breaks compatibility with older `config.json` and `config.gen.js` files.
+
+  - Because of several breaking changes in the codebase of `easy-samba`, version `1.5.0` is not compatible with `config.json` files and `config.gen.js` files older than `1.5`. Note: you can still omit `version` property in a `config.json` file, because `easy-samba` will assume that the `config.json` file is compatible with the current `easy-samba` version.
+
+- Bug fixes:
+
+  - Some code cleanup.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.4.0 (2019-05-31 UTC)
 - New features:
