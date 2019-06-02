@@ -1084,6 +1084,68 @@ config.shares.removeAllRules("test", ["rw:user1", "ro:user2"]);
 console.log( config.shares.get("test")["access"] ); // []
 ```
 
+### `config.shares.removeRuleAt()` method
+This is a method that can be used in order to remove an access rule from an existing share of the `shares` section of an instance of `ConfigGen`.
+
+The access rule to remove is specified using its index.
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.4`.
+
+- PARAMETERS: `sharename` and `ruleIndex`
+
+- PARAMETER `sharename`: it is a string that contains the name of the share
+
+- PARAMETER `ruleIndex`: it is the index of the access rule to remove
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2", "rw:user3"]);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3"]
+
+config.shares.removeRuleAt("public", 1);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "rw:user3"]
+```
+
+### `config.shares.removeAllRules()` method
+This is a method that can be used in order to remove one or more access rules from an existing share of the `shares` section of an instance of `ConfigGen`.
+
+The difference between `config.shares.removeRules()` and `config.shares.removeAllRules()` is that the former will only remove the first occurrency of the specified access rules, while the latter will remove all the occurrencies of the specified access rules.
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.4`.
+
+- PARAMETERS: `sharename` and `rules` (optional)
+
+- PARAMETER `sharename`: it is a string that contains the name of the share
+
+- PARAMETER `rules`: it is an array of strings that contains all the access rules to remove from the specified share; if this parameter is missing, all the access rules of the share will be removed
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("folder1", "/share/folder1", ["rw:user1", "ro:user2", "rw:user1"]);
+
+console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "ro:user2", "rw:user1"]
+
+config.shares.removeAllRules("folder1", ["rw:user1"]);
+
+console.log( config.shares.get("folder1")["access"] ); // ["ro:user2"]
+
+config.shares.removeAllRules("folder1");
+
+console.log( config.shares.get("folder1")["access"] ); // []
+```
+
+> NOTE: `config.shares.removeAllRules("name of share", undefined)` is equivalent to `config.shares.removeAllRules("name of share")`.
+
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
 
