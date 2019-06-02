@@ -783,7 +783,7 @@ const ConfigGen = class {
                     throw "ERROR: GLOBAL MUST BE AN ARRAY OF STRINGS";
                 }
             });
-            this["$global"] = input;
+            this["$global"] = JSON.parse(JSON.stringify(input));
             return this;
         }
 
