@@ -131,6 +131,13 @@ const ConfigGen = class {
 
             // users.remove()
             remove: (username = undefined) => {
+                if (fnIsArray(username)){
+                    username.forEach((e) => {
+                        this.users.remove(e);
+                    });
+                    return this;
+                }
+
                 let index = undefined;
                 this["$users"].forEach((user, i) => {
                     if (user["name"] === username){
@@ -138,11 +145,9 @@ const ConfigGen = class {
                     }
                 });
 
-                if (index === undefined){
-                    throw "ERROR: USER NOT FOUND";
+                if (index !== undefined && index >= 0){
+                    this["$users"].splice(index, 1);
                 }
-
-                this["$users"].splice(index, 1);
 
                 return this;
             },
@@ -257,6 +262,13 @@ const ConfigGen = class {
 
             // groups.remove()
             remove: (groupname = undefined) => {
+                if (fnIsArray(groupname)){
+                    groupname.forEach((e) => {
+                        this.groups.remove(e);
+                    });
+                    return this;
+                }
+
                 let index = undefined;
                 this["$groups"].forEach((group, i) => {
                     if (group["name"] === groupname){
@@ -264,11 +276,9 @@ const ConfigGen = class {
                     }
                 });
 
-                if (index === undefined){
-                    throw "ERROR: GROUP NOT FOUND";
+                if (index !== undefined && index >= 0){
+                    this["$groups"].splice(index, 1);
                 }
-
-                this["$groups"].splice(index, 1);
 
                 return this;
             },
@@ -337,30 +347,6 @@ const ConfigGen = class {
                 members.forEach((member) => {
                     addMember(groupname, member);
                 });
-
-                return this;
-            },
-
-            // groups.removeMember()
-            removeMember: (groupname, member) => {
-                if (fnIsString(member) !== true){
-                    throw "ERROR: MEMBER MUST BE A STRING";
-                }
-
-                let index = undefined;
-                this["$groups"].forEach((group, i) => {
-                    if (group["name"] === groupname){
-                        index = i;
-                    }
-                });
-
-                if (index === undefined){
-                    throw "ERROR: GROUP NOT FOUND";
-                }
-
-                if (this["$groups"][index]["members"].includes(member) === true){
-                    this["$groups"][index]["members"].splice(this["$groups"][index]["members"].indexOf(member), 1);
-                }
 
                 return this;
             },
@@ -452,6 +438,13 @@ const ConfigGen = class {
 
             // shares.remove()
             remove: (sharename = undefined) => {
+                if (fnIsArray(sharename)){
+                    sharename.forEach((e) => {
+                        this.shares.remove(e);
+                    });
+                    return this;
+                }
+
                 let index = undefined;
                 this["$shares"].forEach((share, i) => {
                     if (share["name"] === sharename){
@@ -459,11 +452,9 @@ const ConfigGen = class {
                     }
                 });
 
-                if (index === undefined){
-                    throw "ERROR: SHARE NOT FOUND";
+                if (index !== undefined && index >= 0){
+                    this["$share"].splice(index, 1);
                 }
-
-                this["$shares"].splice(index, 1);
 
                 return this;
             },
