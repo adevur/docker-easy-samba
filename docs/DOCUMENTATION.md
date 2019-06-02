@@ -457,7 +457,6 @@ config.guest("/share/guest");
 console.log( config.guest() ); // /share/guest
 
 // since "guest" section is optional, you can also remove it this way:
-// NOTE: requires ConfigGen.js version 1.5 or newer
 config.unsetGuest();
 ```
 
@@ -508,7 +507,6 @@ config.global(["a", "b"]);
 console.log( config.global() ); // ["a", "b"]
 
 // since "global" section is optional, you can also remove it this way:
-// NOTE: requires ConfigGen.js version 1.5 or newer
 config.unsetGlobal();
 ```
 
@@ -559,7 +557,6 @@ config.version("1.3");
 console.log( config.version() ); // "1.3"
 
 // since "version" section is optional, you can also remove it this way:
-// NOTE: requires ConfigGen.js version 1.5 or newer
 config.unsetVersion();
 ```
 
