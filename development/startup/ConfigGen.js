@@ -746,6 +746,12 @@ const ConfigGen = class {
         throw "ERROR: GUEST MUST BE A STRING OR false";
     }
 
+    // unsetGuest()
+    unsetGuest(){
+        this["$guest"] = undefined;
+        return this;
+    }
+
     // version()
     version(input = undefined){
         if (input === undefined){
@@ -758,6 +764,12 @@ const ConfigGen = class {
         }
 
         throw "ERROR: VERSION MUST BE A STRING";
+    }
+
+    // unsetVersion()
+    unsetVersion(){
+        this["$version"] = undefined;
+        return this;
     }
 
     // global()
@@ -777,6 +789,12 @@ const ConfigGen = class {
         }
 
         throw "ERROR: GLOBAL MUST BE AN ARRAY";
+    }
+
+    // unsetGlobal()
+    unsetGlobal(){
+        this["$global"] = undefined;
+        return this;
     }
 };
 
