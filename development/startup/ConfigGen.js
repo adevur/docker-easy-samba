@@ -24,22 +24,14 @@
     groups.remove()
     groups.get()
     groups.getAll()
-    groups.addMember()
-    groups.addUser() [DEPRECATED]
-    groups.removeMember()
-    groups.removeUser() [DEPRECATED]
     groups.addMembers()
-    groups.addUsers() [DEPRECATED]
     groups.removeMembers()
-    groups.removeUsers() [DEPRECATED]
 
     shares.add()
     shares.addArray()
     shares.remove()
     shares.get()
     shares.getAll()
-    shares.addRule()
-    shares.removeRule()
     shares.addRules()
     shares.removeRules()
     shares.removeRuleAt()
@@ -93,7 +85,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
-        this.easysambaVersion = "1.4";
+        this.easysambaVersion = "1.5";
 
         // internal variables used by an instance of ConfigGen
         this["$domain"] = undefined;
@@ -315,53 +307,38 @@ const ConfigGen = class {
                 return result;
             },
 
-            // groups.addMember()
-            addMember: (groupname, member) => {
-                if (fnIsString(member) !== true){
-                    throw "ERROR: MEMBER MUST BE A STRING";
-                }
-
-                let index = undefined;
-                this["$groups"].forEach((group, i) => {
-                    if (group["name"] === groupname){
-                        index = i;
-                    }
-                });
-
-                if (index === undefined){
-                    throw "ERROR: GROUP NOT FOUND";
-                }
-
-                if (this["$groups"][index]["members"].includes(member) !== true){
-                    this["$groups"][index]["members"].push(member);
-                }
-
-                return this;
-            },
-
-            // groups.addUser()
-            addUser: (groupname, member) => {
-                console.log(`[WARNING] function 'config.groups.addUser()' is deprecated, use 'config.groups.addMember()' instead`);
-                return this.groups.addMember(groupname, member);
-            },
-
             // groups.addMembers()
             addMembers: (groupname, members) => {
+                const addMember = (groupname, member) => {
+                    if (fnIsString(member) !== true){
+                        throw "ERROR: MEMBER MUST BE A STRING";
+                    }
+
+                    let index = undefined;
+                    this["$groups"].forEach((group, i) => {
+                        if (group["name"] === groupname){
+                            index = i;
+                        }
+                    });
+
+                    if (index === undefined){
+                        throw "ERROR: GROUP NOT FOUND";
+                    }
+
+                    if (this["$groups"][index]["members"].includes(member) !== true){
+                        this["$groups"][index]["members"].push(member);
+                    }
+                };
+
                 if (fnIsArray(members) !== true){
                     throw "ERROR: MEMBERS MUST BE AN ARRAY";
                 }
 
                 members.forEach((member) => {
-                    this.groups.addMember(groupname, member);
+                    addMember(groupname, member);
                 });
 
                 return this;
-            },
-
-            // groups.addUsers()
-            addUsers: (groupname, members) => {
-                console.log(`[WARNING] function 'config.groups.addUsers()' is deprecated, use 'config.groups.addMembers()' instead`);
-                return this.groups.addMembers(groupname, members);
             },
 
             // groups.removeMember()
@@ -388,29 +365,39 @@ const ConfigGen = class {
                 return this;
             },
 
-            // groups.removeUser()
-            removeUser: (groupname, member) => {
-                console.log(`[WARNING] function 'config.groups.removeUser()' is deprecated, use 'config.groups.removeMember()' instead`);
-                return this.groups.removeMember(groupname, member);
-            },
-
             // groups.removeMembers()
             removeMembers: (groupname, members) => {
+                const removeMember = (groupname, member) => {
+                    if (fnIsString(member) !== true){
+                        throw "ERROR: MEMBER MUST BE A STRING";
+                    }
+
+                    let index = undefined;
+                    this["$groups"].forEach((group, i) => {
+                        if (group["name"] === groupname){
+                            index = i;
+                        }
+                    });
+
+                    if (index === undefined){
+                        throw "ERROR: GROUP NOT FOUND";
+                    }
+
+                    const temp = this["$groups"][index]["members"];
+                    if (temp.includes(member) === true){
+                        temp.splice(temp.indexOf(member), 1);
+                    }
+                };
+
                 if (fnIsArray(members) !== true){
                     throw "ERROR: MEMBERS MUST BE AN ARRAY";
                 }
 
                 members.forEach((member) => {
-                    this.groups.removeMember(groupname, member);
+                    removeMember(groupname, member);
                 });
 
                 return this;
-            },
-
-            // groups.removeUsers()
-            removeUsers: (groupname, members) => {
-                console.log(`[WARNING] function 'config.groups.removeUsers()' is deprecated, use 'config.groups.removeMembers()' instead`);
-                return this.groups.removeMembers(groupname, members);
             }
         };
 
@@ -515,73 +502,68 @@ const ConfigGen = class {
                 return result;
             },
 
-            // shares.addRule()
-            addRule: (sharename, rule) => {
-                if (fnIsString(rule) !== true){
-                    throw "ERROR: RULE MUST BE A STRING";
-                }
-
-                let index = undefined;
-                this["$shares"].forEach((share, i) => {
-                    if (share["name"] === sharename){
-                        index = i;
-                    }
-                });
-
-                if (index === undefined){
-                    throw "ERROR: SHARE NOT FOUND";
-                }
-
-                this["$shares"][index]["access"].push(rule);
-
-                return this;
-            },
-
             // shares.addRules()
             addRules: (sharename, rules) => {
+                const addRule = (sharename, rule) => {
+                    if (fnIsString(rule) !== true){
+                        throw "ERROR: RULE MUST BE A STRING";
+                    }
+
+                    let index = undefined;
+                    this["$shares"].forEach((share, i) => {
+                        if (share["name"] === sharename){
+                            index = i;
+                        }
+                    });
+
+                    if (index === undefined){
+                        throw "ERROR: SHARE NOT FOUND";
+                    }
+
+                    this["$shares"][index]["access"].push(rule);
+                };
+
                 if (fnIsArray(rules) !== true){
                     throw "ERROR: RULES MUST BE AN ARRAY";
                 }
 
                 rules.forEach((rule) => {
-                    this.shares.addRule(sharename, rule);
+                    addRule(sharename, rule);
                 });
-
-                return this;
-            },
-
-            // shares.removeRule()
-            removeRule: (sharename, rule) => {
-                if (fnIsString(rule) !== true){
-                    throw "ERROR: RULE MUST BE A STRING";
-                }
-
-                let index = undefined;
-                this["$shares"].forEach((share, i) => {
-                    if (share["name"] === sharename){
-                        index = i;
-                    }
-                });
-
-                if (index === undefined){
-                    throw "ERROR: SHARE NOT FOUND";
-                }
-
-                if (this["$shares"][index]["access"].includes(rule) === true){
-                    this["$shares"][index]["access"].splice(this["$shares"][index]["access"].indexOf(rule), 1);
-                }
 
                 return this;
             },
 
             // shares.removeRules()
             removeRules: (sharename, rules) => {
+                const removeRule = (sharename, rule) => {
+                    if (fnIsString(rule) !== true){
+                        throw "ERROR: RULE MUST BE A STRING";
+                    }
+
+                    let index = undefined;
+                    this["$shares"].forEach((share, i) => {
+                        if (share["name"] === sharename){
+                            index = i;
+                        }
+                    });
+
+                    if (index === undefined){
+                        throw "ERROR: SHARE NOT FOUND";
+                    }
+
+                    const temp = this["$shares"][index]["access"];
+                    if (temp.includes(rule) === true){
+                        temp.splice(temp.indexOf(rule), 1);
+                    }
+                };
+
                 if (fnIsArray(rules) !== true){
                     throw "ERROR: RULES MUST BE AN ARRAY";
                 }
 
                 rules.forEach((rule) => {
-                    this.shares.removeRule(sharename, rule);
+                    removeRule(sharename, rule);
                 });
 
                 return this;
@@ -604,7 +586,7 @@ const ConfigGen = class {
 
                 rulesToDelete.forEach((ruleToDelete) => {
                     while (this.shares.get(sharename)["access"].includes(ruleToDelete) === true){
-                        this.shares.removeRule(sharename, ruleToDelete);
+                        this.shares.removeRules(sharename, [ruleToDelete]);
                     }
                 });
 
