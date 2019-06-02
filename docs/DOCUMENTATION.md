@@ -1141,7 +1141,31 @@ config.shares.removeAllRules("folder1");
 console.log( config.shares.get("folder1")["access"] ); // []
 ```
 
-> NOTE: `config.shares.removeAllRules("name of share", undefined)` is equivalent to `config.shares.removeAllRules("name of share")`.
+> NOTE: `config.shares.removeAllRules(sharename, undefined)` is equivalent to `config.shares.removeAllRules(sharename)`.
+
+### `config.shares.setPath()` method
+This is a method that can be used in order to change the path of an existing share of the `shares` section of an instance of `ConfigGen`.
+
+- PARAMETERS: `sharename` and `path`
+
+- PARAMETER `sharename`: it is a string that contains the name of the share
+
+- PARAMETER `path`: it is a string that contains the new path of the specified share
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("folder1", "/share/folder1", ["rw:*"]);
+
+console.log( config.shares.get("folder1")["path"] ); // /share/folder1
+
+config.shares.setPath("folder1", "/share/new-path");
+
+console.log( config.shares.get("folder1")["path"] ); // /share/new-path
+```
 
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
