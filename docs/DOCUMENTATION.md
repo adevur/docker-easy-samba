@@ -278,9 +278,15 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`config.guest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configguest-method)
 
+- [`config.unsetGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configunsetguest-method)
+
 - [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
 
+- [`config.unsetGlobal()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configunsetglobal-method)
+
 - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
+
+- [`config.unsetVersion()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configunsetversion-method)
 
 - [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetojson-method)
 
@@ -312,21 +318,9 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetall-method)
 
-    - [`config.groups.addMember()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmember-method)
-
-    - [`config.groups.addUser()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadduser-method-deprecated)
-
     - [`config.groups.addMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmembers-method)
 
-    - [`config.groups.addUsers()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddusers-method-deprecated)
-
-    - [`config.groups.removeMember()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremovemember-method)
-
-    - [`config.groups.removeUser()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveuser-method-deprecated)
-
     - [`config.groups.removeMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremovemembers-method)
-
-    - [`config.groups.removeUsers()` method [DEPRECATED]](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremoveusers-method-deprecated)
 
 - `config.shares` methods:
 
@@ -340,11 +334,7 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`config.shares.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetall-method)
 
-    - [`config.shares.addRule()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrule-method)
-
     - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrules-method)
-
-    - [`config.shares.removeRule()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverule-method)
 
     - [`config.shares.removeRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverules-method)
 
@@ -465,6 +455,10 @@ const config = new ConfigGen();
 console.log( config.guest() ); // undefined
 config.guest("/share/guest");
 console.log( config.guest() ); // /share/guest
+
+// since "guest" section is optional, you can also remove it this way:
+// NOTE: requires ConfigGen.js version 1.5 or newer
+config.unsetGuest();
 ```
 
 > NOTE: `config.guest(undefined)` is equivalent to `config.guest()`.
@@ -489,7 +483,8 @@ config.global(["a", "b"]);
 console.log( config.global() ); // ["a", "b"]
 
 // since "global" section is optional, you can also remove it this way:
-config.global([]);
+// NOTE: requires ConfigGen.js version 1.5 or newer
+config.unsetGlobal();
 ```
 
 > NOTE: `config.global(undefined)` is equivalent to `config.global()`.
@@ -512,6 +507,10 @@ const config = new ConfigGen();
 console.log( config.version() ); // undefined
 config.version("1.3");
 console.log( config.version() ); // "1.3"
+
+// since "version" section is optional, you can also remove it this way:
+// NOTE: requires ConfigGen.js version 1.5 or newer
+config.unsetVersion();
 ```
 
 > NOTE: `config.version(undefined)` is equivalent to `config.version()`.
@@ -557,11 +556,13 @@ config.users.add("user2", "aaabbb");
 ```
 
 ### `config.users.remove()` method
-This is a method that can be used in order to remove a user from the `users` section of an instance of `ConfigGen`.
+This is a method that can be used in order to remove one or more users from the `users` section of an instance of `ConfigGen`.
 
 - PARAMETERS: `username`
 
-- PARAMETER `username`: it is a string that contains the username of the user to remove
+- PARAMETER `username`: it is a string that contains the username of the user to remove, or it can also be an array of strings (in which every element is a username to remove)
+
+> NOTE: parameter `username` can be an array of strings only since version `1.5` of `ConfigGen.js` library.
 
 EXAMPLE:
 ```js
@@ -571,14 +572,19 @@ const config = new ConfigGen();
 
 config.users.addArray([
     { "name": "user1", "password": "123456" },
-    { "name": "user2", "password": "aaabbb" }
+    { "name": "user2", "password": "aaabbb" },
+    { "name": "user3", "password": "aaabbb" }
 ]);
 
-console.log( config.users.get() ); // ["user1", "user2"]
+console.log( config.users.get() ); // ["user1", "user2", "user3"]
 
 config.users.remove("user1");
 
-console.log( config.users.get() ); // ["user2"]
+console.log( config.users.get() ); // ["user2", "user3"]
+
+config.users.remove(["user2", "user3"]);
+
+console.log( config.users.get() ); // []
 ```
 
 ### `config.users.get()` method
@@ -695,11 +701,13 @@ config.groups.add("group2", ["group1", "user3"]);
 ```
 
 ### `config.groups.remove()` method
-This is a method that can be used in order to remove a group from the `groups` section of an instance of `ConfigGen`.
+This is a method that can be used in order to remove one or more groups from the `groups` section of an instance of `ConfigGen`.
 
 - PARAMETERS: `groupname`
 
-- PARAMETER `groupname`: it is a string that contains the name of the group to remove
+- PARAMETER `groupname`: it is a string that contains the name of the group to remove, or it can also be an array of strings (in which every element is the name of a group to remove)
+
+> NOTE: parameter `groupname` can be an array of strings only since version `1.5` of `ConfigGen.js` library.
 
 EXAMPLE:
 ```js
@@ -709,14 +717,19 @@ const config = new ConfigGen();
 
 config.groups.addArray([
     { "name": "group1", "members": ["user1", "user2"] },
-    { "name": "group2", "members": ["group1", "user3"] }
+    { "name": "group2", "members": ["group1", "user3"] },
+    { "name": "group3", "members": ["user4"] }
 ]);
 
-console.log( config.groups.get() ); // ["group1", "group2"]
+console.log( config.groups.get() ); // ["group1", "group2", "group3"]
 
 config.groups.remove("group1");
 
-console.log( config.groups.get() ); // ["group2"]
+console.log( config.groups.get() ); // ["group2", "group3"]
+
+config.groups.remove(["group2", "group3"]);
+
+console.log( config.groups.get() ); // []
 ```
 
 ### `config.groups.get()` method
@@ -767,50 +780,8 @@ config.groups.addArray([
 console.log( config.groups.getAll() ); // [{ "name": "group1", "members": ["user1", "user2"] },{ "name": "group2", "members": ["group1", "user3"] }]
 ```
 
-### `config.groups.addMember()` method
-This is a method that can be used in order to add a member to an existing group of the `groups` section of an instance of `ConfigGen`.
-
-> NOTE: this function has been introduced in `easy-samba` version `1.4`.
-
-- PARAMETERS: `groupname` and `member`
-
-- PARAMETER `groupname`: it is a string that contains the name of the group
-
-- PARAMETER `member`: it is a string that contains the username or the groupname of the member to add to the specified group
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-config.groups.add("group1", ["user1", "user2"]);
-
-console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
-
-config.groups.addMember("group1", "user3");
-
-console.log( config.groups.get("group1")["members"] ); // ["user1", "user2", "user3"]
-```
-
-### `config.groups.addUser()` method [DEPRECATED]
-This method is now deprecated. It is just an alias for `config.groups.addMember()`. Don't use it, as it will be removed in a future version of `easy-samba`.
-
-EXAMPLE:
-```js
-// ...
-
-config.groups.addUser("group1", "user3");
-// is equivalent to
-config.groups.addMember("group1", "user3");
-
-// ...
-```
-
 ### `config.groups.addMembers()` method
 This is a method that can be used in order to add one or more members to an existing group of the `groups` section of an instance of `ConfigGen`.
-
-> NOTE: this function has been introduced in `easy-samba` version `1.4`.
 
 - PARAMETERS: `groupname` and `members`
 
@@ -833,64 +804,8 @@ config.groups.addMembers("group1", ["user3", "user4"]);
 console.log( config.groups.get("group1")["members"] ); // ["user1", "user2", "user3", "user4"]
 ```
 
-### `config.groups.addUsers()` method [DEPRECATED]
-This method is now deprecated. It is just an alias for `config.groups.addMembers()`. Don't use it, as it will be removed in a future version of `easy-samba`.
-
-EXAMPLE:
-```js
-// ...
-
-config.groups.addUsers("group1", ["user3", "user4"]);
-// is equivalent to
-config.groups.addMembers("group1", ["user3", "user4"]);
-
-// ...
-```
-
-### `config.groups.removeMember()` method
-This is a method that can be used in order to remove a member from an existing group of the `groups` section of an instance of `ConfigGen`.
-
-> NOTE: this function has been introduced in `easy-samba` version `1.4`.
-
-- PARAMETERS: `groupname` and `member`
-
-- PARAMETER `groupname`: it is a string that contains the name of the group
-
-- PARAMETER `member`: it is a string that contains the username or the groupname of the member to remove from the specified group
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-config.groups.add("group1", ["user1", "user2"]);
-
-console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
-
-config.groups.removeMember("group1", "user1");
-
-console.log( config.groups.get("group1")["members"] ); // ["user2"]
-```
-
-### `config.groups.removeUser()` method [DEPRECATED]
-This method is now deprecated. It is just an alias for `config.groups.removeMember()`. Don't use it, as it will be removed in a future version of `easy-samba`.
-
-EXAMPLE:
-```js
-// ...
-
-config.groups.removeUser("group1", "user3");
-// is equivalent to
-config.groups.removeMember("group1", "user3");
-
-// ...
-```
-
 ### `config.groups.removeMembers()` method
 This is a method that can be used in order to remove one or more members from an existing group of the `groups` section of an instance of `ConfigGen`.
-
-> NOTE: this function has been introduced in `easy-samba` version `1.4`.
 
 - PARAMETERS: `groupname` and `members`
 
@@ -911,20 +826,6 @@ console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 config.groups.removeMembers("group1", ["user1", "user2"]);
 
 console.log( config.groups.get("group1")["members"] ); // []
-```
-
-### `config.groups.removeUsers()` method [DEPRECATED]
-This method is now deprecated. It is just an alias for `config.groups.removeMembers()`. Don't use it, as it will be removed in a future version of `easy-samba`.
-
-EXAMPLE:
-```js
-// ...
-
-config.groups.removeUsers("group1", ["user3", "user4"]);
-// is equivalent to
-config.groups.removeMembers("group1", ["user3", "user4"]);
-
-// ...
 ```
 
 ### `config.shares.add()` method
@@ -970,11 +871,13 @@ config.shares.add("user3", "/share/user3", ["rw:user3"]);
 ```
 
 ### `config.shares.remove()` method
-This is a method that can be used in order to remove a share from the `shares` section of an instance of `ConfigGen`.
+This is a method that can be used in order to remove one or more shares from the `shares` section of an instance of `ConfigGen`.
 
 - PARAMETERS: `sharename`
 
-- PARAMETER `sharename`: it is a string that contains the name of the share to remove
+- PARAMETER `sharename`: it is a string that contains the name of the share to remove, or it can also be an array of strings (in which every element is the name of a share to remove)
+
+> NOTE: parameter `sharename` can be an array of strings only since version `1.5` of `ConfigGen.js` library.
 
 EXAMPLE:
 ```js
@@ -984,14 +887,19 @@ const config = new ConfigGen();
 
 config.shares.addArray([
     { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
-    { "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }
+    { "name": "user3", "path": "/share/user3", "access": ["rw:user3"] },
+    { "name": "user4", "path": "/share/user4", "access": ["ro:user4"] }
 ]);
 
-console.log( config.shares.get() ); // ["public", "user3"]
+console.log( config.shares.get() ); // ["public", "user3", "user4"]
 
 config.shares.remove("user3");
 
-console.log( config.shares.get() ); // ["public"]
+console.log( config.shares.get() ); // ["public", "user4"]
+
+config.shares.remove(["public", "user4"]);
+
+console.log( config.shares.get() ); // []
 ```
 
 ### `config.shares.get()` method
@@ -1042,30 +950,6 @@ config.shares.addArray([
 console.log( config.shares.getAll() ); // [{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },{ "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }]
 ```
 
-### `config.shares.addRule()` method
-This is a method that can be used in order to add an access rule to an existing share of the `shares` section of an instance of `ConfigGen`.
-
-- PARAMETERS: `sharename` and `rule`
-
-- PARAMETER `sharename`: it is a string that contains the name of the share
-
-- PARAMETER `rule`: it is a string that contains the access rule to add to the specified share
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
-
-console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
-
-config.shares.addRule("public", "rw:user3");
-
-console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3"]
-```
-
 ### `config.shares.addRules()` method
 This is a method that can be used in order to add one or more access rules to an existing share of the `shares` section of an instance of `ConfigGen`.
 
@@ -1088,43 +972,6 @@ console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"
 config.shares.addRules("public", ["rw:user3", "ro:user4"]);
 
 console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3", "ro:user4"]
-```
-
-### `config.shares.removeRule()` method
-This is a method that can be used in order to remove a rule from an existing share of the `shares` section of an instance of `ConfigGen`.
-
-- PARAMETERS: `sharename` and `rule`
-
-- PARAMETER `sharename`: it is a string that contains the name of the share
-
-- PARAMETER `rule`: it is a string that contains the access rule to remove from the specified share
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
-
-console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
-
-config.shares.removeRule("public", "rw:user1");
-
-console.log( config.shares.get("public")["access"] ); // ["ro:user2"]
-
-// NOTE: config.shares.removeRule() will only remove the first occurency of the specified access rule
-// EXAMPLE:
-config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
-config.shares.removeRule("test", "rw:user1");
-console.log( config.shares.get("test")["access"] ); // ["ro:user2", "rw:user1"]
-
-// HINT: if you want to delete all access rules equal to "rw:user1", a while loop will do the trick:
-const ruleToDelete = "rw:user1";
-while (config.shares.get("test")["access"].includes(ruleToDelete) === true){
-    config.shares.removeRule("test", ruleToDelete);
-}
-console.log( config.shares.get("test")["access"] ); // ["ro:user2"]
 ```
 
 ### `config.shares.removeRules()` method
@@ -1156,13 +1003,9 @@ config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
 config.shares.removeRules("test", ["rw:user1", "ro:user2"]);
 console.log( config.shares.get("test")["access"] ); // ["rw:user1"]
 
-// HINT: if you want to delete all the occurrencies of the specified access rules, a while loop will do the trick:
-const rulesToDelete = ["rw:user1", "ro:user2"];
-rulesToDelete.forEach((ruleToDelete) => {
-    while (config.shares.get("test")["access"].includes(ruleToDelete) === true){
-        config.shares.removeRule("test", ruleToDelete);
-    }
-});
+// HINT: if you want to delete all the occurrencies of the specified access rules, use config.shares.removeAllRules() instead:
+config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
+config.shares.removeAllRules("test", ["rw:user1", "ro:user2"]);
 console.log( config.shares.get("test")["access"] ); // []
 ```
 
