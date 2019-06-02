@@ -76,8 +76,10 @@ const fnHas = (obj, keys) => {
     return temp.every((key) => { return has(obj, key); });
 };
 
+// fnIsInteger()
+//   checks if a given Javascript object "input" is a valid integer
 const fnIsInteger = (input) => {
-    return ( input !== undefined && input === parseInt(String(input), 10) );
+    return ( input !== undefined && input !== NaN && input === parseInt(String(input), 10) );
 };
 
 
@@ -135,7 +137,7 @@ const ConfigGen = class {
             },
 
             // users.remove()
-            remove: (username = undefined) => {
+            remove: (username) => {
                 if (fnIsArray(username)){
                     username.forEach((e) => {
                         this.users.remove(e);
@@ -159,7 +161,7 @@ const ConfigGen = class {
 
             // users.get()
             get: (username = undefined) => {
-                if (username === undefined){
+                if (arguments.length < 1){
                     const result = [];
                     this["$users"].forEach((user) => {
                         result.push(user["name"]);
@@ -260,7 +262,7 @@ const ConfigGen = class {
             },
 
             // groups.remove()
-            remove: (groupname = undefined) => {
+            remove: (groupname) => {
                 if (fnIsArray(groupname)){
                     groupname.forEach((e) => {
                         this.groups.remove(e);
@@ -284,7 +286,7 @@ const ConfigGen = class {
 
             // groups.get()
             get: (groupname = undefined) => {
-                if (groupname === undefined){
+                if (arguments.length < 1){
                     const result = [];
                     this["$groups"].forEach((group) => {
                         result.push(group["name"]);
@@ -436,7 +438,7 @@ const ConfigGen = class {
             },
 
             // shares.remove()
-            remove: (sharename = undefined) => {
+            remove: (sharename) => {
                 if (fnIsArray(sharename)){
                     sharename.forEach((e) => {
                         this.shares.remove(e);
@@ -460,7 +462,7 @@ const ConfigGen = class {
 
             // shares.get()
             get: (sharename = undefined) => {
-                if (sharename === undefined){
+                if (arguments.length < 1){
                     const result = [];
                     this["$shares"].forEach((share) => {
                         result.push(share["name"]);
@@ -567,11 +569,14 @@ const ConfigGen = class {
 
                 let rulesToDelete = undefined;
 
-                if (fnIsArray(rules) !== true){
+                if (arguments.length === 1){
                     rulesToDelete = this.shares.get(sharename)["access"];
                 }
-                else {
+                else if (arguments.length > 1 && fnIsArray(rules)) {
                     rulesToDelete = rules;
+                }
+                else {
+                    throw "ERROR: RULES MUST BE AN ARRAY";
                 }
 
                 rulesToDelete.forEach((ruleToDelete) => {
@@ -674,7 +679,7 @@ const ConfigGen = class {
     }
 
     // saveToFile()
-    saveToFile(path = undefined){
+    saveToFile(path){
         try {
             fs.writeFileSync(path, this.saveToJson());
         }
@@ -719,7 +724,7 @@ const ConfigGen = class {
 
     // domain()
     domain(input = undefined){
-        if (input === undefined){
+        if (arguments.length < 1){
             return this["$domain"];
         }
 
@@ -733,7 +738,7 @@ const ConfigGen = class {
 
     // guest()
     guest(input = undefined){
-        if (input === undefined){
+        if (arguments.length < 1){
             return this["$guest"];
         }
 
@@ -753,7 +758,7 @@ const ConfigGen = class {
 
     // version()
     version(input = undefined){
-        if (input === undefined){
+        if (arguments.length < 1){
             return this["$version"];
         }
 
@@ -773,7 +778,7 @@ const ConfigGen = class {
 
     // global()
     global(input = undefined){
-        if (input === undefined){
+        if (arguments.length < 1){
             return this["$global"];
         }
 
