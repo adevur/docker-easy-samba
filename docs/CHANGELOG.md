@@ -2,11 +2,26 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.5.0`
+### Current stable release: `1.6.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.6.0 (2019-06-03 UTC)
+- New features:
+
+  - The following functions have been added to `ConfigGen.js` library: `config.on()`, `config.shares.setFixedRules()` and `config.shares.unsetFixedRules()`.
+
+  - In `ConfigGen.js` library, it is now possible to use events in order to handle changes to the configuration object. Events are handled with function `config.on()`. The following is the list of supported events: `user-add`, `user-remove`, `user-change`, `user-change-password`, `group-add`, `group-remove`, `group-change`, `group-change-members`, `share-add`, `share-remove`, `share-change`, `share-change-access` and `share-change-path`.
+
+- Bug fixes:
+
+  - Some code cleanup and minor bugfixes.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.5.0 (2019-06-02 UTC)
 - New features:
