@@ -116,6 +116,10 @@ const ConfigGen = class {
         this["$on-user-remove"] = [];
         this["$on-user-change"] = [];
         this["$on-user-change-password"] = [];
+        this["$on-group-add"] = [];
+        this["$on-group-remove"] = [];
+        this["$on-group-change"] = [];
+        this["$on-group-change-members"] = [];
 
         // internal trigger function for events
         this["$trigger"] = (event, current, previous = undefined) => {
@@ -291,7 +295,12 @@ const ConfigGen = class {
                     throw "ERROR: GROUP ALREADY EXISTS";
                 }
 
-                this["$groups"].push({ "name": groupname, "members": members_safe });
+                const newGroup = { "name": groupname, "members": members_safe };
+                this["$groups"].push(newGroup);
+
+                // trigger event "group-add"
+                this["$trigger"]("group-add", JSON.parse(JSON.stringify(newGroup)));
+
                 return this;
             },
 
@@ -327,8 +336,15 @@ const ConfigGen = class {
                     }
                 });
 
+                let removedGroup = undefined;
                 if (index !== undefined && index >= 0){
+                    removedGroup = JSON.parse(JSON.stringify(this["$groups"][index]));
                     this["$groups"].splice(index, 1);
+                }
+
+                // trigger event "group-remove"
+                if (removedGroup !== undefined){
+                    this["$trigger"]("group-remove", removedGroup);
                 }
 
                 return this;
@@ -397,9 +413,17 @@ const ConfigGen = class {
                     throw "ERROR: MEMBERS MUST BE AN ARRAY";
                 }
 
+                const previous = this.groups.get(groupname);
                 members.forEach((member) => {
                     addMember(groupname, member);
                 });
+
+                // trigger event "group-change" and "group-change-members"
+                if (JSON.stringify(current) !== JSON.stringify(previous)){
+                    const current = this.groups.get(groupname);
+                    this["$trigger"]("group-change", current, previous);
+                    this["$trigger"]("group-change-members", current, previous);
+                }
 
                 return this;
             },
@@ -432,9 +456,17 @@ const ConfigGen = class {
                     throw "ERROR: MEMBERS MUST BE AN ARRAY";
                 }
 
+                const previous = this.groups.get(groupname);
                 members.forEach((member) => {
                     removeMember(groupname, member);
                 });
+
+                // trigger event "group-change" and "group-change-members"
+                if (JSON.stringify(current) !== JSON.stringify(previous)){
+                    const current = this.groups.get(groupname);
+                    this["$trigger"]("group-change", current, previous);
+                    this["$trigger"]("group-change-members", current, previous);
+                }
 
                 return this;
             }
