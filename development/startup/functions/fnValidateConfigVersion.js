@@ -47,7 +47,7 @@ function fnValidateConfigVersion(config){
     if (version === "1" || version === "1.0" || version === "1.1" || version === "1.2" || version === "1.3" || version === "1.4"){
         return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR OLDER`;
     }
-    if (version !== "1.5"){
+    if (version !== "1.5" && version !== "1.6"){
         return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR NEWER`;
     }
 
