@@ -120,6 +120,11 @@ const ConfigGen = class {
         this["$on-group-remove"] = [];
         this["$on-group-change"] = [];
         this["$on-group-change-members"] = [];
+        this["$on-share-add"] = [];
+        this["$on-share-remove"] = [];
+        this["$on-share-change"] = [];
+        this["$on-share-change-access"] = [];
+        this["$on-share-change-path"] = [];
 
         // internal trigger function for events
         this["$trigger"] = (event, current, previous = undefined) => {
@@ -150,11 +155,10 @@ const ConfigGen = class {
                     throw "ERROR: USER ALREADY EXISTS";
                 }
 
-                const newUser = { "name": username, "password": password };
-                this["$users"].push(newUser);
+                this["$users"].push({ "name": username, "password": password });
 
                 // trigger event "user-add"
-                this["$trigger"]("user-add", JSON.parse(JSON.stringify(newUser)));
+                this["$trigger"]("user-add", this.users.get(username));
 
                 return this;
             },
@@ -193,7 +197,7 @@ const ConfigGen = class {
 
                 let removedUser = undefined;
                 if (index !== undefined && index >= 0){
-                    removedUser = JSON.parse(JSON.stringify(this["$users"][index]));
+                    removedUser = this.users.get(username);
                     this["$users"].splice(index, 1);
                 }
 
@@ -258,13 +262,15 @@ const ConfigGen = class {
                     throw "ERROR: USER NOT FOUND";
                 }
 
-                const previous = JSON.parse(JSON.stringify(this["$users"][index]));
+                const previous = this.users.get(username);
                 this["$users"][index]["password"] = password;
-                const current = JSON.parse(JSON.stringify(this["$users"][index]));
 
                 // trigger event "user-change" and "user-change-password"
-                this["$trigger"]("user-change", current, previous);
-                this["$trigger"]("user-change-password", current, previous);
+                const current = this.users.get(username);
+                if (current["password"] !== previous["password"]){
+                    this["$trigger"]("user-change", current, previous);
+                    this["$trigger"]("user-change-password", current, previous);
+                }
 
                 return this;
             }
@@ -295,11 +301,10 @@ const ConfigGen = class {
                     throw "ERROR: GROUP ALREADY EXISTS";
                 }
 
-                const newGroup = { "name": groupname, "members": members_safe };
-                this["$groups"].push(newGroup);
+                this["$groups"].push({ "name": groupname, "members": members_safe });
 
                 // trigger event "group-add"
-                this["$trigger"]("group-add", JSON.parse(JSON.stringify(newGroup)));
+                this["$trigger"]("group-add", this.groups.get(groupname));
 
                 return this;
             },
@@ -338,7 +343,7 @@ const ConfigGen = class {
 
                 let removedGroup = undefined;
                 if (index !== undefined && index >= 0){
-                    removedGroup = JSON.parse(JSON.stringify(this["$groups"][index]));
+                    removedGroup = this.groups.get(groupname);
                     this["$groups"].splice(index, 1);
                 }
 
@@ -419,8 +424,8 @@ const ConfigGen = class {
                 });
 
                 // trigger event "group-change" and "group-change-members"
-                if (JSON.stringify(current) !== JSON.stringify(previous)){
-                    const current = this.groups.get(groupname);
+                const current = this.groups.get(groupname);
+                if (JSON.stringify(current["members"]) !== JSON.stringify(previous["members"])){
                     this["$trigger"]("group-change", current, previous);
                     this["$trigger"]("group-change-members", current, previous);
                 }
@@ -462,8 +467,8 @@ const ConfigGen = class {
                 });
 
                 // trigger event "group-change" and "group-change-members"
-                if (JSON.stringify(current) !== JSON.stringify(previous)){
-                    const current = this.groups.get(groupname);
+                const current = this.groups.get(groupname);
+                if (JSON.stringify(current["members"]) !== JSON.stringify(previous["members"])){
                     this["$trigger"]("group-change", current, previous);
                     this["$trigger"]("group-change-members", current, previous);
                 }
@@ -502,6 +507,10 @@ const ConfigGen = class {
                 }
 
                 this["$shares"].push({ "name": sharename, "path": path, "access": rules_safe });
+
+                // trigger event "share-add"
+                this["$trigger"]("share-add", this.shares.get(sharename));
+
                 return this;
             },
 
@@ -537,8 +546,15 @@ const ConfigGen = class {
                     }
                 });
 
+                let removedShare = undefined;
                 if (index !== undefined && index >= 0){
-                    this["$share"].splice(index, 1);
+                    removedShare = this.shares.get(sharename);
+                    this["$shares"].splice(index, 1);
+                }
+
+                // trigger event "share-remove"
+                if (removedShare !== undefined){
+                    this["$trigger"]("share-remove", removedShare);
                 }
 
                 return this;
@@ -605,9 +621,15 @@ const ConfigGen = class {
                     throw "ERROR: RULES MUST BE AN ARRAY";
                 }
 
+                const previous = this.shares.get(sharename);
                 rules.forEach((rule) => {
                     addRule(sharename, rule);
                 });
+
+                // trigger event "share-change" and "share-change-access"
+                const current = this.shares.get(sharename);
+                this["$trigger"]("share-change", current, previous);
+                this["$trigger"]("share-change-access", current, previous);
 
                 return this;
             },
@@ -640,9 +662,17 @@ const ConfigGen = class {
                     throw "ERROR: RULES MUST BE AN ARRAY";
                 }
 
+                const previous = this.shares.get(sharename);
                 rules.forEach((rule) => {
                     removeRule(sharename, rule);
                 });
+
+                // trigger event "share-change" and "share-change-access"
+                const current = this.shares.get(sharename);
+                if (JSON.stringify(current["access"]) !== JSON.stringify(previous["access"])){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-access", current, previous);
+                }
 
                 return this;
             },
@@ -693,8 +723,16 @@ const ConfigGen = class {
                     throw "ERROR: SHARE NOT FOUND";
                 }
 
+                const previous = this.shares.get(sharename);
                 if (this["$shares"][index]["access"].length > ruleIndex){
                     this["$shares"][index]["access"].splice(ruleIndex, 1);
+                }
+
+                // trigger event "share-change" and "share-change-access"
+                const current = this.shares.get(sharename);
+                if (JSON.stringify(current["access"]) !== JSON.stringify(previous["access"])){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-access", current, previous);
                 }
 
                 return this;
@@ -717,7 +755,15 @@ const ConfigGen = class {
                     throw "ERROR: SHARE NOT FOUND";
                 }
 
+                const previous = this.shares.get(sharename);
                 this["$shares"][index]["path"] = path;
+
+                // trigger event "share-change" and "share-change-path"
+                const current = this.shares.get(sharename);
+                if (current["path"] !== previous["path"]){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-path", current, previous);
+                }
 
                 return this;
             }
