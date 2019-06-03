@@ -45,6 +45,7 @@
     config.shares.removeAllRules()
     config.shares.setPath()
     config.shares.setFixedRules()
+    config.shares.unsetFixedRules()
 
 */
 
@@ -82,7 +83,7 @@ const fnHas = (obj, keys) => {
 // fnIsInteger()
 //   checks if a given Javascript object "input" is a valid integer
 const fnIsInteger = (input) => {
-    return ( input !== undefined && input !== NaN && input === parseInt(String(input), 10) );
+    return ( input !== undefined && input === parseInt(String(input), 10) && Number.isNaN(input) !== true );
 };
 
 // fnIsFunction()
@@ -181,11 +182,11 @@ const ConfigGen = class {
             // users.add()
             add: (username, password) => {
                 if (fnIsString(username) !== true || fnIsString(password) !== true){
-                    throw "ERROR: USERNAME AND PASSWORD MUST BE STRINGS";
+                    throw new Error("ERROR: USERNAME AND PASSWORD MUST BE STRINGS");
                 }
 
                 if (this.users.get().includes(username)){
-                    throw "ERROR: USER ALREADY EXISTS";
+                    throw new Error("ERROR: USER ALREADY EXISTS");
                 }
 
                 this["$users"].push({ "name": username, "password": password });
@@ -199,12 +200,12 @@ const ConfigGen = class {
             // users.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
-                    throw "ERROR: INPUT MUST BE AN ARRAY";
+                    throw new Error("ERROR: INPUT MUST BE AN ARRAY");
                 }
 
                 input.forEach((elem) => {
                     if (fnHas(elem, ["name", "password"]) !== true){
-                        throw "ERROR: INPUT IS NOT VALID";
+                        throw new Error("ERROR: INPUT IS NOT VALID");
                     }
                     this.users.add(elem["name"], elem["password"]);
                 });
@@ -262,7 +263,7 @@ const ConfigGen = class {
                 });
 
                 if (index === undefined){
-                    throw "ERROR: USER NOT FOUND";
+                    throw new Error("ERROR: USER NOT FOUND");
                 }
 
                 return JSON.parse(JSON.stringify(this["$users"][index]));
@@ -281,7 +282,7 @@ const ConfigGen = class {
             // users.setPassword()
             setPassword: (username, password) => {
                 if (fnIsString(password) !== true){
-                    throw "ERROR: PASSWORD MUST BE A STRING";
+                    throw new Error("ERROR: PASSWORD MUST BE A STRING");
                 }
 
                 let index = undefined;
@@ -292,7 +293,7 @@ const ConfigGen = class {
                 });
 
                 if (index === undefined){
-                    throw "ERROR: USER NOT FOUND";
+                    throw new Error("ERROR: USER NOT FOUND");
                 }
 
                 const previous = this.users.get(username);
@@ -315,23 +316,23 @@ const ConfigGen = class {
             // groups.add()
             add: (groupname, members) => {
                 if (fnIsString(groupname) !== true){
-                    throw "ERROR: GROUP NAME MUST BE A STRING";
+                    throw new Error("ERROR: GROUP NAME MUST BE A STRING");
                 }
 
                 if (fnIsArray(members) !== true){
-                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
+                    throw new Error("ERROR: MEMBERS MUST BE AN ARRAY");
                 }
 
                 const members_safe = [];
                 members.forEach((member) => {
                     if (fnIsString(member) !== true){
-                        throw "ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS";
+                        throw new Error("ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS");
                     }
                     members_safe.push(member);
                 });
 
                 if (this.groups.get().includes(groupname)){
-                    throw "ERROR: GROUP ALREADY EXISTS";
+                    throw new Error("ERROR: GROUP ALREADY EXISTS");
                 }
 
                 this["$groups"].push({ "name": groupname, "members": members_safe });
@@ -345,12 +346,12 @@ const ConfigGen = class {
             // groups.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
-                    throw "ERROR: INPUT MUST BE AN ARRAY";
+                    throw new Error("ERROR: INPUT MUST BE AN ARRAY");
                 }
 
                 input.forEach((elem) => {
                     if (fnHas(elem, ["name", "members"]) !== true){
-                        throw "ERROR: INPUT IS NOT VALID";
+                        throw new Error("ERROR: INPUT IS NOT VALID");
                     }
                     this.groups.add(elem["name"], elem["members"]);
                 });
@@ -408,7 +409,7 @@ const ConfigGen = class {
                 });
 
                 if (index === undefined){
-                    throw "ERROR: GROUP NOT FOUND";
+                    throw new Error("ERROR: GROUP NOT FOUND");
                 }
 
                 return JSON.parse(JSON.stringify(this["$groups"][index]));
@@ -428,7 +429,7 @@ const ConfigGen = class {
             addMembers: (groupname, members) => {
                 const addMember = (groupname, member) => {
                     if (fnIsString(member) !== true){
-                        throw "ERROR: MEMBER MUST BE A STRING";
+                        throw new Error("ERROR: MEMBER MUST BE A STRING");
                     }
 
                     let index = undefined;
@@ -439,7 +440,7 @@ const ConfigGen = class {
                     });
 
                     if (index === undefined){
-                        throw "ERROR: GROUP NOT FOUND";
+                        throw new Error("ERROR: GROUP NOT FOUND");
                     }
 
                     if (this["$groups"][index]["members"].includes(member) !== true){
@@ -448,7 +449,7 @@ const ConfigGen = class {
                 };
 
                 if (fnIsArray(members) !== true){
-                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
+                    throw new Error("ERROR: MEMBERS MUST BE AN ARRAY");
                 }
 
                 const previous = this.groups.get(groupname);
@@ -470,7 +471,7 @@ const ConfigGen = class {
             removeMembers: (groupname, members) => {
                 const removeMember = (groupname, member) => {
                     if (fnIsString(member) !== true){
-                        throw "ERROR: MEMBER MUST BE A STRING";
+                        throw new Error("ERROR: MEMBER MUST BE A STRING");
                     }
 
                     let index = undefined;
@@ -481,7 +482,7 @@ const ConfigGen = class {
                     });
 
                     if (index === undefined){
-                        throw "ERROR: GROUP NOT FOUND";
+                        throw new Error("ERROR: GROUP NOT FOUND");
                     }
 
                     const temp = this["$groups"][index]["members"];
@@ -491,7 +492,7 @@ const ConfigGen = class {
                 };
 
                 if (fnIsArray(members) !== true){
-                    throw "ERROR: MEMBERS MUST BE AN ARRAY";
+                    throw new Error("ERROR: MEMBERS MUST BE AN ARRAY");
                 }
 
                 const previous = this.groups.get(groupname);
@@ -516,27 +517,27 @@ const ConfigGen = class {
             // shares.add()
             add: (sharename, path, rules) => {
                 if (fnIsString(sharename) !== true){
-                    throw "ERROR: SHARE NAME MUST BE A STRING";
+                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
                 }
 
                 if (fnIsString(path) !== true){
-                    throw "ERROR: SHARE PATH MUST BE A STRING";
+                    throw new Error("ERROR: SHARE PATH MUST BE A STRING");
                 }
 
                 if (fnIsArray(rules) !== true){
-                    throw "ERROR: SHARE RULES MUST BE AN ARRAY";
+                    throw new Error("ERROR: SHARE RULES MUST BE AN ARRAY");
                 }
 
                 const rules_safe = [];
                 rules.forEach((rule) => {
                     if (fnIsString(rule) !== true){
-                        throw "ERROR: SHARE RULES MUST BE AN ARRAY OF STRINGS";
+                        throw new Error("ERROR: SHARE RULES MUST BE AN ARRAY OF STRINGS");
                     }
                     rules_safe.push(rule);
                 });
 
                 if (this.shares.get().includes(sharename)){
-                    throw "ERROR: SHARE ALREADY EXISTS";
+                    throw new Error("ERROR: SHARE ALREADY EXISTS");
                 }
 
                 this["$shares"].push({ "name": sharename, "path": path, "access": rules_safe });
@@ -550,12 +551,12 @@ const ConfigGen = class {
             // shares.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
-                    throw "ERROR: INPUT MUST BE AN ARRAY";
+                    throw new Error("ERROR: INPUT MUST BE AN ARRAY");
                 }
 
                 input.forEach((elem) => {
                     if (fnHas(elem, ["name", "path", "access"]) !== true){
-                        throw "ERROR: INPUT IS NOT VALID";
+                        throw new Error("ERROR: INPUT IS NOT VALID");
                     }
                     this.shares.add(elem["name"], elem["path"], elem["access"]);
                 });
@@ -613,7 +614,7 @@ const ConfigGen = class {
                 });
 
                 if (index === undefined){
-                    throw "ERROR: SHARE NOT FOUND";
+                    throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
                 return JSON.parse(JSON.stringify(this["$shares"][index]));
@@ -633,7 +634,7 @@ const ConfigGen = class {
             addRules: (sharename, rules) => {
                 const addRule = (sharename, rule) => {
                     if (fnIsString(rule) !== true){
-                        throw "ERROR: RULE MUST BE A STRING";
+                        throw new Error("ERROR: RULE MUST BE A STRING");
                     }
 
                     let index = undefined;
@@ -644,14 +645,14 @@ const ConfigGen = class {
                     });
 
                     if (index === undefined){
-                        throw "ERROR: SHARE NOT FOUND";
+                        throw new Error("ERROR: SHARE NOT FOUND");
                     }
 
                     this["$shares"][index]["access"].push(rule);
                 };
 
                 if (fnIsArray(rules) !== true){
-                    throw "ERROR: RULES MUST BE AN ARRAY";
+                    throw new Error("ERROR: RULES MUST BE AN ARRAY");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -671,7 +672,7 @@ const ConfigGen = class {
             removeRules: (sharename, rules) => {
                 const removeRule = (sharename, rule) => {
                     if (fnIsString(rule) !== true){
-                        throw "ERROR: RULE MUST BE A STRING";
+                        throw new Error("ERROR: RULE MUST BE A STRING");
                     }
 
                     let index = undefined;
@@ -682,7 +683,7 @@ const ConfigGen = class {
                     });
 
                     if (index === undefined){
-                        throw "ERROR: SHARE NOT FOUND";
+                        throw new Error("ERROR: SHARE NOT FOUND");
                     }
 
                     const temp = this["$shares"][index]["access"];
@@ -692,7 +693,7 @@ const ConfigGen = class {
                 };
 
                 if (fnIsArray(rules) !== true){
-                    throw "ERROR: RULES MUST BE AN ARRAY";
+                    throw new Error("ERROR: RULES MUST BE AN ARRAY");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -715,7 +716,7 @@ const ConfigGen = class {
                 const sharename = args[0];
 
                 if (this.shares.get().includes(sharename) !== true){
-                    throw "ERROR: SHARE NOT FOUND";
+                    throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
                 let rulesToDelete = undefined;
@@ -727,7 +728,7 @@ const ConfigGen = class {
                     rulesToDelete = args[1];
                 }
                 else {
-                    throw "ERROR: RULES MUST BE AN ARRAY";
+                    throw new Error("ERROR: RULES MUST BE AN ARRAY");
                 }
 
                 rulesToDelete.forEach((ruleToDelete) => {
@@ -742,7 +743,7 @@ const ConfigGen = class {
             // shares.removeRuleAt()
             removeRuleAt: (sharename, ruleIndex) => {
                 if (fnIsInteger(ruleIndex) !== true || ruleIndex < 0){
-                    throw "ERROR: RULE INDEX MUST BE A POSITIVE INTEGER";
+                    throw new Error("ERROR: RULE INDEX MUST BE A POSITIVE INTEGER");
                 }
 
                 let index = undefined;
@@ -753,7 +754,7 @@ const ConfigGen = class {
                 });
 
                 if (index === undefined){
-                    throw "ERROR: SHARE NOT FOUND";
+                    throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -774,7 +775,7 @@ const ConfigGen = class {
             // shares.setPath()
             setPath: (sharename, path) => {
                 if (fnIsString(path) !== true){
-                    throw "ERROR: PATH MUST BE A STRING";
+                    throw new Error("ERROR: PATH MUST BE A STRING");
                 }
 
                 let index = undefined;
@@ -785,7 +786,7 @@ const ConfigGen = class {
                 });
 
                 if (index === undefined){
-                    throw "ERROR: SHARE NOT FOUND";
+                    throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -813,7 +814,7 @@ const ConfigGen = class {
                     rules = args[1];
                 }
                 else {
-                    throw "ERROR: INVALID INPUT";
+                    throw new Error("ERROR: INVALID INPUT");
                 }
 
                 this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : JSON.parse(JSON.stringify(shares));
@@ -878,7 +879,7 @@ const ConfigGen = class {
             fs.writeFileSync(path, this.saveToJson());
         }
         catch (error){
-            throw "ERROR: CANNOT SAVE TO FILE";
+            throw new Error("ERROR: CANNOT SAVE TO FILE");
         }
 
         return this;
@@ -889,7 +890,7 @@ const ConfigGen = class {
         const result = {};
 
         if (fnIsString(this["$domain"]) !== true){
-            throw "ERROR: DOMAIN SECTION IS MISSING";
+            throw new Error("ERROR: DOMAIN SECTION IS MISSING");
         }
         result["domain"] = this["$domain"];
 
@@ -919,10 +920,10 @@ const ConfigGen = class {
     // on()
     on(event, cb){
         if (fnHas(this, `$on-${event}`) !== true){
-            throw "ERROR: INVALID EVENT";
+            throw new Error("ERROR: INVALID EVENT");
         }
         if (fnIsFunction(cb) !== true){
-            throw "ERROR: CALLBACK IS NOT A FUNCTION";
+            throw new Error("ERROR: CALLBACK IS NOT A FUNCTION");
         }
         this[`$on-${event}`].push(cb);
         return this;
@@ -939,7 +940,7 @@ const ConfigGen = class {
             return this;
         }
 
-        throw "ERROR: DOMAIN NAME MUST BE A STRING";
+        throw new Error("ERROR: DOMAIN NAME MUST BE A STRING");
     }
 
     // guest()
@@ -953,7 +954,7 @@ const ConfigGen = class {
             return this;
         }
 
-        throw "ERROR: GUEST MUST BE A STRING OR false";
+        throw new Error("ERROR: GUEST MUST BE A STRING OR false");
     }
 
     // unsetGuest()
@@ -973,7 +974,7 @@ const ConfigGen = class {
             return this;
         }
 
-        throw "ERROR: VERSION MUST BE A STRING";
+        throw new Error("ERROR: VERSION MUST BE A STRING");
     }
 
     // unsetVersion()
@@ -991,14 +992,14 @@ const ConfigGen = class {
         if (fnIsArray(input)){
             input.forEach((elem) => {
                 if (fnIsString(elem) !== true){
-                    throw "ERROR: GLOBAL MUST BE AN ARRAY OF STRINGS";
+                    throw new Error("ERROR: GLOBAL MUST BE AN ARRAY OF STRINGS");
                 }
             });
             this["$global"] = JSON.parse(JSON.stringify(input));
             return this;
         }
 
-        throw "ERROR: GLOBAL MUST BE AN ARRAY";
+        throw new Error("ERROR: GLOBAL MUST BE AN ARRAY");
     }
 
     // unsetGlobal()
