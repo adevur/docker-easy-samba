@@ -44,6 +44,7 @@
     config.shares.removeRuleAt()
     config.shares.removeAllRules()
     config.shares.setPath()
+    config.shares.setFixedRules()
 
 */
 
@@ -90,6 +91,23 @@ const fnIsFunction = (obj) => {
     return (obj && {}.toString.call(obj) === "[object Function]");
 };
 
+// fnArrayEndsWith()
+//   checks if a given array "obj" ends with elements "elems"
+const fnArrayEndsWith = (obj, elems) => {
+    if (elems.length === 0){
+        return true;
+    }
+    if (obj.length < elems.length){
+        return false;
+    }
+    const end = obj.slice(obj.length - elems.length, obj.length);
+    const check = end.every((e, i) => { return (e === elems[i]); });
+    if (check !== true){
+        return false;
+    }
+    return true;
+};
+
 
 
 // ConfigGen
@@ -100,7 +118,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
-        this.easysambaVersion = "1.5";
+        this.easysambaVersion = "1.6";
 
         // internal variables used by an instance of ConfigGen
         this["$domain"] = undefined;
@@ -141,6 +159,21 @@ const ConfigGen = class {
                 }
             });
         };
+
+        // internal variable for config.shares.setFixedRules() function
+        this["$fixedrules"] = { "shares": undefined, "rules": [] };
+
+        // event handlers for config.shares.setFixedRules() function
+        const fixedRulesHandler = (share) => {
+            if (this["$fixedrules"]["shares"] !== undefined && this["$fixedrules"]["shares"].includes(share["name"]) !== true){
+                return;
+            }
+            if (fnArrayEndsWith(share["access"], this["$fixedrules"]["rules"]) !== true){
+                this.shares.addRules(share["name"], this["$fixedrules"]["rules"]);
+            }
+        };
+        this.on("share-change-access", fixedRulesHandler);
+        this.on("share-add", fixedRulesHandler);
 
         // "users" namespace
         //   where functions like "config.users.add(...)" are located
@@ -765,6 +798,33 @@ const ConfigGen = class {
                     this["$trigger"]("share-change-path", current, previous);
                 }
 
+                return this;
+            },
+
+            // shares.setFixedRules()
+            setFixedRules: (...args) => {
+                let shares = undefined;
+                let rules = undefined;
+                if (args.length === 1 && fnIsArray(args[0]) && args[0].every(fnIsString)){
+                    rules = args[0];
+                }
+                else if (args.length === 2 && fnIsArray(args[0]) && args[0].every(fnIsString) && fnIsArray(args[1]) && args[1].every(fnIsString)){
+                    shares = args[0];
+                    rules = args[1];
+                }
+                else {
+                    throw "ERROR: INVALID INPUT";
+                }
+
+                this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : JSON.parse(JSON.stringify(shares));
+                this["$fixedrules"]["rules"] = JSON.parse(JSON.stringify(rules));
+
+                return this;
+            },
+
+            // shares.unsetFixedRules()
+            unsetFixedRules: () => {
+                this.shares.setFixedRules([]);
                 return this;
             }
         };
