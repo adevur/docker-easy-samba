@@ -1,47 +1,49 @@
 /*
     LIST OF METHODS
 
-    [static] fromObject()
-    [static] fromJson()
+    [static] ConfigGen.fromObject()
+    [static] ConfigGen.fromJson()
 
-    [property] easysambaVersion
+    [property] config.easysambaVersion
 
-    saveToJson()
-    saveToFile()
+    config.saveToJson()
+    config.saveToFile()
 
-    domain()
-    guest()
-    unsetGuest()
-    version()
-    unsetVersion()
-    global()
-    unsetGlobal()
+    config.on()
 
-    users.add()
-    users.addArray()
-    users.remove()
-    users.get()
-    users.getAll()
-    users.setPassword()
+    config.domain()
+    config.guest()
+    config.unsetGuest()
+    config.version()
+    config.unsetVersion()
+    config.global()
+    config.unsetGlobal()
 
-    groups.add()
-    groups.addArray()
-    groups.remove()
-    groups.get()
-    groups.getAll()
-    groups.addMembers()
-    groups.removeMembers()
+    config.users.add()
+    config.users.addArray()
+    config.users.remove()
+    config.users.get()
+    config.users.getAll()
+    config.users.setPassword()
 
-    shares.add()
-    shares.addArray()
-    shares.remove()
-    shares.get()
-    shares.getAll()
-    shares.addRules()
-    shares.removeRules()
-    shares.removeRuleAt()
-    shares.removeAllRules()
-    shares.setPath()
+    config.groups.add()
+    config.groups.addArray()
+    config.groups.remove()
+    config.groups.get()
+    config.groups.getAll()
+    config.groups.addMembers()
+    config.groups.removeMembers()
+
+    config.shares.add()
+    config.shares.addArray()
+    config.shares.remove()
+    config.shares.get()
+    config.shares.getAll()
+    config.shares.addRules()
+    config.shares.removeRules()
+    config.shares.removeRuleAt()
+    config.shares.removeAllRules()
+    config.shares.setPath()
 
 */
 
@@ -82,6 +84,12 @@ const fnIsInteger = (input) => {
     return ( input !== undefined && input !== NaN && input === parseInt(String(input), 10) );
 };
 
+// fnIsFunction()
+//   checks if a given Javascript object "obj" is a valid Javascript function
+const fnIsFunction = (obj) => {
+    return (obj && {}.toString.call(obj) === "[object Function]");
+};
+
 
 
 // ConfigGen
@@ -103,6 +111,28 @@ const ConfigGen = class {
         this["$groups"] = [];
         this["$shares"] = [];
 
+        // events
+        this["$on-user-add"] = [];
+        this["$on-user-remove"] = [];
+        this["$on-user-change"] = [];
+        this["$on-user-change-password"] = [];
+
+        // internal trigger function for events
+        this["$trigger"] = (event, current, previous = undefined) => {
+            if (fnHas(this, `$on-${event}`) !== true){
+                return;
+            }
+            const cbs = this[`$on-${event}`];
+            cbs.forEach((cb) => {
+                if (previous !== undefined){
+                    cb(current, previous);
+                }
+                else {
+                    cb(current);
+                }
+            });
+        };
+
         // "users" namespace
         //   where functions like "config.users.add(...)" are located
         this.users = {
@@ -116,7 +146,12 @@ const ConfigGen = class {
                     throw "ERROR: USER ALREADY EXISTS";
                 }
 
-                this["$users"].push({ "name": username, "password": password });
+                const newUser = { "name": username, "password": password };
+                this["$users"].push(newUser);
+
+                // trigger event "user-add"
+                this["$trigger"]("user-add", JSON.parse(JSON.stringify(newUser)));
+
                 return this;
             },
 
@@ -152,22 +187,31 @@ const ConfigGen = class {
                     }
                 });
 
+                let removedUser = undefined;
                 if (index !== undefined && index >= 0){
+                    removedUser = JSON.parse(JSON.stringify(this["$users"][index]));
                     this["$users"].splice(index, 1);
+                }
+
+                // trigger event "user-remove"
+                if (removedUser !== undefined){
+                    this["$trigger"]("user-remove", removedUser);
                 }
 
                 return this;
             },
 
             // users.get()
-            get: (username = undefined) => {
-                if (arguments.length < 1){
+            get: (...args) => {
+                if (args.length < 1){
                     const result = [];
                     this["$users"].forEach((user) => {
                         result.push(user["name"]);
                     });
                     return result;
                 }
+
+                const username = args[0];
 
                 let index = undefined;
                 this["$users"].forEach((user, i) => {
@@ -210,7 +254,13 @@ const ConfigGen = class {
                     throw "ERROR: USER NOT FOUND";
                 }
 
+                const previous = JSON.parse(JSON.stringify(this["$users"][index]));
                 this["$users"][index]["password"] = password;
+                const current = JSON.parse(JSON.stringify(this["$users"][index]));
+
+                // trigger event "user-change" and "user-change-password"
+                this["$trigger"]("user-change", current, previous);
+                this["$trigger"]("user-change-password", current, previous);
 
                 return this;
             }
@@ -285,14 +335,16 @@ const ConfigGen = class {
             },
 
             // groups.get()
-            get: (groupname = undefined) => {
-                if (arguments.length < 1){
+            get: (...args) => {
+                if (args.length < 1){
                     const result = [];
                     this["$groups"].forEach((group) => {
                         result.push(group["name"]);
                     });
                     return result;
                 }
+
+                const groupname = args[0];
 
                 let index = undefined;
                 this["$groups"].forEach((group, i) => {
@@ -461,14 +513,16 @@ const ConfigGen = class {
             },
 
             // shares.get()
-            get: (sharename = undefined) => {
-                if (arguments.length < 1){
+            get: (...args) => {
+                if (args.length < 1){
                     const result = [];
                     this["$shares"].forEach((share) => {
                         result.push(share["name"]);
                     });
                     return result;
                 }
+
+                const sharename = args[0];
 
                 let index = undefined;
                 this["$shares"].forEach((share, i) => {
@@ -562,18 +616,20 @@ const ConfigGen = class {
             },
 
             // shares.removeAllRules()
-            removeAllRules: (sharename, rules = undefined) => {
+            removeAllRules: (...args) => {
+                const sharename = args[0];
+
                 if (this.shares.get().includes(sharename) !== true){
                     throw "ERROR: SHARE NOT FOUND";
                 }
 
                 let rulesToDelete = undefined;
 
-                if (arguments.length === 1){
+                if (args.length === 1){
                     rulesToDelete = this.shares.get(sharename)["access"];
                 }
-                else if (arguments.length > 1 && fnIsArray(rules)) {
-                    rulesToDelete = rules;
+                else if (args.length > 1 && fnIsArray(args[1])) {
+                    rulesToDelete = args[1];
                 }
                 else {
                     throw "ERROR: RULES MUST BE AN ARRAY";
@@ -720,6 +776,18 @@ const ConfigGen = class {
         result["shares"] = this["$shares"];
 
         return JSON.stringify(result);
+    }
+
+    // on()
+    on(event, cb){
+        if (fnHas(this, `$on-${event}`) !== true){
+            throw "ERROR: INVALID EVENT";
+        }
+        if (fnIsFunction(cb) !== true){
+            throw "ERROR: CALLBACK IS NOT A FUNCTION";
+        }
+        this[`$on-${event}`].push(cb);
+        return this;
     }
 
     // domain()
