@@ -288,6 +288,8 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`config.unsetVersion()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configunsetversion-method)
 
+- [`config.on()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configon-method)
+
 - [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetojson-method)
 
 - [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
@@ -343,6 +345,10 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveallrules-method)
 
     - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetpath-method)
+
+    - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
+
+    - [`config.shares.unsetFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesunsetfixedrules-method)
 
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
@@ -433,8 +439,6 @@ config.domain("WORKGROUP");
 console.log( config.domain() ); // WORKGROUP
 ```
 
-> NOTE: `config.domain(undefined)` is equivalent to `config.domain()`.
-
 ### `config.guest()` method
 This is a method that can be used in order to set the `guest` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `guest` section, if used without parameters.
 
@@ -510,8 +514,6 @@ console.log( config.global() ); // ["a", "b"]
 config.unsetGlobal();
 ```
 
-> NOTE: `config.global(undefined)` is equivalent to `config.global()`.
-
 ### `config.unsetGlobal()` method
 This is a method that can be used in order to remove `global` section from an instance of `ConfigGen`.
 
@@ -559,8 +561,6 @@ console.log( config.version() ); // "1.3"
 // since "version" section is optional, you can also remove it this way:
 config.unsetVersion();
 ```
-
-> NOTE: `config.version(undefined)` is equivalent to `config.version()`.
 
 ### `config.unsetVersion()` method
 This is a method that can be used in order to remove `version` section from an instance of `ConfigGen`.
@@ -683,8 +683,6 @@ console.log( config.users.get() ); // ["user1", "user2"]
 
 console.log( config.users.get("user1")["password"] ); // 123456
 ```
-
-> NOTE: `config.users.get(undefined)` is equivalent to `config.users.get()`.
 
 ### `config.users.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all users from the `users` section of an instance of `ConfigGen`.
@@ -828,8 +826,6 @@ console.log( config.groups.get() ); // ["group1", "group2"]
 
 console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 ```
-
-> NOTE: `config.groups.get(undefined)` is equivalent to `config.groups.get()`.
 
 ### `config.groups.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all groups from the `groups` section of an instance of `ConfigGen`.
@@ -1072,13 +1068,13 @@ console.log( config.shares.get("public")["access"] ); // []
 // NOTE: config.shares.removeRules() will only remove the first occurency of each one of the specified access rules
 // EXAMPLE:
 config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
-config.shares.removeRules("test", ["rw:user1", "ro:user2"]);
-console.log( config.shares.get("test")["access"] ); // ["rw:user1"]
+config.shares.removeRules("test", ["rw:user1"]);
+console.log( config.shares.get("test")["access"] ); // ["ro:user2", "rw:user1"]
 
 // HINT: if you want to delete all the occurrencies of the specified access rules, use config.shares.removeAllRules() instead:
 config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
-config.shares.removeAllRules("test", ["rw:user1", "ro:user2"]);
-console.log( config.shares.get("test")["access"] ); // []
+config.shares.removeAllRules("test", ["rw:user1"]);
+console.log( config.shares.get("test")["access"] ); // ["ro:user2"]
 ```
 
 ### `config.shares.removeRuleAt()` method
@@ -1140,8 +1136,6 @@ config.shares.removeAllRules("folder1");
 
 console.log( config.shares.get("folder1")["access"] ); // []
 ```
-
-> NOTE: `config.shares.removeAllRules(sharename, undefined)` is equivalent to `config.shares.removeAllRules(sharename)`.
 
 ### `config.shares.setPath()` method
 This is a method that can be used in order to change the path of an existing share of the `shares` section of an instance of `ConfigGen`.
