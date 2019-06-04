@@ -587,6 +587,84 @@ config.unsetVersion();
 console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "shares": []}
 ```
 
+### `config.on()` method
+This method can be used to register handlers for `ConfigGen` events.
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.6`.
+
+- PARAMETERS: `event` and `cb`
+
+- PARAMETER `event`: it's a string that specifies the event you want to handle
+
+- PARAMETER `cb`: it's the callback function to call every time the specified event is triggered; parameters `current` and `previous` are usually passed to this callback, depending on the event
+
+List of supported events:
+
+- `user-add`: triggered when a new user is added to `config`. Its parameter is `current` (that is a copy of the newly added user).
+
+- `user-remove`: triggered when a user gets removed from `config`. Its parameter is `previous` (that is a copy of the removed user).
+
+- `user-change`: triggered when a user is modified. This event gets triggered together with `user-change-password` event. Its parameters are `current` (that is a copy of the user after the change) and `previous` (that is a copy of the user before the change).
+
+- `user-change-password`: triggered when a user's password is modified. This event gets triggered together with `user-change` event. Its parameters are `current` (that is a copy of the user after the change) and `previous` (that is a copy of the user before the change).
+
+- `group-add`: triggered when a new group is added to `config`. Its parameter is `current` (that is a copy of the newly added group).
+
+- `group-remove`: triggered when a group gets removed from `config`. Its parameter is `previous` (that is a copy of the removed group).
+
+- `group-change`: triggered when a group is modified. This event gets triggered together with `group-change-members` event. Its parameters are `current` (that is a copy of the group after the change) and `previous` (that is a copy of the group before the change).
+
+- `group-change-members`: triggered when a member is added or removed from a group. This event gets triggered together with `group-change` event. Its parameters are `current` (that is a copy of the group after the change) and `previous` (that is a copy of the group before the change).
+
+- `share-add`: triggered when a new share is added to `config`. Its parameter is `current` (that is a copy of the newly added share).
+
+- `share-remove`: triggered when a share gets removed from `config`. Its parameter is `previous` (that is a copy of the removed share).
+
+- `share-change`: triggered when a share is modified. This event gets triggered together with `share-change-access` and `share-change-path` events. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
+
+- `share-change-access`: triggered when an access rule is added or removed from a share. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
+
+- `share-change-path`: triggered when a share's path is modified. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+// let's register some handlers
+
+config.on("user-add", (current) => {
+    console.log(`Added new user '${current["name"]}' with password '${current["password"]}'.`);
+});
+
+config.on("user-change-password", (current, previous) => {
+    console.log(`Changed password of user '${current["name"]}' from '${previous["password"]}' to '${current["password"]}'.`);
+});
+
+config.on("user-remove", (previous) => {
+    console.log(`Removed user '${previous["name"]}'.`);
+});
+
+config.on("share-change-access", (current, previous) => {
+    console.log(`Changed access rules of share '${current["name"]}' from`, previous["access"], `to`, current["access"]);
+});
+
+// let's trigger some events
+
+config.users.add("user1", "123456"); // OUTPUT: Added new user 'user1' with password '123456'.
+
+config.users.setPassword("user1", "aaa"); // OUTPUT: Changed password of user 'user1' from '123456' to 'aaa'.
+
+config.users.setPassword("user1", "aaa"); // this will not trigger "user-change-password" event (nor "user-change" event), since password has not really changed
+
+config.users.remove("user1"); // OUTPUT: Removed user 'user1'.
+
+config.shares.add("folder1", "/share/folder1", ["rw:user1", "ro:user2"]); // no output because we didn't register a handler for "share-add" event
+
+config.shares.addRules("folder1", ["no:user3"]); // OUTPUT: Changed access rules of share 'folder1' from ["rw:user1", "ro:user2"] to ["rw:user1", "ro:user2", "no:user3"]
+```
+
 ### `config.users.add()` method
 This is a method that can be used in order to add a user to the `users` section of an instance of `ConfigGen`.
 
