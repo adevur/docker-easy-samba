@@ -665,6 +665,46 @@ config.shares.add("folder1", "/share/folder1", ["rw:user1", "ro:user2"]); // no 
 config.shares.addRules("folder1", ["no:user3"]); // OUTPUT: Changed access rules of share 'folder1' from ["rw:user1", "ro:user2"] to ["rw:user1", "ro:user2", "no:user3"]
 ```
 
+### `config.saveToJson()` method
+This method can be used to generate a JSON string from an instance of `ConfigGen`.
+
+- PARAMETERS: N/A
+
+- OUTPUT: this method returns a string in JSON format
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.domain("WORKGROUP");
+config.users.add("user1", "123456");
+config.shares.add("user1", "/share/user1", ["rw:user1"]);
+
+console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [{ "name": "user1", "password": "123456" }], "shares": [{ "name": "user1", "path": "/share/user1", "access": ["rw:user1"] }]}
+```
+
+### `config.saveToFile()` method
+This method can be used to save an instance of `ConfigGen` to a file.
+
+- PARAMETERS: `path`
+
+- PARAMETER `path`: the path where the file will be written
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.domain("WORKGROUP");
+config.users.add("user1", "123456");
+config.shares.add("user1", "/share/user1", ["rw:user1"]);
+
+config.saveToFile("./config.json");
+```
+
 ### `config.users.add()` method
 This is a method that can be used in order to add a user to the `users` section of an instance of `ConfigGen`.
 
