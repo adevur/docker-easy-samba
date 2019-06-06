@@ -1279,6 +1279,98 @@ config.shares.setPath("folder1", "/share/new-path");
 console.log( config.shares.get("folder1")["path"] ); // /share/new-path
 ```
 
+### `config.shares.setFixedRules()` method
+This method can be used to set specific access rules to be always added at the end of the specified shares. This will ensure that these shares will always have some fixed permissions on them.
+
+Fixed rules are a global setting; therefore, every time you call `config.shares.setFixedRules()` function, you are overwriting global fixed rules settings.
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.6`.
+
+- ARGUMENTS: `shares` (optional) and `rules`
+
+  - PARAMETER `shares`: it's an array which contains the name of the shares that the specified fixed rules apply to; if this parameter is missing, it means "all the existing and future-created shares"
+
+  - PARAMETER `rules`: it's an array which contains the access rules that the specified shares will always have
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+// let's create a new share "folder1" and set its rules to ["rw:user1"]
+config.shares.add("folder1", "/share/folder1", ["rw:user1"]);
+console.log( config.shares.get("folder1")["access"] ); // ["rw:user1"]
+
+// we want that share "folder1" will always be readable and writable by user "admin"
+config.shares.setFixedRules(["folder1"], ["rw:admin"]);
+
+// let's check access rules of "folder1"
+console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin"]
+
+// now let's add access rule "no:admin" to "folder1"
+config.shares.addRules("folder1", ["no:admin"]);
+
+// user "admin" will still be able to read and write
+console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin", "no:admin", "rw:admin"]
+
+// now let's modify fixed rules, applying them to all shares (this is done by not passing a "shares" parameter)
+config.shares.setFixedRules(["rw:admin"]);
+
+// let's create a new share "folder2"
+config.shares.add("folder2", "/share/folder2", ["ro:user2"]);
+
+// new share "folder2" is readable and writable by user "admin"
+console.log( config.shares.get("folder2")["access"] ); // ["ro:user2", "rw:admin"]
+
+// if we want to disable fixed rules completely, we use config.shares.unsetFixedRules()
+config.shares.unsetFixedRules(); // this is equivalent to config.shares.setFixedRules([])
+
+// next time we modify a share (or we create a new one), fixed rules aren't going to be applied anymore
+config.shares.add("folder3", "/share/folder3", ["ro:user3"]);
+console.log( config.shares.get("folder3")["access"] ); // ["ro:user3"]
+```
+
+### `config.shares.unsetFixedRules()` method
+This method can be used to remove fixed access rules settings.
+
+See also [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method).
+
+> NOTE: this method has been introduced in `ConfigGen.js` version `1.6`.
+
+- ARGUMENTS: N/A
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+// let's set that all shares will always be readable and writable by user "admin"
+config.shares.setFixedRules(["rw:admin"]);
+
+// let's create a new share "folder1"
+config.shares.add("folder1", "/share/folder1", ["rw:user1"]);
+
+// "folder1" is automatically readable and writable by user "admin"
+console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin"]
+
+// now let's remove fixed rules
+config.shares.unsetFixedRules();
+
+// let's create another share, called "folder2"
+config.shares.add("folder2", "/share/folder2", ["rw:user2"]);
+
+// "folder2" is not anymore automatically readable and writable by user "admin"
+console.log( config.shares.get("folder2")["access"] ); // ["rw:user2"]
+
+// NOTE: old fixed rules will stay, and won't be removed
+console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin"]
+
+// CURIOSITY: config.shares.unsetFixedRules() is equivalent to:
+config.shares.setFixedRules([]);
+```
+
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
 
