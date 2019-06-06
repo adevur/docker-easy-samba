@@ -353,9 +353,9 @@ This is a list of all available methods of `ConfigGen.js` library:
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
 
-- PARAMETERS: `input`
+- ARGUMENTS: `input`
 
-- PARAMETER `input`: a string that contains the configuration file in JSON format
+  - PARAMETER `input`: a string that contains the configuration file in JSON format
 
 - OUTPUT: an instance of ConfigGen
 
@@ -376,9 +376,9 @@ config.saveToFile("./new-config.json");
 ### `ConfigGen.fromObject()` static method
 This is a static method that can be used in order to import an existing raw configuration object, that can be later modified and re-saved.
 
-- PARAMETERS: `input`
+- ARGUMENTS: `input`
 
-- PARAMETER `input`: a Javascript object that contains an `easy-samba` configuration
+  - PARAMETER `input`: a Javascript object that contains an `easy-samba` configuration
 
 - OUTPUT: an instance of ConfigGen
 
@@ -422,9 +422,9 @@ This is a method that can be used in order to set the `domain` section of an ins
 
 > NOTE: setting a value for `domain` is mandatory in order to later generate a configuration file.
 
-- PARAMETERS: `input` (optional)
+- ARGUMENTS: `input` (optional)
 
-- PARAMETER `input`: a string that contains the `domain` name to set
+  - PARAMETER `input`: a string that contains the `domain` name to set
 
 - OUTPUT: in case no parameters are passed, it returns the current value of `domain`
 
@@ -444,9 +444,9 @@ This is a method that can be used in order to set the `guest` section of an inst
 
 > NOTE: since `easy-samba` version `1.4`, `guest` section is optional.
 
-- PARAMETERS: `input` (optional)
+- ARGUMENTS: `input` (optional)
 
-- PARAMETER `input`: it can be either `false` or a string that contains the `guest` value to set
+  - PARAMETER `input`: it can be either `false` or a string that contains the `guest` value to set
 
 - OUTPUT: in case no parameters are passed, it returns the current value of `guest`
 
@@ -471,7 +471,7 @@ This is a method that can be used in order to remove `guest` section from an ins
 
 > NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
 
-PARAMETERS: N/A
+- ARGUMENTS: N/A
 
 EXAMPLE:
 ```js
@@ -494,9 +494,9 @@ console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "sha
 ### `config.global()` method
 This is a method that can be used in order to set the `global` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `global` section, if used without parameters.
 
-- PARAMETERS: `input` (optional)
+- ARGUMENTS: `input` (optional)
 
-- PARAMETER `input`: it is a Javascript array of strings that contains the `global` value to set
+  - PARAMETER `input`: it is a Javascript array of strings that contains the `global` value to set
 
 - OUTPUT: in case no parameters are passed, it returns the current value of `global`
 
@@ -519,7 +519,7 @@ This is a method that can be used in order to remove `global` section from an in
 
 > NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
 
-PARAMETERS: N/A
+- ARGUMENTS: N/A
 
 EXAMPLE:
 ```js
@@ -542,9 +542,9 @@ console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "sha
 ### `config.version()` method
 This is a method that can be used in order to set the `version` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `version` section, if used without parameters.
 
-- PARAMETERS: `input` (optional)
+- ARGUMENTS: `input` (optional)
 
-- PARAMETER `input`: it is a string that contains the `version` value to set
+  - PARAMETER `input`: it is a string that contains the `version` value to set
 
 - OUTPUT: in case no parameters are passed, it returns the current value of `version`
 
@@ -567,7 +567,7 @@ This is a method that can be used in order to remove `version` section from an i
 
 > NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
 
-PARAMETERS: N/A
+- ARGUMENTS: N/A
 
 EXAMPLE:
 ```js
@@ -592,11 +592,11 @@ This method can be used to register handlers for `ConfigGen` events.
 
 > NOTE: this method has been introduced in `ConfigGen.js` version `1.6`.
 
-- PARAMETERS: `event` and `cb`
+- ARGUMENTS: `event` and `cb`
 
-- PARAMETER `event`: it's a string that specifies the event you want to handle
+  - PARAMETER `event`: it's a string that specifies the event you want to handle
 
-- PARAMETER `cb`: it's the callback function to call every time the specified event is triggered; parameters `current` and `previous` are usually passed to this callback, depending on the event
+  - PARAMETER `cb`: it's the callback function to call every time the specified event is triggered; parameters `current` and `previous` are usually passed to this callback, depending on the event
 
 List of supported events:
 
@@ -668,7 +668,7 @@ config.shares.addRules("folder1", ["no:user3"]); // OUTPUT: Changed access rules
 ### `config.saveToJson()` method
 This method can be used to generate a JSON string from an instance of `ConfigGen`.
 
-- PARAMETERS: N/A
+- ARGUMENTS: N/A
 
 - OUTPUT: this method returns a string in JSON format
 
@@ -688,9 +688,9 @@ console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [{ "name
 ### `config.saveToFile()` method
 This method can be used to save an instance of `ConfigGen` to a file.
 
-- PARAMETERS: `path`
+- ARGUMENTS: `path`
 
-- PARAMETER `path`: the path where the file will be written
+  - PARAMETER `path`: the path where the file will be written
 
 EXAMPLE:
 ```js
@@ -708,11 +708,11 @@ config.saveToFile("./config.json");
 ### `config.users.add()` method
 This is a method that can be used in order to add a user to the `users` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `username` and `password`
+- ARGUMENTS: `username` and `password`
 
-- PARAMETER `username`: it is a string that contains the username of the new user
+  - PARAMETER `username`: it is a string that contains the username of the new user
 
-- PARAMETER `password`: it is a string that contains the password of the new user
+  - PARAMETER `password`: it is a string that contains the password of the new user
 
 EXAMPLE:
 ```js
@@ -726,9 +726,9 @@ config.users.add("user1", "123456");
 ### `config.users.addArray()` method
 This is a method that can be used in order to add one or more users to the `users` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `input`
+- ARGUMENTS: `input`
 
-- PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "user1", "password": "123456" }`
+  - PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "user1", "password": "123456" }`
 
 EXAMPLE:
 ```js
@@ -748,9 +748,9 @@ config.users.add("user2", "aaabbb");
 ### `config.users.remove()` method
 This is a method that can be used in order to remove one or more users from the `users` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `username`
+- ARGUMENTS: `username`
 
-- PARAMETER `username`: it is a string that contains the username of the user to remove, or it can also be an array of strings (in which every element is a username to remove)
+  - PARAMETER `username`: it is a string that contains the username of the user to remove, or it can also be an array of strings (in which every element is a username to remove)
 
 > NOTE: parameter `username` can be an array of strings only since version `1.5` of `ConfigGen.js` library.
 
@@ -780,9 +780,9 @@ console.log( config.users.get() ); // []
 ### `config.users.get()` method
 This is a method that can be used in order to retrieve the list of all users from the `users` section of an instance of `ConfigGen`, or it can be used in order to retrieve information about a specific user.
 
-- PARAMETERS: `username` (optional)
+- ARGUMENTS: `username` (optional)
 
-- PARAMETER `username`: it is a string that contains the username of the user to retrieve information about
+  - PARAMETER `username`: it is a string that contains the username of the user to retrieve information about
 
 - OUTPUT: in case no parameters are passed, it returns an array with all the usernames of the `users` section; in case `username` parameter is passed, it returns a Javascript object like this: `{ "name": "user1", "password": "123456" }`
 
@@ -805,7 +805,7 @@ console.log( config.users.get("user1")["password"] ); // 123456
 ### `config.users.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all users from the `users` section of an instance of `ConfigGen`.
 
-- PARAMETERS: N/A
+- ARGUMENTS: N/A
 
 - OUTPUT: it returns an array of Javascript objects; every element of the array looks like this: `{ "name": "user1", "password": "123456" }`
 
@@ -826,11 +826,11 @@ console.log( config.users.getAll() ); // [{ "name": "user1", "password": "123456
 ### `config.users.setPassword()` method
 This is a method that can be used in order to change the password of an existing user of the `users` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `username` and `password`
+- ARGUMENTS: `username` and `password`
 
-- PARAMETER `username`: it is a string that contains the username of the user
+  - PARAMETER `username`: it is a string that contains the username of the user
 
-- PARAMETER `password`: it is a string that contains the new password of the specified user
+  - PARAMETER `password`: it is a string that contains the new password of the specified user
 
 EXAMPLE:
 ```js
@@ -850,11 +850,11 @@ console.log( config.users.get("user1")["password"] ); // aaabbb
 ### `config.groups.add()` method
 This is a method that can be used in order to add a group to the `groups` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `groupname` and `members`
+- ARGUMENTS: `groupname` and `members`
 
-- PARAMETER `groupname`: it is a string that contains the name of the new group
+  - PARAMETER `groupname`: it is a string that contains the name of the new group
 
-- PARAMETER `members`: it is an array of strings that contains the list of members of the group
+  - PARAMETER `members`: it is an array of strings that contains the list of members of the group
 
 EXAMPLE:
 ```js
@@ -869,9 +869,9 @@ config.groups.add("group2", ["group1", "user3"]);
 ### `config.groups.addArray()` method
 This is a method that can be used in order to add one or more groups to the `groups` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `input`
+- ARGUMENTS: `input`
 
-- PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "group1", "users": ["user1", "user2"] }`
+  - PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "group1", "users": ["user1", "user2"] }`
 
 EXAMPLE:
 ```js
@@ -891,9 +891,9 @@ config.groups.add("group2", ["group1", "user3"]);
 ### `config.groups.remove()` method
 This is a method that can be used in order to remove one or more groups from the `groups` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `groupname`
+- ARGUMENTS: `groupname`
 
-- PARAMETER `groupname`: it is a string that contains the name of the group to remove, or it can also be an array of strings (in which every element is the name of a group to remove)
+  - PARAMETER `groupname`: it is a string that contains the name of the group to remove, or it can also be an array of strings (in which every element is the name of a group to remove)
 
 > NOTE: parameter `groupname` can be an array of strings only since version `1.5` of `ConfigGen.js` library.
 
@@ -923,9 +923,9 @@ console.log( config.groups.get() ); // []
 ### `config.groups.get()` method
 This is a method that can be used in order to retrieve the list of all groups from the `groups` section of an instance of `ConfigGen`, or it can be used in order to retrieve information about a specific group.
 
-- PARAMETERS: `groupname` (optional)
+- ARGUMENTS: `groupname` (optional)
 
-- PARAMETER `groupname`: it is a string that contains the name of the group to retrieve information about
+  - PARAMETER `groupname`: it is a string that contains the name of the group to retrieve information about
 
 - OUTPUT: in case no parameters are passed, it returns an array with all the group names of the `groups` section; in case `groupname` parameter is passed, it returns a Javascript object like this: `{ "name": "group1", "users": ["user1", "user2"] }`
 
@@ -948,7 +948,7 @@ console.log( config.groups.get("group1")["members"] ); // ["user1", "user2"]
 ### `config.groups.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all groups from the `groups` section of an instance of `ConfigGen`.
 
-- PARAMETERS: N/A
+- ARGUMENTS: N/A
 
 - OUTPUT: it returns an array of Javascript objects; every element of the array looks like this: `{ "name": "group1", "users": ["user1", "user2"] }`
 
@@ -969,11 +969,11 @@ console.log( config.groups.getAll() ); // [{ "name": "group1", "members": ["user
 ### `config.groups.addMembers()` method
 This is a method that can be used in order to add one or more members to an existing group of the `groups` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `groupname` and `members`
+- ARGUMENTS: `groupname` and `members`
 
-- PARAMETER `groupname`: it is a string that contains the name of the group
+  - PARAMETER `groupname`: it is a string that contains the name of the group
 
-- PARAMETER `members`: it is an array of strings that contains all the members to add to the specified group
+  - PARAMETER `members`: it is an array of strings that contains all the members to add to the specified group
 
 EXAMPLE:
 ```js
@@ -993,11 +993,11 @@ console.log( config.groups.get("group1")["members"] ); // ["user1", "user2", "us
 ### `config.groups.removeMembers()` method
 This is a method that can be used in order to remove one or more members from an existing group of the `groups` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `groupname` and `members`
+- ARGUMENTS: `groupname` and `members`
 
-- PARAMETER `groupname`: it is a string that contains the name of the group
+  - PARAMETER `groupname`: it is a string that contains the name of the group
 
-- PARAMETER `members`: it is an array of strings that contains all the members to remove from the specified group
+  - PARAMETER `members`: it is an array of strings that contains all the members to remove from the specified group
 
 EXAMPLE:
 ```js
@@ -1017,13 +1017,13 @@ console.log( config.groups.get("group1")["members"] ); // []
 ### `config.shares.add()` method
 This is a method that can be used in order to add a share to the `shares` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `sharename`, `path` and `access`
+- ARGUMENTS: `sharename`, `path` and `access`
 
-- PARAMETER `sharename`: it is a string that contains the name of the new share
+  - PARAMETER `sharename`: it is a string that contains the name of the new share
 
-- PARAMETER `path`: it is a string that contains the path of the new share
+  - PARAMETER `path`: it is a string that contains the path of the new share
 
-- PARAMETER `access`: it is an array of strings that contains the list of access rules of the share
+  - PARAMETER `access`: it is an array of strings that contains the list of access rules of the share
 
 EXAMPLE:
 ```js
@@ -1037,9 +1037,9 @@ config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
 ### `config.shares.addArray()` method
 This is a method that can be used in order to add one or more shares to the `shares` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `input`
+- ARGUMENTS: `input`
 
-- PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }`
+  - PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }`
 
 EXAMPLE:
 ```js
@@ -1059,9 +1059,9 @@ config.shares.add("user3", "/share/user3", ["rw:user3"]);
 ### `config.shares.remove()` method
 This is a method that can be used in order to remove one or more shares from the `shares` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `sharename`
+- ARGUMENTS: `sharename`
 
-- PARAMETER `sharename`: it is a string that contains the name of the share to remove, or it can also be an array of strings (in which every element is the name of a share to remove)
+  - PARAMETER `sharename`: it is a string that contains the name of the share to remove, or it can also be an array of strings (in which every element is the name of a share to remove)
 
 > NOTE: parameter `sharename` can be an array of strings only since version `1.5` of `ConfigGen.js` library.
 
@@ -1091,9 +1091,9 @@ console.log( config.shares.get() ); // []
 ### `config.shares.get()` method
 This is a method that can be used in order to retrieve the list of all shares from the `shares` section of an instance of `ConfigGen`, or it can be used in order to retrieve information about a specific share.
 
-- PARAMETERS: `sharename` (optional)
+- ARGUMENTS: `sharename` (optional)
 
-- PARAMETER `sharename`: it is a string that contains the name of the share to retrieve information about
+  - PARAMETER `sharename`: it is a string that contains the name of the share to retrieve information about
 
 - OUTPUT: in case no parameters are passed, it returns an array with all the share names of the `shares` section; in case `sharename` parameter is passed, it returns a Javascript object like this: `{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }`
 
@@ -1118,7 +1118,7 @@ console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"
 ### `config.shares.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all shares from the `shares` section of an instance of `ConfigGen`.
 
-- PARAMETERS: N/A
+- ARGUMENTS: N/A
 
 - OUTPUT: it returns an array of Javascript objects; every element of the array looks like this: `{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }`
 
@@ -1139,11 +1139,11 @@ console.log( config.shares.getAll() ); // [{ "name": "public", "path": "/share/p
 ### `config.shares.addRules()` method
 This is a method that can be used in order to add one or more access rules to an existing share of the `shares` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `sharename` and `rules`
+- ARGUMENTS: `sharename` and `rules`
 
-- PARAMETER `sharename`: it is a string that contains the name of the share
+  - PARAMETER `sharename`: it is a string that contains the name of the share
 
-- PARAMETER `rules`: it is an array of strings that contains all the access rules to add to the specified share
+  - PARAMETER `rules`: it is an array of strings that contains all the access rules to add to the specified share
 
 EXAMPLE:
 ```js
@@ -1163,11 +1163,11 @@ console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"
 ### `config.shares.removeRules()` method
 This is a method that can be used in order to remove one or more access rules from an existing share of the `shares` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `sharename` and `rules`
+- ARGUMENTS: `sharename` and `rules`
 
-- PARAMETER `sharename`: it is a string that contains the name of the share
+  - PARAMETER `sharename`: it is a string that contains the name of the share
 
-- PARAMETER `rules`: it is an array of strings that contains all the access rules to remove from the specified share
+  - PARAMETER `rules`: it is an array of strings that contains all the access rules to remove from the specified share
 
 EXAMPLE:
 ```js
@@ -1202,11 +1202,11 @@ The access rule to remove is specified using its index.
 
 > NOTE: this method has been introduced in `ConfigGen.js` version `1.4`.
 
-- PARAMETERS: `sharename` and `ruleIndex`
+- ARGUMENTS: `sharename` and `ruleIndex`
 
-- PARAMETER `sharename`: it is a string that contains the name of the share
+  - PARAMETER `sharename`: it is a string that contains the name of the share
 
-- PARAMETER `ruleIndex`: it is the index of the access rule to remove
+  - PARAMETER `ruleIndex`: it is the index of the access rule to remove
 
 EXAMPLE:
 ```js
@@ -1230,11 +1230,11 @@ The difference between `config.shares.removeRules()` and `config.shares.removeAl
 
 > NOTE: this method has been introduced in `ConfigGen.js` version `1.4`.
 
-- PARAMETERS: `sharename` and `rules` (optional)
+- ARGUMENTS: `sharename` and `rules` (optional)
 
-- PARAMETER `sharename`: it is a string that contains the name of the share
+  - PARAMETER `sharename`: it is a string that contains the name of the share
 
-- PARAMETER `rules`: it is an array of strings that contains all the access rules to remove from the specified share; if this parameter is missing, all the access rules of the share will be removed
+  - PARAMETER `rules`: it is an array of strings that contains all the access rules to remove from the specified share; if this parameter is missing, all the access rules of the share will be removed
 
 EXAMPLE:
 ```js
@@ -1258,11 +1258,11 @@ console.log( config.shares.get("folder1")["access"] ); // []
 ### `config.shares.setPath()` method
 This is a method that can be used in order to change the path of an existing share of the `shares` section of an instance of `ConfigGen`.
 
-- PARAMETERS: `sharename` and `path`
+- ARGUMENTS: `sharename` and `path`
 
-- PARAMETER `sharename`: it is a string that contains the name of the share
+  - PARAMETER `sharename`: it is a string that contains the name of the share
 
-- PARAMETER `path`: it is a string that contains the new path of the specified share
+  - PARAMETER `path`: it is a string that contains the new path of the specified share
 
 EXAMPLE:
 ```js
