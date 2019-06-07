@@ -550,23 +550,32 @@ const ConfigGen = class {
                     throw new Error("ERROR: SHARE PATH MUST BE A STRING");
                 }
 
-                if (fnIsArray(rules) !== true){
-                    throw new Error("ERROR: SHARE RULES MUST BE AN ARRAY");
+                if (fnIsArray(rules) !== true && fnIsString(rules) !== true){
+                    throw new Error("ERROR: SHARE RULES MUST BE AN ARRAY OR A STRING");
                 }
 
-                const rules_safe = [];
-                rules.forEach((rule) => {
-                    if (fnIsString(rule) !== true){
-                        throw new Error("ERROR: SHARE RULES MUST BE AN ARRAY OF STRINGS");
+                if (fnIsString(rules) && rules !== "rw" && rules !== "ro"){
+                    throw new Error("ERROR: GUEST MUST BE EQUAL TO 'rw' OR 'ro'");
+                }
+
+                if (fnIsArray(rules)){
+                    const rules_safe = [];
+                    rules.forEach((rule) => {
+                        if (fnIsString(rule) !== true){
+                            throw new Error("ERROR: SHARE RULES MUST BE AN ARRAY OF STRINGS");
+                        }
+                        rules_safe.push(rule);
+                    });
+
+                    if (this.shares.get().includes(sharename)){
+                        throw new Error("ERROR: SHARE ALREADY EXISTS");
                     }
-                    rules_safe.push(rule);
-                });
 
-                if (this.shares.get().includes(sharename)){
-                    throw new Error("ERROR: SHARE ALREADY EXISTS");
+                    this["$shares"].push({ "name": sharename, "path": path, "access": rules_safe });
                 }
-
-                this["$shares"].push({ "name": sharename, "path": path, "access": rules_safe });
+                else {
+                    this["$shares"].push({ "name": sharename, "path": path, "access": [], "guest": rules });
+                }
 
                 // trigger event "share-add"
                 this["$trigger"]("share-add", this.shares.get(sharename));
@@ -581,10 +590,13 @@ const ConfigGen = class {
                 }
 
                 input.forEach((elem) => {
-                    if (fnHas(elem, ["name", "path", "access"]) !== true){
+                    if (fnHas(elem, ["name", "path"]) !== true){
                         throw new Error("ERROR: INPUT IS NOT VALID");
                     }
-                    this.shares.add(elem["name"], elem["path"], elem["access"]);
+                    if (fnHas(elem, "access") !== true && fnHas(elem, "guest") !== true){
+                        throw new Error("ERROR: INPUT IS NOT VALID");
+                    }
+                    this.shares.add(elem["name"], elem["path"], (fnHas(elem, "guest")) ? elem["guest"] : elem["access"]);
                 });
 
                 return this;
