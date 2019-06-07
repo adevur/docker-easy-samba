@@ -53,6 +53,7 @@
 
 // dependencies
 const fs = require("fs");
+const crypto = require("crypto");
 
 
 
@@ -187,7 +188,25 @@ const ConfigGen = class {
         //   where functions like "config.users.add(...)" are located
         this.users = {
             // users.add()
-            add: (username, password) => {
+            add: (...args) => {
+                let username = undefined;
+                let password = undefined;
+
+                if (args.length === 1){
+                    username = args[0];
+                }
+                else if (args.length === 2){
+                    username = args[0];
+                    password = args[1];
+                }
+                else {
+                    throw new Error("ERROR: INVALID ARGUMENTS");
+                }
+
+                if (password === undefined){
+                    password = this.constructor.genRandomPassword();
+                }
+
                 if (fnIsString(username) !== true || fnIsString(password) !== true){
                     throw new Error("ERROR: USERNAME AND PASSWORD MUST BE STRINGS");
                 }
@@ -211,10 +230,10 @@ const ConfigGen = class {
                 }
 
                 input.forEach((elem) => {
-                    if (fnHas(elem, ["name", "password"]) !== true){
+                    if (fnHas(elem, "name") !== true){
                         throw new Error("ERROR: INPUT IS NOT VALID");
                     }
-                    this.users.add(elem["name"], elem["password"]);
+                    this.users.add(elem["name"], (fnHas(elem, "password")) ? elem["password"] : undefined);
                 });
 
                 return this;
@@ -809,6 +828,45 @@ const ConfigGen = class {
                 return this;
             },
 
+            // shares.setGuest()
+            setGuest: (sharename, permission) => {
+                if (fnIsString(permission) !== true){
+                    throw new Error("ERROR: PERMISSION MUST BE A STRING");
+                }
+
+                if (permission !== "rw" && permission !== "ro" && permission !== "no"){
+                    throw new Error("ERROR: PERMISSION MUST BE EQUAL TO 'rw', 'ro' OR 'no'");
+                }
+
+                let index = undefined;
+                this["$shares"].forEach((share, i) => {
+                    if (share["name"] === sharename){
+                        index = i;
+                    }
+                });
+
+                if (index === undefined){
+                    throw new Error("ERROR: SHARE NOT FOUND");
+                }
+
+                const previous = this.shares.get(sharename);
+                if (permission === "no" && fnHas(this["$shares"][index], "guest")){
+                    delete this["$shares"][index]["guest"];
+                }
+                else if (permission === "rw" || permission === "ro") {
+                    this["$shares"][index]["guest"] = permission;
+                }
+
+                // trigger event "share-change" and "share-change-guest"
+                const current = this.shares.get(sharename);
+                if (fnHas(current, "guest") !== fnHas(previous, "guest") || current["guest"] !== previous["guest"]){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-guest", current, previous);
+                }
+
+                return this;
+            },
+
             // shares.setFixedRules()
             setFixedRules: (...args) => {
                 let shares = undefined;
@@ -883,6 +941,50 @@ const ConfigGen = class {
     // ConfigGen.fromJson()
     static fromJson(input){
         return this.fromObject(JSON.parse(input));
+    }
+
+    static genRandomPassword(){
+        // create a new empty array of 12 elements
+        let result = Array.from({ length: 12 }, () => 0);
+
+        // generate 12 random numbers (between 0 and 255)
+        result.forEach((n, i) => {
+            result[i] = crypto.randomBytes(1).readUInt8();
+        });
+
+        // adjust numbers to fit range from 32 to 126 (ASCII codes of printable chars)
+        result.forEach((n, i) => {
+            result[i] = (n % 95) + 32;
+        });
+
+        // convert ASCII codes to strings
+        result.forEach((n, i) => {
+            result[i] = String.fromCharCode(n);
+        });
+
+        // convert "result" from array of chars to string
+        result = result.join("");
+
+        // count lowercase letters, uppercase letters, digits and symbols in "result"
+        let lcl = 0;
+        let ucl = 0;
+        let dig = 0;
+        let sym = 0;
+        result.split("").forEach((c) => {
+            lcl = (c === c.toLowerCase() && c !== c.toUpperCase()) ? (lcl + 1) : lcl;
+            ucl = (c === c.toUpperCase() && c !== c.toLowerCase()) ? (ucl + 1) : ucl;
+            dig = (c === String(parseInt(c, 10))) ? (dig + 1) : dig;
+        });
+        sym = result.length - lcl - ucl - dig;
+
+        // make sure that "result" contains at least 1 lowercase letter, 1 uppercase letter, 1 symbol and 1 digit
+        //   otherwise, generate a new password
+        if (lcl === 0 || ucl === 0 || dig === 0 || sym === 0){
+            return this.genRandomPassword();
+        }
+        else {
+            return result;
+        }
     }
 
     // saveToFile()
