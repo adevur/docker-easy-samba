@@ -56,7 +56,7 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"` or `"1.5"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"` or `"1.6"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `global` section
 This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.

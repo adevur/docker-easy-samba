@@ -2,11 +2,24 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.6.0`
+### Current stable release: `1.6.1`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] 1.6.1 (2019-06-07 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Fixed a major bug in function `config.shares.setFixedRules()` of `ConfigGen.js` library.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.6.0 (2019-06-03 UTC)
 - New features:
