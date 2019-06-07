@@ -9,6 +9,7 @@ module.exports = fnCreateShares;
 // dependencies
 const fs = require("fs");
 const { spawnSync } = require("child_process");
+const fnHas = require("/startup/functions/fnHas.js");
 
 
 
@@ -33,30 +34,50 @@ function fnCreateShares(shares){
             return false;
         }
 
-        // for each "user" of the share, generate the ACLs
-        // EXAMPLE: share["users"] == ["rw:user1", "ro:user2"] --->
-        //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rx,g:user2:rx"
-        let entries = ["u::rwx", "g::rwx", "o::x"];
-        share["users"].forEach((user) => {
-            const name = user.substring(3);
-            const perm = (user.startsWith("ro:")) ? "rx" : "rwx";
-            entries.push(`u:${name}:${perm},g:${name}:${perm}`);
-        });
-        entries = entries.join(",");
-
-        // set the correct ACLs for the share
-        // EXAMPLE: share["path"] == "/share/public" --->
-        //   chown -R root:root '/share/public'
-        //   setfacl -R -m 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
-        //   setfacl -R -dm 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
-        try {
-            spawnSync("chown", ["-R", "root:root", share["path"]], { stdio: "ignore" });
-            spawnSync("setfacl", ["-R", "-m", entries, share["path"]], { stdio: "ignore" });
-            spawnSync("setfacl", ["-R", "-dm", entries, share["path"]], { stdio: "ignore" });
+        // if the share is a guest share
+        if (fnHas(share, "guest")){
+            // set share permissions and ACLs
+            // HOW:
+            //   chown -R nobody:nobody ${path}
+            //   setfacl -R -m 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' ${path}
+            //   setfacl -R -dm 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' ${path}
+            const perms = (share["guest"] === "rw") ? "rwx" : "rx";
+            try {
+                spawnSync("chown", ["-R", "nobody:nobody", share["path"]], { stdio: "ignore" });
+                spawnSync("setfacl", ["-R", "-m", `u::${perms},g::${perms},o::${perms},u:nobody:${perms},g:nobody:${perms}`, share["path"]], { stdio: "ignore" });
+                spawnSync("setfacl", ["-R", "-dm", `u::${perms},g::${perms},o::${perms},u:nobody:${perms},g:nobody:${perms}`, share["path"]], { stdio: "ignore" });
+            }
+            catch (error){
+                errorMsg = `PERMISSIONS FOR '${share["path"]}' COULD NOT BE SET`;
+                return false;
+            }
         }
-        catch (error){
-            errorMsg = `PERMISSIONS FOR '${share["path"]}' COULD NOT BE SET`;
-            return false;
+        else {
+            // for each "user" of the share, generate the ACLs
+            // EXAMPLE: share["users"] == ["rw:user1", "ro:user2"] --->
+            //   entries == "u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rx,g:user2:rx"
+            let entries = ["u::rwx", "g::rwx", "o::x"];
+            share["users"].forEach((user) => {
+                const name = user.substring(3);
+                const perm = (user.startsWith("ro:")) ? "rx" : "rwx";
+                entries.push(`u:${name}:${perm},g:${name}:${perm}`);
+            });
+            entries = entries.join(",");
+
+            // set the correct ACLs for the share
+            // EXAMPLE: share["path"] == "/share/public" --->
+            //   chown -R root:root '/share/public'
+            //   setfacl -R -m 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
+            //   setfacl -R -dm 'u::rwx,g::rwx,o::x,u:user1:rwx,g:user1:rwx,u:user2:rwx,g:user2:rwx' '/share/public'
+            try {
+                spawnSync("chown", ["-R", "root:root", share["path"]], { stdio: "ignore" });
+                spawnSync("setfacl", ["-R", "-m", entries, share["path"]], { stdio: "ignore" });
+                spawnSync("setfacl", ["-R", "-dm", entries, share["path"]], { stdio: "ignore" });
+            }
+            catch (error){
+                errorMsg = `PERMISSIONS FOR '${share["path"]}' COULD NOT BE SET`;
+                return false;
+            }
         }
 
         return true;

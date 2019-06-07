@@ -29,9 +29,15 @@ function fnValidateConfigShares(shares, sharedb){
     // for each "share" in "shares" ...
     let error = "";
     const result = shares.every((share) => {
-        // "share" must have "name", "path" and "access" properties (and cannot have "users" property)
-        if (fnHas(share, ["name", "path", "access"]) !== true || fnHas(share, "users") === true){
-            error = `EVERY SHARED FOLDER IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' PROPERTIES`;
+        // "share" must have "name" and "path" properties (and cannot have "users" property)
+        if (fnHas(share, ["name", "path"]) !== true || fnHas(share, "users") === true){
+            error = `EVERY SHARED FOLDER IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' OR 'guest' PROPERTIES`;
+            return false;
+        }
+
+        // "share" must have "access" or "guest" properties
+        if (fnHas(share, "access") !== true && fnHas(share, "guest") !== true){
+            error = `EVERY SHARED FOLDER IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' OR 'guest' PROPERTIES`;
             return false;
         }
 
@@ -78,11 +84,19 @@ function fnValidateConfigShares(shares, sharedb){
             return false;
         }
 
-        // check share["access"]
-        const validateConfigSharesAccess = fnValidateConfigSharesAccess(share, sharedb);
-        if (validateConfigSharesAccess !== true){
-            error = validateConfigSharesAccess;
-            return false;
+        // check share["guest"] and share["access"]
+        if (fnHas(share, "guest")){
+            if (share["guest"] !== "rw" && share["guest"] !== "ro"){
+                error = `SHARED FOLDER WITH PATH '${share["path"]}' HAS AN INVALID GUEST PROPERTY`;
+                return false;
+            }
+        }
+        else {
+            const validateConfigSharesAccess = fnValidateConfigSharesAccess(share, sharedb);
+            if (validateConfigSharesAccess !== true){
+                error = validateConfigSharesAccess;
+                return false;
+            }
         }
 
         // push shares' names
@@ -93,13 +107,15 @@ function fnValidateConfigShares(shares, sharedb){
 
         // evaluate access rules
         // TODO: EXPLAIN
-        fnEvaluateAccessRules(share, sharedb);
+        if (fnHas(share, "guest") !== true){
+            fnEvaluateAccessRules(share, sharedb);
 
-        // after access rules evaluation,
-        //   if no user has access to the shared folder, throw error
-        if (share["users"].length < 1){
-            error = `AT LEAST ONE USER SHOULD BE ABLE TO ACCESS SHARED FOLDER '${share["path"]}'`;
-            return false;
+            // after access rules evaluation,
+            //   if no user has access to the shared folder, throw error
+            if (share["users"].length < 1){
+                error = `AT LEAST ONE USER SHOULD BE ABLE TO ACCESS SHARED FOLDER '${share["path"]}'`;
+                return false;
+            }
         }
 
         return true;
