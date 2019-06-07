@@ -1312,7 +1312,7 @@ console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin
 config.shares.addRules("folder1", ["no:admin"]);
 
 // user "admin" will still be able to read and write
-console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin", "no:admin", "rw:admin"]
+console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "no:admin", "rw:admin"]
 
 // now let's modify fixed rules, applying them to all shares (this is done by not passing a "shares" parameter)
 config.shares.setFixedRules(["rw:admin"]);
