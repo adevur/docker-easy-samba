@@ -165,16 +165,23 @@ const ConfigGen = class {
         this["$fixedrules"] = { "shares": undefined, "rules": [] };
 
         // event handlers for config.shares.setFixedRules() function
-        const fixedRulesHandler = (share) => {
+        this["$fixedrules-handler-current"] = undefined;
+        this["$fixedrules-handler"] = (share) => {
+            if (this["$fixedrules-handler-current"] === share["name"]){
+                return;
+            }
+            this["$fixedrules-handler-current"] = share["name"];
             if (this["$fixedrules"]["shares"] !== undefined && this["$fixedrules"]["shares"].includes(share["name"]) !== true){
                 return;
             }
             if (fnArrayEndsWith(share["access"], this["$fixedrules"]["rules"]) !== true){
+                this.shares.removeAllRules(share["name"], this["$fixedrules"]["rules"]);
                 this.shares.addRules(share["name"], this["$fixedrules"]["rules"]);
             }
+            this["$fixedrules-handler-current"] = undefined;
         };
-        this.on("share-change-access", fixedRulesHandler);
-        this.on("share-add", fixedRulesHandler);
+        this.on("share-change-access", this["$fixedrules-handler"]);
+        this.on("share-add", this["$fixedrules-handler"]);
 
         // "users" namespace
         //   where functions like "config.users.add(...)" are located
@@ -819,6 +826,11 @@ const ConfigGen = class {
 
                 this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : JSON.parse(JSON.stringify(shares));
                 this["$fixedrules"]["rules"] = JSON.parse(JSON.stringify(rules));
+
+                // trigger fixed rules handler right now for existing shares
+                this.shares.getAll().forEach((share) => {
+                    this["$fixedrules-handler"](share);
+                });
 
                 return this;
             },
