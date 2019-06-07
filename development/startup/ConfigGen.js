@@ -145,6 +145,7 @@ const ConfigGen = class {
         this["$on-share-change"] = [];
         this["$on-share-change-access"] = [];
         this["$on-share-change-path"] = [];
+        this["$on-share-change-guest"] = [];
 
         // internal trigger function for events
         this["$trigger"] = (event, current, previous = undefined) => {
