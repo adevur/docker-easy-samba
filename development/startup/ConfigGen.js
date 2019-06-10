@@ -40,6 +40,7 @@
     config.shares.get()
     config.shares.getAll()
     config.shares.addRules()
+    config.shares.addRuleAt()
     config.shares.removeRules()
     config.shares.removeRuleAt()
     config.shares.removeAllRules()
@@ -698,6 +699,44 @@ const ConfigGen = class {
                 rules.forEach((rule) => {
                     addRule(sharename, rule);
                 });
+
+                // trigger event "share-change" and "share-change-access"
+                const current = this.shares.get(sharename);
+                this["$trigger"]("share-change", current, previous);
+                this["$trigger"]("share-change-access", current, previous);
+
+                return this;
+            },
+
+            // shares.addRuleAt()
+            addRuleAt: (sharename, rule, ruleIndex) => {
+                // check parameters
+                if (fnIsString(sharename) !== true){
+                    throw new Error("ERROR: NAME OF SHARE MUST BE A STRING");
+                }
+
+                if (fnIsString(rule) !== true){
+                    throw new Error("ERROR: RULE MUST BE A STRING");
+                }
+
+                if (fnIsInteger(ruleIndex) !== true || ruleIndex < 0){
+                    throw new Error("ERROR: INDEX MUST BE A POSITIVE INTEGER");
+                }
+
+                // find share's index
+                const index = this.shares.get().indexOf(sharename);
+                if (index < 0){
+                    throw new Error("ERROR: SHARE NOT FOUND");
+                }
+
+                // check ruleIndex range
+                if (ruleIndex > this.shares.get(sharename)["access"].length){
+                    throw new Error("ERROR: INDEX OUT OF RANGE");
+                }
+
+                // add the rule at the specified ruleIndex
+                const previous = this.shares.get(sharename);
+                this["$shares"][index]["access"].splice(ruleIndex, 0, rule);
 
                 // trigger event "share-change" and "share-change-access"
                 const current = this.shares.get(sharename);
