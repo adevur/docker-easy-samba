@@ -3,6 +3,7 @@
 
     [static] ConfigGen.fromObject()
     [static] ConfigGen.fromJson()
+    [static] ConfigGen.genRandomPassword()
 
     [property] config.easysambaVersion
 
@@ -996,11 +997,16 @@ const ConfigGen = class {
         return this.fromObject(JSON.parse(input));
     }
 
-    static genRandomPassword(){
-        // create a new empty array of 12 elements
-        let result = Array.from({ length: 12 }, () => 0);
+    static genRandomPassword(len = 12){
+        // check parameter "len"
+        if (fnIsInteger(len) !== true || len < 1){
+            throw new Error("ERROR: PASSWORD LENGTH MUST BE AT LEAST 1");
+        }
 
-        // generate 12 random numbers (between 0 and 255)
+        // create a new empty array
+        let result = Array.from({ length: len }, () => 0);
+
+        // fill the array with random numbers (between 0 and 255)
         result.forEach((n, i) => {
             result[i] = crypto.randomBytes(1).readUInt8();
         });
