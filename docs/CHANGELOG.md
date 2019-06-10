@@ -2,11 +2,28 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.6.1`
+### Current stable release: `1.7.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.7.0 (2019-06-10 UTC)
+- New features:
+
+  - In `config.json`, now it is possible to specify if a shared folder has guest access, replacing property `access` with `guest`. New property `guest` can be equal to `"rw"` (in case guest users have read and write permissions) or equal to `"ro"` (in case guest users have read-only permissions). If a shared folder has `guest` property, `access` property is ignored. NOTE: you can still use `guest` section of `config.json` to create an anonymous shared folder, but it is a much less versatile method, compared to new `guest` property of shared folders.
+
+  - The following functions have been added to `ConfigGen.js` library: `config.shares.setGuest()`, `ConfigGen.genRandomPassword()` and `config.shares.addRuleAt()`.
+
+  - New event handler has been added to `ConfigGen.js` library: `share-change-guest`.
+
+- Bug fixes:
+
+  - Some code cleanup and minor bugfixes.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] 1.6.1 (2019-06-07 UTC)
 - New features:
