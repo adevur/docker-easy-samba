@@ -999,8 +999,8 @@ const ConfigGen = class {
 
     static genRandomPassword(len = 12){
         // check parameter "len"
-        if (fnIsInteger(len) !== true || len < 1){
-            throw new Error("ERROR: PASSWORD LENGTH MUST BE AT LEAST 1");
+        if (fnIsInteger(len) !== true || len < 4){
+            throw new Error("ERROR: PASSWORD LENGTH MUST BE AT LEAST 4");
         }
 
         // create a new empty array
@@ -1039,7 +1039,7 @@ const ConfigGen = class {
         // make sure that "result" contains at least 1 lowercase letter, 1 uppercase letter, 1 symbol and 1 digit
         //   otherwise, generate a new password
         if (lcl === 0 || ucl === 0 || dig === 0 || sym === 0){
-            return this.genRandomPassword();
+            return this.genRandomPassword(len);
         }
         else {
             return result;
