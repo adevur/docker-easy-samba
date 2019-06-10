@@ -56,7 +56,7 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"` or `"1.6"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"` or `"1.7"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `global` section
 This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
@@ -88,8 +88,7 @@ It's a string that contains the domain name of the SAMBA server. It must be a va
 This rule is valid only for chars that are not the first or the last.
 
 ### `guest` section
-It can be either a boolean equal to `false`, or a string. When `guest` equals `false`, it means that no anonymous login will
-be permitted to the SAMBA server. If `guest` is a string, it represents the path of the anonymous shared folder.
+It is optional and can be either a boolean equal to `false`, or a string. When `guest` is a string, it represents the path of the anonymous shared folder to create. This new share will have `guest` as name.
 For example: `"/share/guest"`. To be a valid path, `guest` string must follow these rules:
 
 - It must be a sub-directory of `/share`.
@@ -104,7 +103,7 @@ For example: `"/share/guest"`. To be a valid path, `guest` string must follow th
 
 - It cannot be equal to any of the paths that will be specified in the `shares` section of `config.json`.
 
-Since `easy-samba` version `1.4`, `guest` section is optional. If it is not present in a `config.json` file, `easy-samba` assumes that its value is `false`.
+> NOTE: this section is obsolete. Use `guest` property of shared folders, instead.
 
 ### `users` section
 It is an array that contains all the users that will be created and used by the SAMBA server. These users are created only
@@ -132,19 +131,29 @@ with the same name).
 > NOTE: starting with `easy-samba` version `1.4`, `users` property of a group has been renamed to `members`.
 
 ### `shares` section
-This is an array that contains all the shared folders to be created by the SAMBA server. The only shared folder that is
-not included in this array is the anonymous shared folder (that is instead defined in [`guest` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section)).
+This is an array that contains all the shared folders to be created by the SAMBA server.
 This section can also be an empty array. An element of `shares` array looks like this:
-`{ "name": "public", "path": "/share/public", "access": ["user1", "ro:group2", "rw:user3"] }`.
+`{ "name": "public", "path": "/share/public", "access": ["user1", "ro:group2", "rw:user3"] }` (in case of a regular shared folder that requires user login), or `{ "name": "anon", "path": "/share/anon", "guest": "rw" }` (in case of an anonymous shared folder, that doesn't require user login).
 
 - `name` is a unique name to identify the shared folder. It must be alphanumeric.
 
-- `path` is the location on disk of the shared folder. It must be a sub-directory of `/share` and it must follow all the
-validation rules described for anonymous shared folder path in [`guest` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section).
+- `path` is the location on disk of the shared folder. It must follow these rules:
 
-- `access` is a non-empty array of strings that contains all the "access rules" for the shared folder.
-An access rule is a string that tells the SAMBA server who can access the shared folder, and with what permissions.
-See below for more info.
+  - It must be a sub-directory of `/share`.
+
+  - It can contain whatever Unicode character, except for: `/`, `\`, `<`, `>`, `:`, `"`, `|`, `?`, `*`.
+
+  - It cannot contain control characters (i.e. chars with a code between 0 and 31 or with a code of 127).
+
+  - It cannot be equal to `"/share/config.json"`, to `"/share/."` or to `"/share/.."`.
+
+  - It cannot be long more than 255 characters.
+
+  - It cannot be equal to any of the other paths used in the `shares` section of `config.json`.
+
+- `guest` is an optional property. If it's present, it is a string (equal to `"rw"` or to `"ro"`) that specifies if the shared folder can be accessed without login (i.e. if the share is an anonymous shared folder). In case it's equal to `"rw"`, it means that guest users (i.e. users without login) can read and write inside the shared folder; in case it's equal to `"ro"`, it means that guest users can only read contents inside the shared folder. These permissions also apply to regular users of the SAMBA server. If `guest` property is missing, it means that this shared folder cannot be accessed by users without login.
+
+- `access` is a non-empty array of strings that contains all the "access rules" for the shared folder. This property is ignored if `guest` property is present; if `guest` property is absent, `access` property is mandatory and defines the rules that `easy-samba` must apply to the shared folder. An access rule is a string that tells `easy-samba` who can access the shared folder, and with what permissions. See below for more info.
 
 ACCESS RULE SYNTAX: these are the types of access rules supported:
 
@@ -154,8 +163,6 @@ and write permissions on the shared folder.
 
 - When an access rule is equal to `"*"`, it means that all users (that have been defined in `users` property of `config.json`)
 have access to the shared folder with full read and write permissions. Access rule `"*"` is equivalent to `"rw:*"`.
-
-    > The wildcard character `*` has been introduced in `easy-samba` version `1.1`.
 
 - When an access rule starts with `"rw:"` followed by a username or a group name, it means "read and write" permissions.
 E.g.: `"rw:group1"` is equivalent to `"group1"` and it means that users of `group1` have read and write permissions on
@@ -169,13 +176,9 @@ E.g.: `["ro:group1", "rw:user2"]` means that all users of `group1` have read per
 have read-only permissions on the shared folder. For example: `["ro:*", "rw:user1"]` means that all users
 have read-only permissions, but `user1` has also write permissions.
 
-    > The wildcard character `*` has been introduced in `easy-samba` version `1.1`.
-
 - When an access rule starts with `no:` followed by a username, a group name, or `*`, it means "no access at all".
 E.g.: `["rw:group1", "no:user1"]` means that all members of `group1` have read and write permissions on the shared folder,
 but `user1` has no access at all.
-
-    > Permission type `no:` has been introduced in `easy-samba` version `1.1`.
 
 - If a user or a group are not included in the access rules of a shared folder, it means that they have no access at all
 to that shared folder.
@@ -272,6 +275,8 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromobject-static-method)
 
+- [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
+
 - [`config.easysambaVersion` property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configeasysambaversion-property)
 
 - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
@@ -338,6 +343,8 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrules-method)
 
+    - [`config.shares.addRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddruleat-method)
+
     - [`config.shares.removeRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverules-method)
 
     - [`config.shares.removeRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveruleat-method)
@@ -345,6 +352,8 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveallrules-method)
 
     - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetpath-method)
+
+    - [`config.shares.setGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetguest-method)
 
     - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
 
@@ -401,6 +410,30 @@ config.users.add("new-user", "123456");
 config.saveToFile("./new-config.json");
 ```
 
+### `ConfigGen.genRandomPassword()` static method
+This is a static method that can be used in order to generate a random password. This is useful in case you want users to have a random password, instead of a manually generated one.
+
+This function uses a cryptographically-strong random number generator to create a random password of minimum 4 characters (password length can be given as function argument). The newly-generated password will always have at least 1 lowercase letter, 1 uppercase letter, 1 digit, and 1 symbol.
+
+- ARGUMENTS: `len` (optional)
+
+  - PARAMETER `len`: it is a positive integer (greater or equal to 4) that specifies how many characters long will be the newly-generated password; if this parameter is missing, a default length of 12 characters will be used
+
+- OUTPUT: a string that contains the newly-generated password
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const passw1 = ConfigGen.genRandomPassword();
+
+console.log( passw1 ); // M]K:IF`4"#bN
+
+const passw2 = ConfigGen.genRandomPassword(4);
+
+console.log( passw2 ); // 2[gT
+```
+
 ### `config.easysambaVersion` property
 This is a property of an instance of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
 
@@ -420,7 +453,7 @@ console.log( config.easysambaVersion ); // 1.3
 ### `config.domain()` method
 This is a method that can be used in order to set the `domain` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `domain` section, if used without parameters.
 
-> NOTE: setting a value for `domain` is mandatory in order to later generate a configuration file.
+> NOTE: by default, `domain` section is equal to `WORKGROUP` when a new `ConfigGen` instance is created.
 
 - ARGUMENTS: `input` (optional)
 
@@ -434,15 +467,15 @@ const ConfigGen = require("./ConfigGen.js");
 
 const config = new ConfigGen();
 
-console.log( config.domain() ); // undefined
-config.domain("WORKGROUP");
 console.log( config.domain() ); // WORKGROUP
+config.domain("NEW-DOMAIN");
+console.log( config.domain() ); // NEW-DOMAIN
 ```
 
 ### `config.guest()` method
 This is a method that can be used in order to set the `guest` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `guest` section, if used without parameters.
 
-> NOTE: since `easy-samba` version `1.4`, `guest` section is optional.
+> NOTE: `guest` section is obsolete. Use `config.shares.add()` and `config.shares.addArray()` to create new anonymous shared folders, instead. You can also use `config.shares.setGuest()` to make an existing shared folder anonymous.
 
 - ARGUMENTS: `input` (optional)
 
@@ -464,8 +497,6 @@ console.log( config.guest() ); // /share/guest
 config.unsetGuest();
 ```
 
-> NOTE: `config.guest(undefined)` is equivalent to `config.guest()`.
-
 ### `config.unsetGuest()` method
 This is a method that can be used in order to remove `guest` section from an instance of `ConfigGen`.
 
@@ -478,9 +509,6 @@ EXAMPLE:
 const ConfigGen = require("./ConfigGen.js");
 
 const config = new ConfigGen();
-
-// this is needed because "domain" section is mandatory in order to generate a "config.json" file
-config.domain("WORKGROUP");
 
 config.guest("/share/guest");
 
@@ -620,11 +648,13 @@ List of supported events:
 
 - `share-remove`: triggered when a share gets removed from `config`. Its parameter is `previous` (that is a copy of the removed share).
 
-- `share-change`: triggered when a share is modified. This event gets triggered together with `share-change-access` and `share-change-path` events. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
+- `share-change`: triggered when a share is modified. This event gets triggered together with `share-change-access`, `share-change-path` and `share-change-guest` events. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
 
 - `share-change-access`: triggered when an access rule is added or removed from a share. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
 
 - `share-change-path`: triggered when a share's path is modified. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
+
+- `share-change-guest`: triggered when a share's `guest` property is modified. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
 
 EXAMPLE:
 ```js
@@ -708,11 +738,11 @@ config.saveToFile("./config.json");
 ### `config.users.add()` method
 This is a method that can be used in order to add a user to the `users` section of an instance of `ConfigGen`.
 
-- ARGUMENTS: `username` and `password`
+- ARGUMENTS: `username` and `password` (optional)
 
   - PARAMETER `username`: it is a string that contains the username of the new user
 
-  - PARAMETER `password`: it is a string that contains the password of the new user
+  - PARAMETER `password`: it is a string that contains the password of the new user; if this parameter is missing, the newly-created user will have a random password of 12 characters (generated using `ConfigGen.genRandomPassword()`)
 
 EXAMPLE:
 ```js
@@ -721,6 +751,10 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.users.add("user1", "123456");
+
+config.users.add("user2");
+
+console.log( config.users.get("user2") ); // { "name": "user2", "password": "K3?\J.5 bfBt" }
 ```
 
 ### `config.users.addArray()` method
@@ -728,7 +762,7 @@ This is a method that can be used in order to add one or more users to the `user
 
 - ARGUMENTS: `input`
 
-  - PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "user1", "password": "123456" }`
+  - PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "user1", "password": "123456" }`, or like this: `{ "name": "user2" }` (if `password` property is missing, a new random password of 12 characters will be generated for the user)
 
 EXAMPLE:
 ```js
@@ -738,11 +772,11 @@ const config = new ConfigGen();
 
 config.users.addArray([
     { "name": "user1", "password": "123456" },
-    { "name": "user2", "password": "aaabbb" }
+    { "name": "user2" }
 ]);
 // this is equivalent to writing:
 config.users.add("user1", "123456");
-config.users.add("user2", "aaabbb");
+config.users.add("user2");
 ```
 
 ### `config.users.remove()` method
@@ -1023,7 +1057,7 @@ This is a method that can be used in order to add a share to the `shares` sectio
 
   - PARAMETER `path`: it is a string that contains the path of the new share
 
-  - PARAMETER `access`: it is an array of strings that contains the list of access rules of the share
+  - PARAMETER `access`: it can be a string equal to `"rw"` or to `"ro"` (in this case, this parameter represents the `guest` property of the share); or it can be an array of strings that contains the list of access rules of the share (in this case, this parameter represents the `access` property of the share)
 
 EXAMPLE:
 ```js
@@ -1032,6 +1066,10 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
+console.log( config.shares.get("public") ); // { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }
+
+config.shares.add("anon", "/share/anon", "ro");
+console.log( config.shares.get("anon") ); // { "name": "anon", "path": "/share/anon", "guest": "ro", "access": [] }
 ```
 
 ### `config.shares.addArray()` method
@@ -1049,11 +1087,11 @@ const config = new ConfigGen();
 
 config.shares.addArray([
     { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
-    { "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }
+    { "name": "anon", "path": "/share/anon", "guest": "ro" }
 ]);
 // this is equivalent to writing:
 config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
-config.shares.add("user3", "/share/user3", ["rw:user3"]);
+config.shares.add("anon", "/share/anon", "ro");
 ```
 
 ### `config.shares.remove()` method
@@ -1158,6 +1196,34 @@ console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"
 config.shares.addRules("public", ["rw:user3", "ro:user4"]);
 
 console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3", "ro:user4"]
+```
+
+### `config.shares.addRuleAt()` method
+This is a method that can be used in order to add an access rule to an existing share of the `shares` section of an instance of `ConfigGen`.
+
+The access rule is inserted at the specified index.
+
+- ARGUMENTS: `sharename`, `rule` and `ruleIndex`
+
+  - PARAMETER `sharename`: it is a string that contains the name of the share
+
+  - PARAMETER `rule`: it is a string that contains the access rule
+
+  - PARAMETER `ruleIndex`: it is the index where the access rule will be inserted
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2", "rw:user3"]);
+
+console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3"]
+
+config.shares.addRuleAt("public", "ro:*", 0);
+
+console.log( config.shares.get("public")["access"] ); // ["ro:*", "rw:user1", "ro:user2", "rw:user3"]
 ```
 
 ### `config.shares.removeRules()` method
@@ -1277,6 +1343,34 @@ console.log( config.shares.get("folder1")["path"] ); // /share/folder1
 config.shares.setPath("folder1", "/share/new-path");
 
 console.log( config.shares.get("folder1")["path"] ); // /share/new-path
+```
+
+### `config.shares.setGuest()` method
+This method can be used in order to change/remove the `guest` property of an existing share of the `shares` section of an instance of `ConfigGen`.
+
+- ARGUMENTS: `sharename` and `guest`
+
+  - PARAMETER `sharename`: it is a string that contains the name of the share
+
+  - PARAMETER `guest`: it is a string equal to `"rw"`, `"ro"` or `"no"`; in case it's equal to `"no"`, `guest` property of the specified shared folder is removed
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("folder1", "/share/folder1", "rw");
+
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "guest": "rw", "access": [] }
+
+config.shares.setGuest("folder1", "ro");
+
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "guest": "ro", "access": [] }
+
+config.shares.setGuest("folder1", "no");
+
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [] }
 ```
 
 ### `config.shares.setFixedRules()` method
