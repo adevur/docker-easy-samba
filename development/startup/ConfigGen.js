@@ -45,6 +45,7 @@
     config.shares.removeRuleAt()
     config.shares.removeAllRules()
     config.shares.setPath()
+    config.shares.setGuest()
     config.shares.setFixedRules()
     config.shares.unsetFixedRules()
 
@@ -124,7 +125,7 @@ const ConfigGen = class {
         this.easysambaVersion = "1.7";
 
         // internal variables used by an instance of ConfigGen
-        this["$domain"] = undefined;
+        this["$domain"] = "WORKGROUP";
         this["$guest"] = undefined;
         this["$version"] = undefined;
         this["$global"] = undefined;
@@ -1079,6 +1080,11 @@ const ConfigGen = class {
         }
 
         result["shares"] = this["$shares"];
+        result["shares"].forEach((e) => {
+            if (fnHas(e, ["guest", "access"])){
+                delete e["access"];
+            }
+        });
 
         return JSON.stringify(result);
     }
