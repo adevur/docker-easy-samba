@@ -4,7 +4,7 @@
 // dependencies
 
 // native Node.js modules
-const { spawnSync, spawn } = require("child_process");
+const { spawnSync, spawn, execSync } = require("child_process");
 const fs = require("fs");
 
 // external functions
@@ -16,6 +16,11 @@ const fnCreateShares = require("/startup/functions/fnCreateShares.js");
 const fnGenSmbConf = require("/startup/functions/fnGenSmbConf.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
 const fnCleanUpUsers = require("/startup/functions/fnCleanUpUsers.js");
+
+// global variables
+let nmbd = undefined;
+let smbd = undefined;
+let configgen = false;
 
 
 
@@ -45,8 +50,54 @@ async function fnMain(){
         console.log(`[WARNING] it's not been possible to display version information.`);
     }
 
-    // now the script can start
-    console.log(`[LOG] SAMBA server configuration process has started.`);
+    // loop every 10 seconds
+    let previous = undefined;
+    while (true){
+        // get current config.json file
+        const current = (fs.existsSync("/share/config.json")) ? fs.readFileSync("/share/config.json", "utf8") : undefined;
+
+        // in case config.json has been modified, update running configuration
+        if (previous === undefined || current !== previous){
+            console.log(`[LOG] SAMBA server configuration process has started.`);
+            const result = await fnRun();
+            if (result !== true){
+                console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
+            }
+            previous = (fs.existsSync("/share/config.json")) ? fs.readFileSync("/share/config.json", "utf8") : undefined;
+        }
+
+        await fnSleep(10000);
+    }
+}
+
+
+
+async function fnRun(){
+    // if there's a "/share/config.gen.js" file, and "/share/config.json" is missing,
+    //   generate the new config.json running "node /share/config.gen.js"
+    if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true){
+        // if config.gen.js is already running, abort
+        if (configgen === true){
+            console.log(`[LOG] '/share/config.gen.js' is already running.`);
+            return false;
+        }
+
+        console.log(`[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`);
+        try {
+            configgen = true;
+            spawn("node", ["/share/config.gen.js"], { stdio: "ignore" }).on("exit", () => {
+                configgen = false;
+            }).on("error", () => {
+                configgen = false;
+            });
+            console.log(`[LOG] '/share/config.gen.js' script has started, running configuration will be updated in 10 seconds.`);
+        }
+        catch (error){
+            configgen = false;
+            return false;
+        }
+        return true;
+    }
 
     // remove all non-native users from container's OS and from SAMBA
     //   EXPLAIN: non-native users are the users that aren't included
@@ -56,20 +107,7 @@ async function fnMain(){
     const cleanUpUsers = fnCleanUpUsers();
     if (cleanUpUsers !== true){
         console.log(`[ERROR] it's not been possible to clean up existing users.`);
-        process.exitCode = 1;
-        return;
-    }
-
-    // if there's a "/share/config.gen.js" file, and "/share/config.json" is missing,
-    //   generate the new config.json running "node /share/config.gen.js"
-    if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true){
-        console.log(`[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`);
-        try {
-            spawnSync("node", ["/share/config.gen.js"], { stdio: "ignore" });
-        }
-        catch (error){
-            // ignore errors
-        }
+        return false;
     }
 
     // load configuration from JSON file "/share/config.json"
@@ -78,8 +116,7 @@ async function fnMain(){
     // if configuration file doesn't exist or it's not in JSON format, exit
     if (config === false){
         console.log(`[ERROR] '/share/config.json' could not be loaded or it is not in JSON format.`);
-        process.exitCode = 1;
-        return;
+        return false;
     }
     console.log(`[LOG] '/share/config.json' has been correctly loaded.`);
     
@@ -87,8 +124,7 @@ async function fnMain(){
     const validateConfig = fnValidateConfig(config);
     if (validateConfig !== true){
         console.log(`[ERROR] '/share/config.json' syntax is not correct: ${validateConfig}.`);
-        process.exitCode = 1;
-        return;
+        return false;
     }
     console.log(`[LOG] '/share/config.json' syntax is correct.`);
 
@@ -100,8 +136,7 @@ async function fnMain(){
     }
     catch (error){
         console.log(`[ERROR] permissions of '/share' could not be reset.`);
-        process.exitCode = 1;
-        return;
+        return false;
     }
     console.log(`[LOG] permissions of '/share' have been correctly reset.`);
     
@@ -119,8 +154,7 @@ async function fnMain(){
     }
     catch (error){
         console.log(`[ERROR] permissions of '/share' could not be set.`);
-        process.exitCode = 1;
-        return;
+        return false;
     }
     console.log(`[LOG] permissions of '/share' have been correctly set.`);
 
@@ -129,8 +163,7 @@ async function fnMain(){
         const createGuest = fnCreateGuest(config["guest"]);
         if (createGuest !== true){
             console.log(`[ERROR] guest share could not be created: ${createGuest}.`);
-            process.exitCode = 1;
-            return;
+            return false;
         }
         console.log(`[LOG] guest share has been correctly created.`);
     }
@@ -151,8 +184,7 @@ async function fnMain(){
     const createShares = fnCreateShares(config["shares"]);
     if (createShares !== true){
         console.log(`[ERROR] shares could not be created: ${createShares}.`);
-        process.exitCode = 1;
-        return;
+        return false;
     }
     console.log(`[LOG] shares have been correctly created.`);
 
@@ -163,23 +195,42 @@ async function fnMain(){
     }
     catch (error){
         console.log(`[ERROR] '/etc/samba/smb.conf' could not be generated or written.`);
-        process.exitCode = 1;
-        return;
+        return false;
     }
     console.log(`[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`);
 
+    // run nmbd and smbd daemons
+    console.log(`[LOG] starting 'nmbd' and 'smbd' daemons...`);
+    fnStartDaemons();
+
+    // script has been executed, now the SAMBA server is ready
+    console.log(`[LOG] SAMBA server is now ready.`);
+
+    return true;
+}
+
+
+
+async function fnStartDaemons(){
+    if (smbd !== undefined){
+        process.kill(smbd.pid, "SIGKILL");
+    }
+
+    if (nmbd !== undefined){
+        process.kill(nmbd.pid, "SIGKILL");
+    }
+
     // start "nmbd" daemon
-    console.log("[LOG] starting 'nmbd'...");
-    spawn("/usr/sbin/nmbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
+    nmbd = spawn("/usr/sbin/nmbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
         .on("error", () => {
             console.log(`[ERROR] 'nmbd' could not be started.`);
             process.exitCode = 1;
             process.exit();
         })
         .on("exit", () => {
-            console.log(`[ERROR] 'nmbd' terminated for unknown reasons.`);
+            /*console.log(`[ERROR] 'nmbd' terminated for unknown reasons.`);
             process.exitCode = 1;
-            process.exit();
+            process.exit();*/
         })
         .on("message", () => {
             // do nothing
@@ -188,30 +239,25 @@ async function fnMain(){
     ;
 
     // wait 2 seconds
-    console.log(`[LOG] waiting 2 seconds before starting 'smbd'...`);
     await fnSleep(2000);
 
     // start "smbd" daemon
-    console.log(`[LOG] starting 'smbd'...`);
-    spawn("/usr/sbin/smbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
+    smbd = spawn("/usr/sbin/smbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
         .on("error", () => {
             console.log(`[ERROR] 'smbd' could not be started.`);
             process.exitCode = 1;
             process.exit();
         })
         .on("exit", () => {
-            console.log(`[ERROR] 'smbd' terminated for unknown reasons.`);
+            /*console.log(`[ERROR] 'smbd' terminated for unknown reasons.`);
             process.exitCode = 1;
-            process.exit();
+            process.exit();*/
         })
         .on("message", () => {
             // do nothing
             // EXPLAIN: this is needed in order to prevent the script from exiting
         })
     ;
-
-    // script has been executed, now the SAMBA server is ready
-    console.log(`[LOG] SAMBA server is now ready.`);
 }
 
 
