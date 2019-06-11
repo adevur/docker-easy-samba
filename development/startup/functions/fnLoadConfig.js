@@ -17,7 +17,9 @@ const fs = require("fs");
 // PURPOSE: load the configuration file
 function fnLoadConfig(path){
     try {
-        return JSON.parse(fs.readFileSync(path, "utf8"));
+        const raw = fs.readFileSync(path, "utf8");
+        const parsed = JSON.parse(raw);
+        return { config: parsed, rawConfig: raw };
     }
     catch (error){
         return false;

@@ -4,7 +4,7 @@
 // dependencies
 
 // native Node.js modules
-const { spawnSync, spawn, execSync } = require("child_process");
+const { spawnSync, spawn } = require("child_process");
 const fs = require("fs");
 
 // external functions
@@ -16,6 +16,8 @@ const fnCreateShares = require("/startup/functions/fnCreateShares.js");
 const fnGenSmbConf = require("/startup/functions/fnGenSmbConf.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
 const fnCleanUpUsers = require("/startup/functions/fnCleanUpUsers.js");
+const fnIsRunning = require("/startup/functions/fnIsRunning.js");
+const fnIsString = require("/startup/functions/fnIsString.js");
 
 // global variables
 let nmbd = undefined;
@@ -56,25 +58,25 @@ async function fnMain(){
     let previous = undefined;
     while (true){
         // get current config.json file
-        const current = (fs.existsSync("/share/config.json")) ? fs.readFileSync("/share/config.json", "utf8") : undefined;
+        let current = undefined;
+        try {
+            current = fs.readFileSync("/share/config.json", "utf8");
+            if (fnIsString(current) !== true || current.length < 1){
+                current = undefined;
+            }
+        }
+        catch (error){
+            current = undefined;
+        }
 
         // code to start configuration
         const startConfig = async () => {
             console.log(`[LOG] SAMBA server configuration process has started.`);
             const result = await fnRun();
-            if (result !== true){
+            if (result === false){
                 console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
             }
-            previous = (fs.existsSync("/share/config.json")) ? fs.readFileSync("/share/config.json", "utf8") : undefined;
-        };
-
-        const isRunning = (pr) => {
-            try {
-                return execSync(`ps -ef | grep "${pr}" | grep -v grep`, { encoding: "utf8" }).split("\n").length > 1;
-            }
-            catch (error){
-                return false;
-            }
+            previous = (fnIsString(result) && result.length > 0) ? result : undefined;
         };
 
         // in case config.json has been modified, update running configuration
@@ -82,7 +84,7 @@ async function fnMain(){
             await startConfig();
         }
         // in case smbd or nmbd have stopped running unexpectedly, update running configuration
-        else if (isRunning("/usr/sbin/smbd") !== true || isRunning("/usr/sbin/nmbd") !== true){
+        else if (fnIsRunning("/usr/sbin/smbd") !== true || fnIsRunning("/usr/sbin/nmbd") !== true){
             console.log(`[WARNING] 'smbd' and/or 'nmbd' terminated unexpectedly, re-trying...`);
             await startConfig();
         }
@@ -132,7 +134,8 @@ async function fnRun(){
     }
 
     // load configuration from JSON file "/share/config.json"
-    const config = fnLoadConfig("/share/config.json");
+    //  "rawConfig" is just plain text read from /share/config.json, it is needed in order to be returned as output
+    const { config, rawConfig } = fnLoadConfig("/share/config.json");
     
     // if configuration file doesn't exist or it's not in JSON format, exit
     if (config === false){
@@ -230,7 +233,7 @@ async function fnRun(){
     // script has been executed, now the SAMBA server is ready
     console.log(`[LOG] SAMBA server is now ready.`);
 
-    return true;
+    return rawConfig;
 }
 
 
@@ -252,19 +255,10 @@ async function fnStartDaemons(){
         .on("error", () => {
             nmbdRunning = false;
             console.log(`[ERROR] 'nmbd' could not be started.`);
-            /*process.exitCode = 1;
-            process.exit();*/
         })
         .on("exit", () => {
             nmbdRunning = false;
-            /*console.log(`[ERROR] 'nmbd' terminated for unknown reasons.`);
-            process.exitCode = 1;
-            process.exit();*/
         })
-        /*.on("message", () => {
-            // do nothing
-            // EXPLAIN: this is needed in order to prevent the script from exiting
-        })*/
     ;
 
     // wait 2 seconds
@@ -276,19 +270,10 @@ async function fnStartDaemons(){
         .on("error", () => {
             smbdRunning = false;
             console.log(`[ERROR] 'smbd' could not be started.`);
-            /*process.exitCode = 1;
-            process.exit();*/
         })
         .on("exit", () => {
             smbdRunning = false;
-            /*console.log(`[ERROR] 'smbd' terminated for unknown reasons.`);
-            process.exitCode = 1;
-            process.exit();*/
         })
-        /*.on("message", () => {
-            // do nothing
-            // EXPLAIN: this is needed in order to prevent the script from exiting
-        })*/
     ;
 }
 
