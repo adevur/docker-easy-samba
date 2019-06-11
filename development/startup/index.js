@@ -261,9 +261,6 @@ async function fnStartDaemons(){
         })
     ;
 
-    // wait 2 seconds
-    await fnSleep(2000);
-
     // start "smbd" daemon
     smbdRunning = true;
     smbd = spawn("/usr/sbin/smbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
