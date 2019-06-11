@@ -4,7 +4,7 @@
 // dependencies
 
 // native Node.js modules
-const { spawnSync, spawn, execSync } = require("child_process");
+const { spawnSync, spawn } = require("child_process");
 const fs = require("fs");
 
 // external functions
