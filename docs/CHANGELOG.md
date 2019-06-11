@@ -2,11 +2,30 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.7.0`
+### Current stable release: `1.8.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.8.0 (2019-06-11 UTC)
+- New features:
+
+  - If an `easy-samba` container is already started, and you modify (or remove) `config.json` file (located inside the container), `easy-samba` will now auto-update its configuration according to the new `config.json` file. This way, you don't have to manually restart the `easy-samba` container if you update its configuration file. If you remove `config.json` file, `easy-samba` will try to generate a new one using `config.gen.js` script.
+
+  - If processes `smbd` or `nmbd` crash inside a running `easy-samba` container, `easy-samba` will re-try automatically to restart itself (and the crashed processes too). This way, a simple crash of `smbd` or `nmbd` will not cause `easy-samba` to completely stop working.
+
+  - Now, your `config.gen.js` script isn't obliged anymore to terminate, after it has written the `config.json` file. Instead, it can keep running in the background, and eventually modify the `config.json` file multiple times during its run-time. When your `config.gen.js` script modifies `config.json` file, `easy-samba` will automatically update according to the new configuration. If your `config.gen.js` script crashes, `easy-samba` will run it again only in case `config.json` file is missing.
+
+  - Users connected to the SAMBA server will not get disconnected (even if they're performing operations like file writing/reading) when `easy-samba` updates its configuration. This way, you can modify `config.json` file without interrupting users' current work.
+
+- Bug fixes:
+
+  - Minor bugfixes.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.7.0 (2019-06-10 UTC)
 - New features:
