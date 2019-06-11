@@ -4,7 +4,7 @@
 // dependencies
 
 // native Node.js modules
-const { spawnSync, spawn } = require("child_process");
+const { spawnSync, spawn, execSync } = require("child_process");
 const fs = require("fs");
 
 // external functions
@@ -20,6 +20,8 @@ const fnCleanUpUsers = require("/startup/functions/fnCleanUpUsers.js");
 // global variables
 let nmbd = undefined;
 let smbd = undefined;
+let nmbdRunning = false;
+let smbdRunning = false;
 let configgen = false;
 
 
@@ -56,14 +58,33 @@ async function fnMain(){
         // get current config.json file
         const current = (fs.existsSync("/share/config.json")) ? fs.readFileSync("/share/config.json", "utf8") : undefined;
 
-        // in case config.json has been modified, update running configuration
-        if (previous === undefined || current !== previous){
+        // code to start configuration
+        const startConfig = async () => {
             console.log(`[LOG] SAMBA server configuration process has started.`);
             const result = await fnRun();
             if (result !== true){
                 console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
             }
             previous = (fs.existsSync("/share/config.json")) ? fs.readFileSync("/share/config.json", "utf8") : undefined;
+        };
+
+        const isRunning = (pr) => {
+            try {
+                return execSync(`ps -ef | grep "${pr}" | grep -v grep`, { encoding: "utf8" }).split("\n").length > 1;
+            }
+            catch (error){
+                return false;
+            }
+        };
+
+        // in case config.json has been modified, update running configuration
+        if (previous === undefined || current !== previous){
+            await startConfig();
+        }
+        // in case smbd or nmbd have stopped running unexpectedly, update running configuration
+        else if (isRunning("/usr/sbin/smbd") !== true || isRunning("/usr/sbin/nmbd") !== true){
+            console.log(`[WARNING] 'smbd' and/or 'nmbd' terminated unexpectedly, re-trying...`);
+            await startConfig();
         }
 
         await fnSleep(10000);
@@ -203,6 +224,9 @@ async function fnRun(){
     console.log(`[LOG] starting 'nmbd' and 'smbd' daemons...`);
     fnStartDaemons();
 
+    // wait 5 seconds...
+    await fnSleep(5000);
+
     // script has been executed, now the SAMBA server is ready
     console.log(`[LOG] SAMBA server is now ready.`);
 
@@ -212,51 +236,59 @@ async function fnRun(){
 
 
 async function fnStartDaemons(){
-    if (smbd !== undefined){
+    if (smbd !== undefined && smbdRunning === true){
         process.kill(smbd.pid, "SIGKILL");
+        smbdRunning = false;
     }
 
-    if (nmbd !== undefined){
+    if (nmbd !== undefined && nmbdRunning === true){
         process.kill(nmbd.pid, "SIGKILL");
+        nmbdRunning = false;
     }
 
     // start "nmbd" daemon
+    nmbdRunning = true;
     nmbd = spawn("/usr/sbin/nmbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
         .on("error", () => {
+            nmbdRunning = false;
             console.log(`[ERROR] 'nmbd' could not be started.`);
-            process.exitCode = 1;
-            process.exit();
+            /*process.exitCode = 1;
+            process.exit();*/
         })
         .on("exit", () => {
+            nmbdRunning = false;
             /*console.log(`[ERROR] 'nmbd' terminated for unknown reasons.`);
             process.exitCode = 1;
             process.exit();*/
         })
-        .on("message", () => {
+        /*.on("message", () => {
             // do nothing
             // EXPLAIN: this is needed in order to prevent the script from exiting
-        })
+        })*/
     ;
 
     // wait 2 seconds
     await fnSleep(2000);
 
     // start "smbd" daemon
+    smbdRunning = true;
     smbd = spawn("/usr/sbin/smbd", ["--foreground", "--no-process-group"], { stdio: "ignore" })
         .on("error", () => {
+            smbdRunning = false;
             console.log(`[ERROR] 'smbd' could not be started.`);
-            process.exitCode = 1;
-            process.exit();
+            /*process.exitCode = 1;
+            process.exit();*/
         })
         .on("exit", () => {
+            smbdRunning = false;
             /*console.log(`[ERROR] 'smbd' terminated for unknown reasons.`);
             process.exitCode = 1;
             process.exit();*/
         })
-        .on("message", () => {
+        /*.on("message", () => {
             // do nothing
             // EXPLAIN: this is needed in order to prevent the script from exiting
-        })
+        })*/
     ;
 }
 
