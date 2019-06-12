@@ -8,7 +8,6 @@ module.exports = fnValidateConfig;
 
 // dependencies
 const fnValidateConfigVersion = require("/startup/functions/fnValidateConfigVersion.js");
-const fnValidateConfigGuest = require("/startup/functions/fnValidateConfigGuest.js");
 const fnValidateConfigUsers = require("/startup/functions/fnValidateConfigUsers.js");
 const fnValidateConfigGroups = require("/startup/functions/fnValidateConfigGroups.js");
 const fnValidateConfigShares = require("/startup/functions/fnValidateConfigShares.js");
@@ -51,18 +50,6 @@ function fnValidateConfig(config){
         return "'domain' IS NOT A VALID NETBIOS NAME";
     }
 
-    // check "guest" property
-    // if this property is missing, its value is false
-    // EXPLAIN: "guest" can be either "false" or the path to the guest share (e.g. "/share/guest")
-    //   "guest" cannot be "/share/config.json"
-    if (fnHas(config, "guest") !== true){
-        config["guest"] = false;
-    }
-    const validateConfigGuest = fnValidateConfigGuest(config["guest"], sharedb);
-    if (validateConfigGuest !== true){
-        return validateConfigGuest;
-    }
-
     // check "users" property
     const validateConfigUsers = fnValidateConfigUsers(config["users"], sharedb);
     if (validateConfigUsers !== true){
@@ -79,6 +66,12 @@ function fnValidateConfig(config){
     const validateConfigShares = fnValidateConfigShares(config["shares"], sharedb);
     if (validateConfigShares !== true){
         return validateConfigShares;
+    }
+
+    // "guest" section is not supported anymore
+    //  display a warning
+    if (fnHas(config, "guest") && config["guest"] !== false){
+        console.log(`[WARNING] 'guest' section of 'config.json' is not supported anymore and is ignored. Use 'guest' property of shares, in order to create anonymous shared folders.`);
     }
 
     return true;

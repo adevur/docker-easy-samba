@@ -10,7 +10,6 @@ const fs = require("fs");
 // external functions
 const fnLoadConfig = require("/startup/functions/fnLoadConfig.js");
 const fnValidateConfig = require("/startup/functions/fnValidateConfig.js");
-const fnCreateGuest = require("/startup/functions/fnCreateGuest.js");
 const fnCreateUsers = require("/startup/functions/fnCreateUsers.js");
 const fnCreateShares = require("/startup/functions/fnCreateShares.js");
 const fnGenSmbConf = require("/startup/functions/fnGenSmbConf.js");
@@ -182,19 +181,6 @@ async function fnRun(){
     }
     console.log(`[LOG] permissions of '/share' have been correctly set.`);
 
-    // add guest share
-    if (config["guest"] !== false) {
-        const createGuest = fnCreateGuest(config["guest"]);
-        if (createGuest !== true){
-            console.log(`[ERROR] guest share could not be created: ${createGuest}.`);
-            return false;
-        }
-        console.log(`[LOG] guest share has been correctly created.`);
-    }
-    else {
-        console.log(`[LOG] guest share will not be created.`);
-    }
-
     // add the users in the container's OS and in SAMBA
     const createUsers = fnCreateUsers(config["users"]);
     if (createUsers !== true){
@@ -227,8 +213,8 @@ async function fnRun(){
     console.log(`[LOG] starting 'nmbd' and 'smbd' daemons...`);
     fnStartDaemons();
 
-    // wait 5 seconds...
-    await fnSleep(5000);
+    // wait 3 seconds...
+    await fnSleep(3000);
 
     // script has been executed, now the SAMBA server is ready
     console.log(`[LOG] SAMBA server is now ready.`);
