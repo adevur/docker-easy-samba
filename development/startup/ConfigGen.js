@@ -13,8 +13,6 @@
     config.on()
 
     config.domain()
-    config.guest()
-    config.unsetGuest()
     config.version()
     config.unsetVersion()
     config.global()
@@ -123,11 +121,10 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
-        this.easysambaVersion = "1.8";
+        this.easysambaVersion = "1.9";
 
         // internal variables used by an instance of ConfigGen
         this["$domain"] = "WORKGROUP";
-        this["$guest"] = undefined;
         this["$version"] = undefined;
         this["$global"] = undefined;
         this["$users"] = [];
@@ -965,10 +962,6 @@ const ConfigGen = class {
             result.domain(input["domain"]);
         }
 
-        if (fnHas(input, "guest")){
-            result.guest(input["guest"]);
-        }
-
         if (fnHas(input, "version")){
             result.version(input["version"]);
         }
@@ -1067,10 +1060,6 @@ const ConfigGen = class {
         }
         result["domain"] = this["$domain"];
 
-        if (this["$guest"] === false || fnIsString(this["$guest"]) === true){
-            result["guest"] = this["$guest"];
-        }
-
         if (fnIsString(this["$version"])){
             result["version"] = this["$version"];
         }
@@ -1119,26 +1108,6 @@ const ConfigGen = class {
         }
 
         throw new Error("ERROR: DOMAIN NAME MUST BE A STRING");
-    }
-
-    // guest()
-    guest(input = undefined){
-        if (arguments.length < 1){
-            return this["$guest"];
-        }
-
-        if (input === false || fnIsString(input)){
-            this["$guest"] = input;
-            return this;
-        }
-
-        throw new Error("ERROR: GUEST MUST BE A STRING OR false");
-    }
-
-    // unsetGuest()
-    unsetGuest(){
-        this["$guest"] = undefined;
-        return this;
     }
 
     // version()
