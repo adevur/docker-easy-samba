@@ -17,7 +17,6 @@ const fnHas = require("/startup/functions/fnHas.js");
 // PURPOSE: generate "/etc/samba/smb.conf"
 function fnGenSmbConf(config){
     const domain = config["domain"];
-    const guest = config["guest"];
     const shares = config["shares"];
 
     // final result will be written into "result" variable
@@ -27,7 +26,7 @@ function fnGenSmbConf(config){
     result += `[global]\n`;
     result += `workgroup = ${domain}\n`;
     result += `security = user\n`;
-    result += (guest !== false || shares.some((share) => { return fnHas(share, "guest"); })) ? `map to guest = Bad User\n` : `map to guest = Never\n`;
+    result += (shares.some((share) => { return fnHas(share, "guest"); })) ? `map to guest = Bad User\n` : `map to guest = Never\n`;
     result += `unix charset = UTF-8\n`;
     result += `dos charset = CP850\n`;
     result += `mangled names = yes\n`;
@@ -40,17 +39,6 @@ function fnGenSmbConf(config){
         result += config["global"].map((line) => { return (line + "\n"); }).join("");
     }
     result += "\n";
-
-    // add guest share
-    if (guest !== false){
-        result += `[guest]\n`;
-        result += `path = "${guest}"\n`;
-        result += `browsable = yes\n`;
-        result += `writable = yes\n`;
-        result += `read only = no\n`;
-        result += `guest ok = yes\n`;
-        result += `force user = nobody\n\n`;
-    }
 
     // for each "share" in "shares" ...
     shares.forEach((share) => {
