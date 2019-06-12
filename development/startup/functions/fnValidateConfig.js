@@ -14,6 +14,7 @@ const fnValidateConfigShares = require("/startup/functions/fnValidateConfigShare
 const fnValidateConfigGlobal = require("/startup/functions/fnValidateConfigGlobal.js");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
+const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
 
 
@@ -30,6 +31,14 @@ function fnValidateConfig(config){
     // "config" must contain "domain", "users" and "shares" properties
     if (fnHas(config, ["domain", "guest", "users", "shares"]) !== true){
         return "MUST CONTAIN 'domain', 'users' AND 'shares' PROPERTIES";
+    }
+
+    // check "guest" property
+    if (fnHas(config, "guest") && fnIsString(config["guest"])){
+        console.log(`[WARNING] 'guest' section of 'config.json' is not supported anymore. Use 'guest' property of shares, in order to create anonymous shared folders.`);
+        if (fnHas(config, "shares") && fnIsArray(config["shares"])){
+            config["shares"].push({ "name": "guest", "path": config["guest"], "guest": "rw" });
+        }
     }
 
     // check "version" property
@@ -66,12 +75,6 @@ function fnValidateConfig(config){
     const validateConfigShares = fnValidateConfigShares(config["shares"], sharedb);
     if (validateConfigShares !== true){
         return validateConfigShares;
-    }
-
-    // "guest" section is not supported anymore
-    //  display a warning
-    if (fnHas(config, "guest") && config["guest"] !== false){
-        console.log(`[WARNING] 'guest' section of 'config.json' is not supported anymore and is ignored. Use 'guest' property of shares, in order to create anonymous shared folders.`);
     }
 
     return true;

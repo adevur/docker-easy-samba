@@ -962,6 +962,10 @@ const ConfigGen = class {
             result.domain(input["domain"]);
         }
 
+        if (fnHas(input, "guest")){
+            result.guest(input["guest"]);
+        }
+
         if (fnHas(input, "version")){
             result.version(input["version"]);
         }
@@ -1108,6 +1112,42 @@ const ConfigGen = class {
         }
 
         throw new Error("ERROR: DOMAIN NAME MUST BE A STRING");
+    }
+
+    // guest()
+    guest(input = undefined){
+
+        if (arguments.length < 1){
+            console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
+            return (this.shares.get().includes("guest")) ? this.shares.get("guest")["path"] : undefined;
+        }
+
+        if (fnIsString(input)){
+            console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
+            if (this.shares.get().includes("guest")){
+                this.shares.setPath("guest", input);
+            }
+            else {
+                this.shares.add("guest", input, "rw");
+            }
+            return this;
+        }
+        else if (input === false){
+            this.unsetGuest();
+            return this;
+        }
+
+        throw new Error("ERROR: GUEST MUST BE false OR A STRING");
+    }
+
+    // unsetGuest()
+    unsetGuest(){
+        console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
+
+        if (this.shares.get().includes("guest")){
+            this.shares.remove("guest");
+        }
+        return this;
     }
 
     // version()
