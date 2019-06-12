@@ -25,7 +25,7 @@ const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
 //   check if config file content is correct
 function fnValidateConfig(config){
     // TODO: document "sharedb"
-    const sharedb = { "users": [], "names": ["global", "homes", "printers", "guest"], "paths": [], "groups": {} };
+    const sharedb = { "users": [], "names": ["global", "homes", "printers"], "paths": [], "groups": {} };
 
     // "config" must contain "domain", "users" and "shares" properties
     if (fnHas(config, ["domain", "guest", "users", "shares"]) !== true){
