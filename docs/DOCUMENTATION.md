@@ -1067,9 +1067,11 @@ const config = new ConfigGen();
 
 config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
 console.log( config.shares.get("public") ); // { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }
+console.log( config.shares.get("public")["guest"] ); // undefined
 
 config.shares.add("anon", "/share/anon", "ro");
 console.log( config.shares.get("anon") ); // { "name": "anon", "path": "/share/anon", "guest": "ro", "access": [] }
+console.log( config.shares.get("anon")["guest"] ); // ro
 ```
 
 ### `config.shares.addArray()` method
@@ -1371,6 +1373,7 @@ console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/s
 config.shares.setGuest("folder1", "no");
 
 console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [] }
+console.log( config.shares.get("folder1")["guest"] ); // undefined
 ```
 
 ### `config.shares.setFixedRules()` method
