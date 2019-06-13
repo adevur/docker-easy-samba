@@ -34,8 +34,6 @@ This chapter is divided into these sections:
 
 - [`domain` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section)
 
-- [`guest` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section)
-
 - [`users` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section)
 
 - [`groups` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#groups-section)
@@ -43,7 +41,7 @@ This chapter is divided into these sections:
 - [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
 
 ### general structure of the file
-`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `global` (optional), `domain`, `guest` (optional since `easy-samba` version `1.4`), `users`, `groups` (optional),
+`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `global` (optional), `domain`, `users`, `groups` (optional),
 and `shares`. `config.json` must be placed in the directory that will be mounted as `/share` in the container.
 
 ### `version` section
@@ -56,7 +54,7 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"` or `"1.7"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"` or `"1.8"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `global` section
 This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
@@ -86,24 +84,6 @@ It's a string that contains the domain name of the SAMBA server. It must be a va
 
 - All characters of `domain` must be either alphanumeric or hyphen (`-`).
 This rule is valid only for chars that are not the first or the last.
-
-### `guest` section
-It is optional and can be either a boolean equal to `false`, or a string. When `guest` is a string, it represents the path of the anonymous shared folder to create. This new share will have `guest` as name.
-For example: `"/share/guest"`. To be a valid path, `guest` string must follow these rules:
-
-- It must be a sub-directory of `/share`.
-
-- It can contain whatever Unicode character, except for: `/`, `\`, `<`, `>`, `:`, `"`, `|`, `?`, `*`.
-
-- It cannot contain control characters (i.e. chars with a code between 0 and 31 or with a code of 127).
-
-- It cannot be equal to `"/share/config.json"`, to `"/share/."` or to `"/share/.."`.
-
-- It cannot be long more than 255 characters.
-
-- It cannot be equal to any of the paths that will be specified in the `shares` section of `config.json`.
-
-> NOTE: this section is obsolete. Use `guest` property of shared folders, instead.
 
 ### `users` section
 It is an array that contains all the users that will be created and used by the SAMBA server. These users are created only
@@ -208,7 +188,6 @@ This is the simplest example of `config.gen.js` file that you can write:
 const fs = require("fs");
 const config = {
     "domain": "WORKGROUP",
-    "guest": false,
     "users": [ { "name": "user1", "password": "123456" } ],
     "shares": [ { "name": "folder1", "path": "/share/folder1", "access": ["user1"] } ]
 };
@@ -221,7 +200,6 @@ const ConfigGen = require("/startup/ConfigGen.js");
 const config = new ConfigGen();
 
 config.domain("WORKGROUP");
-config.guest(false);
 
 config.users.add("user1", "123456");
 config.shares.add("folder1", "/share/folder1", ["user1"]);
@@ -280,10 +258,6 @@ This is a list of all available methods of `ConfigGen.js` library:
 - [`config.easysambaVersion` property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configeasysambaversion-property)
 
 - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
-
-- [`config.guest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configguest-method)
-
-- [`config.unsetGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configunsetguest-method)
 
 - [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
 
@@ -397,7 +371,6 @@ const ConfigGen = require("./ConfigGen.js");
 
 const raw = {
     "domain": "WORKGROUP",
-    "guest": false,
     "users": [ { "name": "user1", "password": "123456" } ],
     "shares": [ { "name": "folder1", "path": "/share/folder1", "access": ["user1"] } ]
 };
@@ -470,53 +443,6 @@ const config = new ConfigGen();
 console.log( config.domain() ); // WORKGROUP
 config.domain("NEW-DOMAIN");
 console.log( config.domain() ); // NEW-DOMAIN
-```
-
-### `config.guest()` method
-This is a method that can be used in order to set the `guest` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `guest` section, if used without parameters.
-
-> NOTE: `guest` section is obsolete. Use `config.shares.add()` and `config.shares.addArray()` to create new anonymous shared folders, instead. You can also use `config.shares.setGuest()` to make an existing shared folder anonymous.
-
-- ARGUMENTS: `input` (optional)
-
-  - PARAMETER `input`: it can be either `false` or a string that contains the `guest` value to set
-
-- OUTPUT: in case no parameters are passed, it returns the current value of `guest`
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-console.log( config.guest() ); // undefined
-config.guest("/share/guest");
-console.log( config.guest() ); // /share/guest
-
-// since "guest" section is optional, you can also remove it this way:
-config.unsetGuest();
-```
-
-### `config.unsetGuest()` method
-This is a method that can be used in order to remove `guest` section from an instance of `ConfigGen`.
-
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
-
-- ARGUMENTS: N/A
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-config.guest("/share/guest");
-
-console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "guest": "/share/guest", "users": [], "shares": []}
-
-config.unsetGuest();
-
-console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "shares": []}
 ```
 
 ### `config.global()` method
@@ -1605,114 +1531,93 @@ you first [started the container](https://github.com/adevur/docker-easy-samba/bl
 ### list of logs
 This is the list of possible logs, when no error occurs:
 
-0) `[LOG] you're using easy-samba version '...' from '...' branch.`: this log informs the user about the current `easy-samba`
+- `[LOG] you're using easy-samba version '...' from '...' branch.`: this log informs the user about the current `easy-samba`
 version. E.g.: `[LOG] you're using easy-samba version '1.0.0' from 'stable' branch.`.
 
-1) `[LOG] SAMBA server configuration process has started.`: this log informs the user that `easy-samba` has started.
+- `[LOG] SAMBA server configuration process has started.`: this log informs the user that `easy-samba` has started.
 
-2) `[LOG] '/share/config.json' has been correctly loaded.`: this log informs the user that configuration file
+- `[LOG] '/share/config.json' has been correctly loaded.`: this log informs the user that configuration file
 `/share/config.json` has been successfully read and parsed.
 
-3) `[LOG] '/share/config.json' syntax is correct.`: this log informs the user that the configuration file doesn't
+- `[LOG] '/share/config.json' syntax is correct.`: this log informs the user that the configuration file doesn't
 contain syntax errors or content errors (e.g. usernames are correct, shared folders' paths are valid, ...).
 
-4) `[LOG] permissions of '/share' have been correctly reset.`: this log informs the user that filesystem permissions
+- `[LOG] permissions of '/share' have been correctly reset.`: this log informs the user that filesystem permissions
 and ACLs of `/share` have been cleared successfully.
 
-5) `[LOG] permissions of '/share' have been correctly set.`: this log informs the user that filesystem permissions
+- `[LOG] permissions of '/share' have been correctly set.`: this log informs the user that filesystem permissions
 and ACLs of `/share` have been successfully set, so that `/share` and all its children can only be accessed by
 `root`.
 
-6) `[LOG] guest share has been correctly created.`: this log informs the user that the anonymous shared folder has been
-successfully created (in case it didn't exist) and its filesystem permissions have been successfully set.
-This log only appears when you configured an anonymous shared folder in [`guest` section of `config.json` file](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section).
-
-7) `[LOG] guest share will not be created.`: this log informs the user that no anonymous shared folder will be created.
-This log only appears when [`guest` property of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#guest-section) has been set to `false`.
-
-8) `[LOG] users have been correctly created.`: this log informs the user that all the users that you configured in
+- `[LOG] users have been correctly created.`: this log informs the user that all the users that you configured in
 [`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section) have been correctly added to container's OS and to container's SAMBA server.
 
-9) `[LOG] shares have been correctly created.`: this log informs the user that all the shared folders that you
+- `[LOG] shares have been correctly created.`: this log informs the user that all the shared folders that you
 configured in [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section) have been correctly created (in case they didn't exist), and all
 the filesystem permissions and ACLs have been correctly set to them.
 
-10) `[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`: this log informs the user that the SAMBA
+- `[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`: this log informs the user that the SAMBA
 server's configuration file `/etc/samba/smb.conf` has been successfully generated and written to disk.
 
-11) `[LOG] starting 'nmbd'...`: this log informs the user that `/usr/sbin/nmbd` process is about to being started.
+- `[LOG] starting 'nmbd'...`: this log informs the user that `/usr/sbin/nmbd` process is about to being started.
 This process is necessary for the SAMBA server to function properly.
 
-12) `[LOG] waiting 2 seconds before starting 'smbd'...`: this log informs the user that `easy-samba` will wait 2
-seconds before starting `/usr/sbin/smbd` process.
-
-13) `[LOG] starting 'smbd'...`: this log informs the user that `/usr/sbin/smbd` process is about to being started.
+- `[LOG] starting 'smbd'...`: this log informs the user that `/usr/sbin/smbd` process is about to being started.
 This process is necessary for the SAMBA server to function properly.
 
-14) `[LOG] SAMBA server is now ready.`: this log informs the user that `easy-samba` completed its configuration without
+- `[LOG] SAMBA server is now ready.`: this log informs the user that `easy-samba` completed its configuration without
 errors, so you can now [connect to the container using a SAMBA client](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking).
 
-15) `[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`: this log informs the user that `/share/config.json` configuration file is missing, but `/share/config.gen.js` script has been found, so the latter will be used to generate the missing `config.json` file. This log has been added in `easy-samba` version `1.3.0`.
+- `[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`: this log informs the user that `/share/config.json` configuration file is missing, but `/share/config.gen.js` script has been found, so the latter will be used to generate the missing `config.json` file. This log has been added in `easy-samba` version `1.3.0`.
 
 ### list of errors
 This is the list of possible logs, when an error occurs:
 
-0) `[WARNING] it's not been possible to display version information.`: this is the only error that doesn't stop the container.
-It is not a real error, just a warning that `easy-samba` could not retrieve version information. This happens when file
+- `[WARNING] it's not been possible to display version information.`: it is not a real error, just a warning that `easy-samba` could not retrieve version information. This happens when file
 `/startup/version.txt` doesn't exist or it's not well-formatted. You should ignore this error since it's not caused by you.
 Moreover, you should open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
-1) `[ERROR] script has failed for unknown reasons.`: this is a generic error that occurs when `easy-samba` configuration
+- `[ERROR] script has failed for unknown reasons.`: this is a generic error that occurs when `easy-samba` configuration
 process throws an error that it doesn't recognize. This error is usually followed by message `[DEBUG] DETAILS ABOUT THE ERROR: ...`,
 which gives you mostly debug information. If this error occurs, you should open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
-2) `[ERROR] '/share/config.json' could not be loaded or it is not in JSON format.`: this error occurs when the configuration
+- `[ERROR] '/share/config.json' could not be loaded or it is not in JSON format.`: this error occurs when the configuration
 file `/share/config.json` doesn't exist or it is not a valid JSON file.
 
-3) `[ERROR] '/share/config.json' syntax is not correct: ...`: this error occurs when `config.json` contains syntax or
+- `[ERROR] '/share/config.json' syntax is not correct: ...`: this error occurs when `config.json` contains syntax or
 content errors (e.g. `guest` section is missing, one of the usernames is not a valid username, ...). This log also
 gives you detailed information about what is the error that's been found.
 See also [`config.json` section of this `Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson)
 in order to better understand the reported error.
 
-4) `[ERROR] permissions of '/share' could not be reset.`: this error occurs mostly if the underlying OS or the underlying
+- `[ERROR] permissions of '/share' could not be reset.`: this error occurs mostly if the underlying OS or the underlying
 filesystem that you're using on your computer don't support POSIX ACLs.
 
-5) `[ERROR] permissions of '/share' could not be set.`: this error occurs mostly if the underlying OS or the underlying
+- `[ERROR] permissions of '/share' could not be set.`: this error occurs mostly if the underlying OS or the underlying
 filesystem that you're using on your computer don't support POSIX ACLs.
 
-6) `[ERROR] guest share could not be created: ...`: this error occurs if `easy-samba` has not been able to create
-the anonymous shared folder. This log also gives you detailed information about what is the error that's been found.
-If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
-
-7) `[ERROR] users could not be created: ...`: this error occurs if `easy-samba` has not been able to add the users
+- `[ERROR] users could not be created: ...`: this error occurs if `easy-samba` has not been able to add the users
 (that you specified in [`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section))
 in the container's OS and in the SAMBA server.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
-8) `[ERROR] shares could not be created: ...`: this error occurs if `easy-samba` has not been able to create
+- `[ERROR] shares could not be created: ...`: this error occurs if `easy-samba` has not been able to create
 the shared folders (that you specified in the [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)).
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
-9) `[ERROR] '/etc/samba/smb.conf' could not be generated or written.`: this error occurs mostly if `easy-samba` has
+- `[ERROR] '/etc/samba/smb.conf' could not be generated or written.`: this error occurs mostly if `easy-samba` has
 not been able to write file `/etc/samba/smb.conf` inside the container.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
-10) `[ERROR] 'nmbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
+- `[ERROR] 'nmbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
 `/usr/sbin/nmbd` inside the container.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
-11) `[ERROR] 'nmbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/nmbd` has suddenly exited.
-If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
-
-12) `[ERROR] 'smbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
+- `[ERROR] 'smbd' could not be started.`: this error occurs if `easy-samba` has not been able to start process
 `/usr/sbin/smbd` inside the container.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
-13) `[ERROR] 'smbd' terminated for unknown reasons.`: this error occurs if process `/usr/sbin/smbd` has suddenly exited.
-If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
-
-14) `[ERROR] it's not been possible to clean up existing users.`: this error occurs if `easy-samba` has not been able to clean up existing users during startup phase. This error has been added in version `1.2.0` of `easy-samba`.
+- `[ERROR] it's not been possible to clean up existing users.`: this error occurs if `easy-samba` has not been able to clean up existing users during startup phase. This error has been added in version `1.2.0` of `easy-samba`.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 ## how easy-samba works
@@ -1740,15 +1645,15 @@ As you can see from the [`Dockerfile`](https://github.com/adevur/docker-easy-sam
 Node.js script, written in Javascript, whose main purpose is to configure and start the SAMBA server.
 Here's what it does:
 
-1) The script looks for the configuration file `/share/config.json`, reads it and parses it (from JSON to Javascript object).
+- The script looks for the configuration file `/share/config.json`, reads it and parses it (from JSON to Javascript object).
 
-2) The script checks if `config.json` contains syntax errors, or any other error (e.g. you defined two users with the same username).
+- The script checks if `config.json` contains syntax errors, or any other error (e.g. you defined two users with the same username).
 
     This phase is very important, since the rest of this script will just assume that every single parameter of `config.json` is valid and has no conflicts with other parameters (because the configuration file has already been validated during this phase).
 
     Also, during this phase, `easy-samba` will evaluate the access rules defined in the `shares` property (see also [`shares` property of `config.json` in this Doumentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section) in order to understand how access rules get evaluated).
 
-3) The script will clear all filesystem permissions of `/share` using these commands:
+- The script will clear all filesystem permissions of `/share` using these commands:
     ```sh
     setfacl -R -bn /share
     chmod -R a+rX /share
@@ -1756,21 +1661,14 @@ Here's what it does:
 
     This phase is needed because `easy-samba` has to set its own permissions on `/share` (accordingly to `config.json`), so no other custom permission must be present on `/share`.
 
-4) The script will set the initial permissions of `/share`. In this phase, `/share` is set so that only `root` has access to it and its children. These commands are used:
+- The script will set the initial permissions of `/share`. In this phase, `/share` is set so that only `root` has access to it and its children. These commands are used:
     ```sh
     chown -R root:root /share
     setfacl -R -m 'u::rwx,g::rwx,o::x' /share
     setfacl -R -dm 'u::rwx,g::rwx,o::x' /share
     ```
 
-5) In case `guest` property of `config.json` is not `false`, the script will create the anonymous shared folder (in case it doesn't exist). In order to set the correct permissions on the anonymous shared folder, these commands are used (in this example, `/share/guest` will be the shared folder's path):
-    ```sh
-    chown -R nobody:nobody /share/guest
-    setfacl -R -m 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
-    setfacl -R -dm 'u::rwx,g::rwx,o::rwx,u:nobody:rwx,g:nobody:rwx' /share/guest
-    ```
-
-6) The script reads `users` property of `config.json` and adds every user into the container's OS and in the SAMBA server.
+- The script reads `users` property of `config.json` and adds every user into the container's OS and in the SAMBA server.
 The script uses these commands (in this example, there's only a user with name `user1` and password `123456`):
     ```sh
     useradd -M -s /sbin/nologin user1
@@ -1778,19 +1676,19 @@ The script uses these commands (in this example, there's only a user with name `
     (echo '123456'; echo '123456') | smbpasswd -a user1 -s
     ```
 
-7) The script reads `shares` property of `config.json` and, for each defined shared folder, it creates the directory (if it doesn't exist) and
+- The script reads `shares` property of `config.json` and, for each defined shared folder, it creates the directory (if it doesn't exist) and
 sets its permission accordingly to the access rules that have been evaluated during phase 2.
 
-8) The script writes a `/etc/samba/smb.conf` file, accordingly to the configuration parameters of `config.json`.
+- The script writes a `/etc/samba/smb.conf` file, accordingly to the configuration parameters of `config.json`.
 Documentation about `/etc/samba/smb.conf` can be found [here](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html).
 
-9) The script starts the SAMBA server with these commands:
+- The script starts the SAMBA server with these commands:
     ```sh
     /usr/sbin/nmbd --foreground --no-process-group
     /usr/sbin/smbd --foreground --no-process-group
     ```
 
-10) The script will now keep running until either `nmbd` or `smbd` stop.
+- The script will now keep running until either `nmbd` or `smbd` stop.
 
 
 
