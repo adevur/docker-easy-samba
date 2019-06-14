@@ -625,22 +625,11 @@ const ConfigGen = class {
                 }
 
                 const index = this.shares.get().indexOf(sharename);
-
                 if (index < 0){
                     throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
-                const previous = this.shares.get(sharename);
-                rules.forEach((rule) => {
-                    this["$shares"][index]["access"].push(rule);
-                });
-
-                // trigger event "share-change" and "share-change-access"
-                const current = this.shares.get(sharename);
-                if (fnEqualArrays(current["access"], previous["access"]) !== true){
-                    this["$trigger"]("share-change", current, previous);
-                    this["$trigger"]("share-change-access", current, previous);
-                }
+                this.shares.addRuleAt(sharename, rules, this.shares.get(sharename)["access"].length);
 
                 return this;
             },
@@ -652,8 +641,8 @@ const ConfigGen = class {
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
                 }
 
-                if (fnIsString(rule) !== true){
-                    throw new Error("ERROR: RULE MUST BE A STRING");
+                if (fnIsString(rule) !== true && (fnIsArray(rule) !== true || rule.every(fnIsString) !== true)){
+                    throw new Error("ERROR: RULE MUST BE A STRING OR AN ARRAY OF STRINGS");
                 }
 
                 if (fnIsInteger(ruleIndex) !== true || ruleIndex < 0){
@@ -671,14 +660,20 @@ const ConfigGen = class {
                     throw new Error("ERROR: INDEX OUT OF RANGE");
                 }
 
-                // add the rule at the specified ruleIndex
+                const rules = (fnIsString(rule)) ? [rule] : rule;
+
+                // add the rules at the specified ruleIndex
                 const previous = this.shares.get(sharename);
-                this["$shares"][index]["access"].splice(ruleIndex, 0, rule);
+                rules.forEach((e, i) => {
+                    this["$shares"][index]["access"].splice(ruleIndex + i, 0, e);
+                });
 
                 // trigger event "share-change" and "share-change-access"
                 const current = this.shares.get(sharename);
-                this["$trigger"]("share-change", current, previous);
-                this["$trigger"]("share-change-access", current, previous);
+                if (fnEqualArrays(current["access"], previous["access"]) !== true){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-access", current, previous);
+                }
 
                 return this;
             },
@@ -694,25 +689,18 @@ const ConfigGen = class {
                 }
 
                 const index = this.shares.get().indexOf(sharename);
-
                 if (index < 0){
                     throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
-                const previous = this.shares.get(sharename);
-                rules.forEach((rule) => {
-                    const ruleIndex = this["$shares"][index]["access"].indexOf(rule);
-                    if (ruleIndex >= 0){
-                        this["$shares"][index]["access"].splice(ruleIndex, 1);
-                    }
+                const indices = rules.map((e) => {
+                    const i = this.shares.get(sharename)["access"].indexOf(e);
+                    return (i < 0) ? undefined : i;
+                }).filter((e, i, arr) => {
+                    return (arr.indexOf(e) === arr.lastIndexOf(e) && e !== undefined);
                 });
 
-                // trigger event "share-change" and "share-change-access"
-                const current = this.shares.get(sharename);
-                if (fnEqualArrays(current["access"], previous["access"]) !== true){
-                    this["$trigger"]("share-change", current, previous);
-                    this["$trigger"]("share-change-access", current, previous);
-                }
+                this.shares.removeRuleAt(sharename, indices);
 
                 return this;
             },
@@ -996,8 +984,8 @@ const ConfigGen = class {
         return this;
     }
 
-    // saveToJson()
-    saveToJson(){
+    // saveToObject()
+    saveToObject(){
         const result = {};
 
         if (fnIsString(this["$domain"]) !== true){
@@ -1026,7 +1014,12 @@ const ConfigGen = class {
             }
         });
 
-        return JSON.stringify(result);
+        return result;
+    }
+
+    // saveToJson()
+    saveToJson(){
+        return JSON.stringify(this.saveToObject());
     }
 
     // on()
