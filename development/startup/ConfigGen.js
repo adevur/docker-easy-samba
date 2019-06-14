@@ -1022,7 +1022,7 @@ const ConfigGen = class {
         return JSON.stringify(this.saveToObject());
     }
 
-    // on()
+    // config.on()
     on(event, cb){
         if (fnHas(this, `$on-${event}`) !== true){
             throw new Error("ERROR: INVALID EVENT");
@@ -1034,7 +1034,7 @@ const ConfigGen = class {
         return this;
     }
 
-    // domain()
+    // config.domain()
     domain(input = undefined){
         if (arguments.length < 1){
             return this["$domain"];
@@ -1048,7 +1048,7 @@ const ConfigGen = class {
         throw new Error("ERROR: DOMAIN NAME MUST BE A STRING");
     }
 
-    // guest()
+    // config.guest()
     guest(input = undefined){
         if (arguments.length < 1){
             console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
@@ -1073,7 +1073,7 @@ const ConfigGen = class {
         throw new Error("ERROR: GUEST MUST BE false OR A STRING");
     }
 
-    // unsetGuest()
+    // config.unsetGuest()
     unsetGuest(){
         console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
 
@@ -1083,13 +1083,13 @@ const ConfigGen = class {
         return this;
     }
 
-    // version()
+    // config.version()
     version(input = undefined){
         if (arguments.length < 1){
             return this["$version"];
         }
 
-        if (fnIsString(input)){
+        if (fnIsString(input) || input === undefined){
             this["$version"] = input;
             return this;
         }
@@ -1097,29 +1097,31 @@ const ConfigGen = class {
         throw new Error("ERROR: VERSION MUST BE A STRING");
     }
 
-    // unsetVersion()
+    // config.unsetVersion()
     unsetVersion(){
-        this["$version"] = undefined;
+        console.log(`[WARNING] 'config.unsetVersion()' is deprecated. Use 'config.version(undefined)'.`);
+        this.version(undefined);
         return this;
     }
 
-    // global()
+    // config.global()
     global(input = undefined){
         if (arguments.length < 1){
             return this["$global"];
         }
 
-        if (fnIsArray(input) && input.every(fnIsString)){
-            this["$global"] = fnCopy(input);
+        if (input === undefined || (fnIsArray(input) && input.every(fnIsString))){
+            this["$global"] = (input === undefined) ? undefined : fnCopy(input);
             return this;
         }
 
         throw new Error("ERROR: GLOBAL MUST BE AN ARRAY OF STRINGS");
     }
 
-    // unsetGlobal()
+    // config.unsetGlobal()
     unsetGlobal(){
-        this["$global"] = undefined;
+        console.log(`[WARNING] 'config.unsetGlobal()' is deprecated. Use 'config.global(undefined)'.`);
+        this.global(undefined);
         return this;
     }
 };
