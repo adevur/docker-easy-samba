@@ -197,8 +197,7 @@ const ConfigGen = class {
             }
             this["$fixedrules-handler-current"] = undefined;
         };
-        this.on("share-change-access", this["$fixedrules-handler"]);
-        this.on("share-add", this["$fixedrules-handler"]);
+        this.on(["share-add", "share-change-access"], this["$fixedrules-handler"]);
 
         // "users" namespace
         //   where functions like "config.users.add(...)" are located
