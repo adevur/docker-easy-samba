@@ -219,8 +219,9 @@ const ConfigGen = class {
                     throw new Error("ERROR: INVALID ARGUMENTS");
                 }
 
-                if (password === undefined){
-                    password = this.constructor.genRandomPassword();
+                if (password === undefined || fnIsInteger(password)){
+                    const len = (password === undefined || password < 4) ? 12 : password;
+                    password = this.constructor.genRandomPassword(len);
                 }
 
                 if (fnIsString(username) !== true || fnIsString(password) !== true){
