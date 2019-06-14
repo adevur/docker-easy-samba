@@ -29,16 +29,15 @@ function fnValidateConfigShares(shares, sharedb){
     // for each "share" in "shares" ...
     let error = "";
     const result = shares.every((share) => {
-        // "share" must have "name" and "path" properties (and cannot have "users" property)
-        if (fnHas(share, ["name", "path"]) !== true || fnHas(share, "users") === true){
-            error = `EVERY SHARED FOLDER IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' OR 'guest' PROPERTIES`;
+        // "share" must have "name" and "path" properties and must have "access" or "guest" properties
+        if (fnHas(share, ["name", "path"]) !== true || (fnHas(share, "access") !== true && fnHas(share, "guest") !== true)){
+            error = `EVERY SHARED FOLDER IN 'shares' MUST HAVE 'name' AND 'path' PROPERTIES, AND 'access' OR 'guest' PROPERTIES`;
             return false;
         }
 
-        // "share" must have "access" or "guest" properties
-        if (fnHas(share, "access") !== true && fnHas(share, "guest") !== true){
-            error = `EVERY SHARED FOLDER IN 'shares' MUST ONLY HAVE 'name', 'path' AND 'access' OR 'guest' PROPERTIES`;
-            return false;
+        // delete "users" property if present (it is reserved for internal use)
+        if (fnHas(share, "users")){
+            delete share["users"];
         }
 
         // "name" must be a unique alphanumeric name of minimum 1 char length
