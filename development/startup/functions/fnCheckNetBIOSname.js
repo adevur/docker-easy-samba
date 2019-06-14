@@ -7,7 +7,6 @@ module.exports = fnCheckNetBIOSname;
 
 
 // dependencies
-const fnIsAsciiString = require("/startup/functions/fnIsAsciiString.js");
 const fnValidateString = require("/startup/functions/fnValidateString.js");
 
 
@@ -20,12 +19,6 @@ const fnValidateString = require("/startup/functions/fnValidateString.js");
 function fnCheckNetBIOSname(name){
     // minimum length: 1 character, maximum length: 15 characters
     if (name.length < 1 || name.length > 15){
-        return false;
-    }
-
-    // check if "name" is an ASCII string
-    // TODO: could be omitted
-    if (fnIsAsciiString(name) !== true){
         return false;
     }
 
