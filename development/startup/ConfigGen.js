@@ -203,7 +203,7 @@ const ConfigGen = class {
         // "users" namespace
         //   where functions like "config.users.add(...)" are located
         this.users = {
-            // users.add()
+            // config.users.add()
             add: (...args) => {
                 let username = undefined;
                 let password = undefined;
@@ -239,7 +239,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // users.addArray()
+            // config.users.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
                     throw new Error("ERROR: INPUT MUST BE AN ARRAY");
@@ -255,7 +255,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // users.remove()
+            // config.users.remove()
             remove: (username) => {
                 if (fnIsArray(username)){
                     username.forEach((e) => {
@@ -284,7 +284,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // users.get()
+            // config.users.get()
             get: (...args) => {
                 if (args.length < 1){
                     return this["$users"].map((e) => { return e["name"]; });
@@ -304,12 +304,12 @@ const ConfigGen = class {
                 return fnCopy(this["$users"][index]);
             },
 
-            // users.getAll()
+            // config.users.getAll()
             getAll: () => {
                 return fnCopy(this["$users"]);
             },
 
-            // users.setPassword()
+            // config.users.setPassword()
             setPassword: (username, password) => {
                 if (fnIsString(username) !== true || fnIsString(password) !== true){
                     throw new Error("ERROR: USERNAME AND PASSWORD MUST BE STRINGS");
@@ -338,7 +338,7 @@ const ConfigGen = class {
         // "groups" namespace
         //   where functions like "config.groups.add(...)" are located
         this.groups = {
-            // groups.add()
+            // config.groups.add()
             add: (groupname, members) => {
                 if (fnIsString(groupname) !== true){
                     throw new Error("ERROR: GROUP NAME MUST BE A STRING");
@@ -362,7 +362,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // groups.addArray()
+            // config.groups.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
                     throw new Error("ERROR: INPUT MUST BE AN ARRAY");
@@ -378,7 +378,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // groups.remove()
+            // config.groups.remove()
             remove: (groupname) => {
                 if (fnIsArray(groupname)){
                     groupname.forEach((e) => {
@@ -407,7 +407,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // groups.get()
+            // config.groups.get()
             get: (...args) => {
                 if (args.length < 1){
                     return this["$groups"].map((e) => { return e["name"]; });
@@ -428,12 +428,12 @@ const ConfigGen = class {
                 return fnCopy(this["$groups"][index]);
             },
 
-            // groups.getAll()
+            // config.groups.getAll()
             getAll: () => {
                 return fnCopy(this["$groups"]);
             },
 
-            // groups.addMembers()
+            // config.groups.addMembers()
             addMembers: (groupname, members) => {
                 const addMember = (groupname, member) => {
                     if (this["$groups"][index]["members"].includes(member) !== true){
@@ -472,7 +472,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // groups.removeMembers()
+            // config.groups.removeMembers()
             removeMembers: (groupname, members) => {
                 if (fnIsString(groupname) !== true){
                     throw new Error("ERROR: GROUP NAME MUST BE A STRING");
@@ -510,7 +510,7 @@ const ConfigGen = class {
         // "shares" namespace
         //   where functions like "config.shares.add(...)" are located
         this.shares = {
-            // shares.add()
+            // config.shares.add()
             add: (sharename, path, rules) => {
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
@@ -540,7 +540,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.addArray()
+            // config.shares.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
                     throw new Error("ERROR: INPUT MUST BE AN ARRAY");
@@ -559,7 +559,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.remove()
+            // config.shares.remove()
             remove: (sharename) => {
                 if (fnIsArray(sharename)){
                     sharename.forEach((e) => {
@@ -588,7 +588,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.get()
+            // config.shares.get()
             get: (...args) => {
                 if (args.length < 1){
                     return this["$shares"].map((e) => { return e["name"]; });
@@ -609,12 +609,12 @@ const ConfigGen = class {
                 return fnCopy(this["$shares"][index]);
             },
 
-            // shares.getAll()
+            // config.shares.getAll()
             getAll: () => {
                 return fnCopy(this["$shares"]);
             },
 
-            // shares.addRules()
+            // config.shares.addRules()
             addRules: (sharename, rules) => {
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
@@ -634,7 +634,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.addRuleAt()
+            // config.shares.addRuleAt()
             addRuleAt: (sharename, rule, ruleIndex) => {
                 // check parameters
                 if (fnIsString(sharename) !== true){
@@ -678,7 +678,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.removeRules()
+            // config.shares.removeRules()
             removeRules: (sharename, rules) => {
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
@@ -705,7 +705,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.removeAllRules()
+            // config.shares.removeAllRules()
             removeAllRules: (...args) => {
                 let sharename = undefined;
                 let rulesToDelete = undefined;
@@ -737,7 +737,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.removeRuleAt()
+            // config.shares.removeRuleAt()
             removeRuleAt: (sharename, ruleIndices) => {
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
@@ -772,7 +772,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.setPath()
+            // config.shares.setPath()
             setPath: (sharename, path) => {
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
@@ -801,7 +801,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.setGuest()
+            // config.shares.setGuest()
             setGuest: (sharename, permission) => {
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
@@ -839,7 +839,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.setFixedRules()
+            // config.shares.setFixedRules()
             setFixedRules: (...args) => {
                 let shares = undefined;
                 let rules = undefined;
@@ -866,7 +866,7 @@ const ConfigGen = class {
                 return this;
             },
 
-            // shares.unsetFixedRules()
+            // config.shares.unsetFixedRules()
             unsetFixedRules: () => {
                 this.shares.setFixedRules([]);
                 return this;
@@ -923,6 +923,7 @@ const ConfigGen = class {
         }
     }
 
+    // ConfigGen.genRandomPassword()
     static genRandomPassword(len = 12){
         // check parameter "len"
         if (fnIsInteger(len) !== true || len < 4){
@@ -972,7 +973,7 @@ const ConfigGen = class {
         }
     }
 
-    // saveToFile()
+    // config.saveToFile()
     saveToFile(path){
         try {
             fs.writeFileSync(path, this.saveToJson());
@@ -984,7 +985,7 @@ const ConfigGen = class {
         return this;
     }
 
-    // saveToObject()
+    // config.saveToObject()
     saveToObject(){
         const result = {};
 
@@ -1017,20 +1018,30 @@ const ConfigGen = class {
         return result;
     }
 
-    // saveToJson()
+    // config.saveToJson()
     saveToJson(){
         return JSON.stringify(this.saveToObject());
     }
 
     // config.on()
     on(event, cb){
-        if (fnHas(this, `$on-${event}`) !== true){
+        if (fnIsArray(event) && event.every(fnIsString)){
+            event.forEach((e) => {
+                this.on(e, cb);
+            });
+            return this;
+        }
+
+        if (fnIsString(event) !== true || fnHas(this, `$on-${event}`) !== true){
             throw new Error("ERROR: INVALID EVENT");
         }
+
         if (fnIsFunction(cb) !== true){
             throw new Error("ERROR: CALLBACK IS NOT A FUNCTION");
         }
+
         this[`$on-${event}`].push(cb);
+
         return this;
     }
 
