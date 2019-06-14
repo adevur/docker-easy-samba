@@ -767,10 +767,8 @@ const ConfigGen = class {
 
                 const previous = this.shares.get(sharename);
                 const indices = (fnIsInteger(ruleIndices)) ? [ruleIndices] : ruleIndices;
-                indices.forEach((ruleIndex) => {
-                    if (this["$shares"][index]["access"].length > ruleIndex){
-                        this["$shares"][index]["access"][ruleIndex] = undefined;
-                    }
+                this["$shares"][index]["access"] = this["$shares"][index]["access"].map((e, i) => {
+                    return (indices.includes(i)) ? undefined : e;
                 });
                 while (this["$shares"][index]["access"].includes(undefined)){
                     this["$shares"][index]["access"].splice(this["$shares"][index]["access"].indexOf(undefined), 1);
