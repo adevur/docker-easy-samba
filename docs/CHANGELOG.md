@@ -2,11 +2,30 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.8.0`
+### Current stable release: `1.9.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.9.0 (2019-06-14 UTC)
+- New features:
+
+  - Support for `guest` section of `config.json` has been removed both from `easy-samba` and from `ConfigGen.js` library. This section can still be used for retro-compatibility purposes, but a deprecation warning will be displayed.
+
+  - Implemented new function in `ConfigGen.js` library: `config.saveToObject()`.
+
+  - These functions in `ConfigGen.js` have extended their functionalities (without breaking compatibility): `config.on()`, `config.shares.removeRuleAt()`, `config.shares.addRuleAt()`, `config.users.add()`, `config.users.addArray()`, `config.version()` and `config.global()`.
+
+  - These functions of `ConfigGen.js` are now deprecated: `config.guest()`, `config.unsetGuest()`, `config.unsetVersion()` and `config.unsetGlobal()`.
+
+- Bug fixes:
+
+  - Minor bugfixes.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.8.0 (2019-06-11 UTC)
 - New features:

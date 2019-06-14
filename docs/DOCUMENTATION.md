@@ -54,7 +54,7 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"` or `"1.8"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"`, `"1.8"` or `"1.9"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `global` section
 This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
@@ -107,8 +107,6 @@ and it must be unique (so there cannot be two or more groups with the same name,
 with the same name).
 
 - `members` is an array that contains all the usernames of the members of the group. It cannot be empty. Also, starting with `easy-samba` version `1.3`, it is possible to specify group names together with usernames (e.g. `{ "name": "group2", "members": ["group1", "user4"] }` means that `group2` contains all the users in `group1` plus `user4`).
-
-> NOTE: starting with `easy-samba` version `1.4`, `users` property of a group has been renamed to `members`.
 
 ### `shares` section
 This is an array that contains all the shared folders to be created by the SAMBA server.
@@ -261,15 +259,13 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
 
-- [`config.unsetGlobal()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configunsetglobal-method)
-
 - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
-
-- [`config.unsetVersion()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configunsetversion-method)
 
 - [`config.on()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configon-method)
 
 - [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetojson-method)
+
+- [`config.saveToObject()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoobject-method)
 
 - [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
 
@@ -450,7 +446,7 @@ This is a method that can be used in order to set the `global` section of an ins
 
 - ARGUMENTS: `input` (optional)
 
-  - PARAMETER `input`: it is a Javascript array of strings that contains the `global` value to set
+  - PARAMETER `input`: it is a Javascript array of strings that contains the `global` value to set; if `input` is equal to `undefined`, `global` section will be removed
 
 - OUTPUT: in case no parameters are passed, it returns the current value of `global`
 
@@ -465,32 +461,7 @@ config.global(["a", "b"]);
 console.log( config.global() ); // ["a", "b"]
 
 // since "global" section is optional, you can also remove it this way:
-config.unsetGlobal();
-```
-
-### `config.unsetGlobal()` method
-This is a method that can be used in order to remove `global` section from an instance of `ConfigGen`.
-
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
-
-- ARGUMENTS: N/A
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-// this is needed because "domain" section is mandatory in order to generate a "config.json" file
-config.domain("WORKGROUP");
-
-config.global(["a", "b"]);
-
-console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "global": ["a", "b"], "users": [], "shares": []}
-
-config.unsetGlobal();
-
-console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "shares": []}
+config.global(undefined);
 ```
 
 ### `config.version()` method
@@ -498,7 +469,7 @@ This is a method that can be used in order to set the `version` section of an in
 
 - ARGUMENTS: `input` (optional)
 
-  - PARAMETER `input`: it is a string that contains the `version` value to set
+  - PARAMETER `input`: it is a string that contains the `version` value to set; if `input` is equal to `undefined`, `version` section will be removed
 
 - OUTPUT: in case no parameters are passed, it returns the current value of `version`
 
@@ -513,42 +484,15 @@ config.version("1.3");
 console.log( config.version() ); // "1.3"
 
 // since "version" section is optional, you can also remove it this way:
-config.unsetVersion();
-```
-
-### `config.unsetVersion()` method
-This is a method that can be used in order to remove `version` section from an instance of `ConfigGen`.
-
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.5`.
-
-- ARGUMENTS: N/A
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-// this is needed because "domain" section is mandatory in order to generate a "config.json" file
-config.domain("WORKGROUP");
-
-config.version("1.5");
-
-console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "version": "1.5", "users": [], "shares": []}
-
-config.unsetVersion();
-
-console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [], "shares": []}
+config.version(undefined);
 ```
 
 ### `config.on()` method
 This method can be used to register handlers for `ConfigGen` events.
 
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.6`.
-
 - ARGUMENTS: `event` and `cb`
 
-  - PARAMETER `event`: it's a string that specifies the event you want to handle
+  - PARAMETER `event`: it's a string that specifies the event you want to handle; it can also be an array of strings that contains all the events that you want to handle
 
   - PARAMETER `cb`: it's the callback function to call every time the specified event is triggered; parameters `current` and `previous` are usually passed to this callback, depending on the event
 
@@ -619,6 +563,18 @@ config.users.remove("user1"); // OUTPUT: Removed user 'user1'.
 config.shares.add("folder1", "/share/folder1", ["rw:user1", "ro:user2"]); // no output because we didn't register a handler for "share-add" event
 
 config.shares.addRules("folder1", ["no:user3"]); // OUTPUT: Changed access rules of share 'folder1' from ["rw:user1", "ro:user2"] to ["rw:user1", "ro:user2", "no:user3"]
+
+// also, note that:
+config.on(["share-add", "share-change"], () => {
+    console.log("something changed");
+});
+// is equivalent to:
+config.on("share-add", () => {
+    console.log("something changed");
+});
+config.on("share-change", () => {
+    console.log("something changed");
+});
 ```
 
 ### `config.saveToJson()` method
@@ -639,6 +595,26 @@ config.users.add("user1", "123456");
 config.shares.add("user1", "/share/user1", ["rw:user1"]);
 
 console.log( config.saveToJson() ); // {"domain": "WORKGROUP", "users": [{ "name": "user1", "password": "123456" }], "shares": [{ "name": "user1", "path": "/share/user1", "access": ["rw:user1"] }]}
+```
+
+### `config.saveToObject()` method
+This method can be used to generate a Javascript object from an instance of `ConfigGen`.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: this method returns a Javascript object
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.domain("WORKGROUP");
+config.users.add("user1", "123456");
+config.shares.add("user1", "/share/user1", ["rw:user1"]);
+
+console.log( config.saveToObject() ); // {"domain": "WORKGROUP", "users": [{ "name": "user1", "password": "123456" }], "shares": [{ "name": "user1", "path": "/share/user1", "access": ["rw:user1"] }]}
 ```
 
 ### `config.saveToFile()` method
@@ -668,7 +644,7 @@ This is a method that can be used in order to add a user to the `users` section 
 
   - PARAMETER `username`: it is a string that contains the username of the new user
 
-  - PARAMETER `password`: it is a string that contains the password of the new user; if this parameter is missing, the newly-created user will have a random password of 12 characters (generated using `ConfigGen.genRandomPassword()`)
+  - PARAMETER `password`: it is a string that contains the password of the new user; if this parameter is missing, the newly-created user will have a random password of 12 characters (generated using `ConfigGen.genRandomPassword()`); if `password` is an integer, it will be interpreted as the length of the newly-generated random password
 
 EXAMPLE:
 ```js
@@ -679,8 +655,10 @@ const config = new ConfigGen();
 config.users.add("user1", "123456");
 
 config.users.add("user2");
-
 console.log( config.users.get("user2") ); // { "name": "user2", "password": "K3?\J.5 bfBt" }
+
+config.users.add("user3", 4);
+console.log( config.users.get("user3") ); // { "name": "user3", "password": "aB!2" }
 ```
 
 ### `config.users.addArray()` method
@@ -688,7 +666,7 @@ This is a method that can be used in order to add one or more users to the `user
 
 - ARGUMENTS: `input`
 
-  - PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "user1", "password": "123456" }`, or like this: `{ "name": "user2" }` (if `password` property is missing, a new random password of 12 characters will be generated for the user)
+  - PARAMETER `input`: it is an array of Javascript objects; an element of this array looks like this: `{ "name": "user1", "password": "123456" }`, or like this: `{ "name": "user2" }` (if `password` property is missing, a new random password of 12 characters will be generated for the user), or like this: `{ "name": "user3", "password": 4 }` (if `password` property is an integer, it will be interpreted as the length of the newly-generated random password)
 
 EXAMPLE:
 ```js
@@ -698,11 +676,13 @@ const config = new ConfigGen();
 
 config.users.addArray([
     { "name": "user1", "password": "123456" },
-    { "name": "user2" }
+    { "name": "user2" },
+    { "name": "user3", "password": 4 },
 ]);
 // this is equivalent to writing:
 config.users.add("user1", "123456");
 config.users.add("user2");
+config.users.add("user3", 4);
 ```
 
 ### `config.users.remove()` method
@@ -1127,7 +1107,7 @@ console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"
 ```
 
 ### `config.shares.addRuleAt()` method
-This is a method that can be used in order to add an access rule to an existing share of the `shares` section of an instance of `ConfigGen`.
+This is a method that can be used in order to add one or more access rules to an existing share of the `shares` section of an instance of `ConfigGen`.
 
 The access rule is inserted at the specified index.
 
@@ -1135,9 +1115,9 @@ The access rule is inserted at the specified index.
 
   - PARAMETER `sharename`: it is a string that contains the name of the share
 
-  - PARAMETER `rule`: it is a string that contains the access rule
+  - PARAMETER `rule`: it is a string that contains the access rule to add; it can also be an array of strings (that contains all the access rules to add)
 
-  - PARAMETER `ruleIndex`: it is the index where the access rule will be inserted
+  - PARAMETER `ruleIndex`: it is the index where the access rule(s) will be inserted
 
 EXAMPLE:
 ```js
@@ -1146,12 +1126,13 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.shares.add("public", "/share/public", ["rw:user1", "ro:user2", "rw:user3"]);
-
 console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3"]
 
 config.shares.addRuleAt("public", "ro:*", 0);
-
 console.log( config.shares.get("public")["access"] ); // ["ro:*", "rw:user1", "ro:user2", "rw:user3"]
+
+config.shares.addRuleAt("public", ["a", "b"], 1);
+console.log( config.shares.get("public")["access"] ); // ["ro:*", "a", "b", "rw:user1", "ro:user2", "rw:user3"]
 ```
 
 ### `config.shares.removeRules()` method
@@ -1190,17 +1171,15 @@ console.log( config.shares.get("test")["access"] ); // ["ro:user2"]
 ```
 
 ### `config.shares.removeRuleAt()` method
-This is a method that can be used in order to remove an access rule from an existing share of the `shares` section of an instance of `ConfigGen`.
+This is a method that can be used in order to remove one or more access rules from an existing share of the `shares` section of an instance of `ConfigGen`.
 
 The access rule to remove is specified using its index.
-
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.4`.
 
 - ARGUMENTS: `sharename` and `ruleIndex`
 
   - PARAMETER `sharename`: it is a string that contains the name of the share
 
-  - PARAMETER `ruleIndex`: it is the index of the access rule to remove
+  - PARAMETER `ruleIndex`: it is the index of the access rule to remove; it can also be an array of integers (that contains all the indices to remove)
 
 EXAMPLE:
 ```js
@@ -1209,12 +1188,13 @@ const ConfigGen = require("./ConfigGen.js");
 const config = new ConfigGen();
 
 config.shares.add("public", "/share/public", ["rw:user1", "ro:user2", "rw:user3"]);
-
 console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2", "rw:user3"]
 
 config.shares.removeRuleAt("public", 1);
-
 console.log( config.shares.get("public")["access"] ); // ["rw:user1", "rw:user3"]
+
+config.shares.removeRuleAt("public", [0, 1]);
+console.log( config.shares.get("public")["access"] ); // []
 ```
 
 ### `config.shares.removeAllRules()` method
