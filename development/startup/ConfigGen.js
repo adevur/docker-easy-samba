@@ -163,10 +163,17 @@ const ConfigGen = class {
         this["$on-share-change-guest"] = [];
 
         // internal trigger function for events
+        this["$trigger-flag"] = false;
         this["$trigger"] = (event, current, previous = undefined) => {
+            if (this["$trigger-flag"] === true){
+                return;
+            }
+
             if (fnHas(this, `$on-${event}`) !== true){
                 return;
             }
+
+            this["$trigger-flag"] = true;
             const cbs = this[`$on-${event}`];
             cbs.forEach((cb) => {
                 if (previous !== undefined){
@@ -176,26 +183,23 @@ const ConfigGen = class {
                     cb(current);
                 }
             });
+
+            this["$trigger-flag"] = false;
         };
 
         // internal variable for config.shares.setFixedRules() function
         this["$fixedrules"] = { "shares": undefined, "rules": [] };
 
         // event handlers for config.shares.setFixedRules() function
-        this["$fixedrules-handler-current"] = undefined;
+        //this["$fixedrules-handler-current"] = undefined;
         this["$fixedrules-handler"] = (share) => {
-            if (this["$fixedrules-handler-current"] === share["name"]){
-                return;
-            }
-            this["$fixedrules-handler-current"] = share["name"];
             if (this["$fixedrules"]["shares"] !== undefined && this["$fixedrules"]["shares"].includes(share["name"]) !== true){
                 return;
             }
-            if (fnArrayEndsWith(share["access"], this["$fixedrules"]["rules"]) !== true){
+            if (fnArrayEndsWith(this.shares.get(share["name"])["access"], this["$fixedrules"]["rules"]) !== true){
                 this.shares.removeAllRules(share["name"], this["$fixedrules"]["rules"]);
                 this.shares.addRules(share["name"], this["$fixedrules"]["rules"]);
             }
-            this["$fixedrules-handler-current"] = undefined;
         };
         this.on(["share-add", "share-change-access"], this["$fixedrules-handler"]);
 
