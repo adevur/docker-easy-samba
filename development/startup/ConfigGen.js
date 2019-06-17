@@ -9,6 +9,7 @@
 
     config.saveToJson()
     config.saveToFile()
+    config.saveToObject()
 
     config.on()
 
@@ -16,9 +17,9 @@
     [deprecated] config.guest()
     [deprecated] config.unsetGuest()
     config.version()
-    config.unsetVersion()
+    [deprecated] config.unsetVersion()
     config.global()
-    config.unsetGlobal()
+    [deprecated] config.unsetGlobal()
 
     config.users.add()
     config.users.addArray()
