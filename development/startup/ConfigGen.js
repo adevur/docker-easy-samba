@@ -12,6 +12,7 @@
     config.saveToObject()
 
     config.on()
+    config.atom()
 
     config.domain()
     [deprecated] config.guest()
@@ -137,7 +138,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
-        this.easysambaVersion = "1.9";
+        this.easysambaVersion = "1.10";
 
         // internal variables used by an instance of ConfigGen
         this["$domain"] = "WORKGROUP";
@@ -165,8 +166,10 @@ const ConfigGen = class {
 
         // internal trigger function for events
         this["$trigger-flag"] = false;
+        this["$trigger-untriggered"] = [];
         this["$trigger"] = (event, current, previous = undefined) => {
             if (this["$trigger-flag"] === true){
+                this["$trigger-untriggered"].push([event, current, previous]);
                 return;
             }
 
@@ -1026,6 +1029,20 @@ const ConfigGen = class {
     // config.saveToJson()
     saveToJson(){
         return JSON.stringify(this.saveToObject());
+    }
+
+    // config.atom()
+    atom(fn){
+        return ((...args) => {
+            this["$trigger-flag"] = true;
+            this["$trigger-untriggered"].splice(0, this["$trigger-untriggered"].length);
+            fn(...args);
+            this["$trigger-flag"] = false;
+            this["$trigger-untriggered"].forEach((e) => {
+                this["$trigger"](e[0], e[1], e[2]);
+            });
+            this["$trigger-untriggered"].splice(0, this["$trigger-untriggered"].length);
+        });
     }
 
     // config.on()
