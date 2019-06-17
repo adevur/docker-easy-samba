@@ -22,7 +22,6 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
     ```json
     {
         "domain": "WORKGROUP",
-        "guest": false,
         "users": [
             { "name": "user1", "password": "123456" }
         ],
@@ -34,11 +33,9 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
 
 5) Let's analyze what this configuration file means:
 
-    - This file is a JSON object with 4 properties: `domain`, `guest`, `users` and `shares`.
+    - This file is a JSON object with 4 properties: `domain`, `users` and `shares`.
 
     - `domain` property is a string that tells `easy-samba` what it will be the domain name of the SAMBA server.
-
-    - `guest` property in this case is a `false` boolean that tells `easy-samba` that no anonymous login will be available in the SAMBA server.
 
     - `users` property is an array containing all the users of the SAMBA server. Every user is an object with `name` (the username) and `password` (the user's password) properties.
     The password `123456` will be used by `user1` when they will try to login to the SAMBA server.
