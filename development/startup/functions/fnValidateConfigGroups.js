@@ -26,6 +26,18 @@ function fnValidateConfigGroups(config, sharedb){
 
     const groups = config["groups"];
 
+    // retro-compatibility fix for configuration files older than version 1.5
+    if (fnIsArray(groups)){
+        groups.forEach((group) => {
+            if (fnHas(group, "users") && fnHas(group, "members") !== true && fnIsArray(group["users"]) && group["users"].every(fnIsString)){
+                const backup = JSON.parse(JSON.stringify(group["users"]));
+                delete group["users"];
+                group["members"] = backup;
+                console.log(`[WARNING] 'users' property of groups is deprecated. Rename it to 'members'.`);
+            }
+        });
+    }
+
     // "groups" must be a non-empty array
     if (fnIsArray(groups) !== true || groups.length < 1){
         return `'groups' MUST BE A NON-EMPTY ARRAY`;

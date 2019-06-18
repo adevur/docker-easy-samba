@@ -9,7 +9,6 @@ module.exports = fnValidateConfigVersion;
 // dependencies
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
-const fnIsInteger = require("/startup/functions/fnIsInteger.js");
 
 
 
@@ -33,21 +32,8 @@ function fnValidateConfigVersion(config){
         return `'version' PROPERTY MUST BE A STRING`;
     }
 
-    // "version" must be formatted as "x" or "x.y" (e.g. "1", "1.1", "2", "3.2")
-    //   where "x" and "y" are both non-negative integers
-    const check = (str) => {
-        const temp = str.split(".");
-        return (str.length > 0 && fnIsInteger(str)) || (temp.length === 2 && temp[0].length > 0 && temp[1].length > 0 && fnIsInteger(temp[0]) && fnIsInteger(temp[1]));
-    };
-    if (check(version) !== true){
-        return `'version' PROPERTY MUST BE A VALID CONFIGURATION FILE VERSION`;
-    }
-
-    // the current version of easy-samba supports only "1.5", "1.6", "1.7", "1.8" or "1.9" config files
-    if (version === "1" || version === "1.0" || version === "1.1" || version === "1.2" || version === "1.3" || version === "1.4"){
-        return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR OLDER`;
-    }
-    if (version !== "1.5" && version !== "1.6" && version !== "1.7" && version !== "1.8" && version !== "1.9"){
+    // the current version of easy-samba supports only "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8" or "1.9" config files
+    if (["1", "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9"].includes(version) !== true){
         return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR NEWER`;
     }
 
