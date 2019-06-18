@@ -32,8 +32,8 @@ function fnValidateConfigVersion(config){
         return `'version' PROPERTY MUST BE A STRING`;
     }
 
-    // the current version of easy-samba supports only "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8" or "1.9" config files
-    if (["1", "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9"].includes(version) !== true){
+    // the current version of easy-samba supports only "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9" or "1.10" config files
+    if (["1", "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10"].includes(version) !== true){
         return `THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '${version}' OR NEWER`;
     }
 

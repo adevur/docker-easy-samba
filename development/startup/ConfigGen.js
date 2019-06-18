@@ -137,7 +137,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
-        this.easysambaVersion = "1.9";
+        this.easysambaVersion = "1.10";
 
         // internal variables used by an instance of ConfigGen
         this["$domain"] = "WORKGROUP";
