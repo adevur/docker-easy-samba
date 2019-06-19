@@ -949,55 +949,57 @@ const ConfigGen = class {
     }
 
     // ConfigGen.genRandomPassword()
-    // TODO: should be transformed from recursive to iterative
-    //   in order to avoid possible stack overflows
+    // TODO: performance could be improved
     static genRandomPassword(len = 12){
         // check parameter "len"
         if (fnIsInteger(len) !== true || len < 4){
             throw new Error("ERROR: PASSWORD LENGTH MUST BE AT LEAST 4");
         }
 
-        // create a new empty array
-        let result = Array.from({ length: len }, () => 0);
-
-        // fill the array with random numbers (between 0 and 255)
-        result.forEach((n, i) => {
-            result[i] = crypto.randomBytes(1).readUInt8();
-        });
-
-        // adjust numbers to fit range from 32 to 126 (ASCII codes of printable chars)
-        result.forEach((n, i) => {
-            result[i] = (n % 95) + 32;
-        });
-
-        // convert ASCII codes to strings
-        result.forEach((n, i) => {
-            result[i] = String.fromCharCode(n);
-        });
-
-        // convert "result" from array of chars to string
-        result = result.join("");
-
-        // count lowercase letters, uppercase letters, digits and symbols in "result"
+        let result = undefined;
         let lcl = 0;
         let ucl = 0;
         let dig = 0;
         let sym = 0;
-        result.split("").forEach((c) => {
-            lcl = (c === c.toLowerCase() && c !== c.toUpperCase()) ? (lcl + 1) : lcl;
-            ucl = (c === c.toUpperCase() && c !== c.toLowerCase()) ? (ucl + 1) : ucl;
-            dig = (c === String(parseInt(c, 10))) ? (dig + 1) : dig;
-        });
-        sym = result.length - lcl - ucl - dig;
 
-        // make sure that "result" contains at least 1 lowercase letter, 1 uppercase letter, 1 symbol and 1 digit
-        //   otherwise, generate a new password
-        if (lcl === 0 || ucl === 0 || dig === 0 || sym === 0){
-            return this.genRandomPassword(len);
+        // generate a new random password
+        //   until the new password contains at least 1 lowecase letter, 1 uppercase letter, 1 digit and 1 symbol
+        while (lcl === 0 || ucl === 0 || dig === 0 || sym === 0){
+            // create a new empty array
+            result = Array.from({ length: len }, () => 0);
+
+            // fill the array with random numbers (between 0 and 255)
+            result = result.map(() => {
+                return crypto.randomBytes(1).readUInt8();
+            });
+
+            // adjust numbers to fit range from 32 to 126 (ASCII codes of printable chars)
+            result = result.map((e) => {
+                return (e % 95) + 32;
+            });
+
+            // convert ASCII codes to strings
+            result = result.map((e) => {
+                return String.fromCharCode(e);
+            });
+
+            // convert "result" from array of chars to string
+            result = result.join("");
+
+            // count lowercase letters, uppercase letters, digits and symbols in "result"
+            lcl = 0;
+            ucl = 0;
+            dig = 0;
+            sym = 0;
+            result.split("").forEach((c) => {
+                lcl = (c === c.toLowerCase() && c !== c.toUpperCase()) ? (lcl + 1) : lcl;
+                ucl = (c === c.toUpperCase() && c !== c.toLowerCase()) ? (ucl + 1) : ucl;
+                dig = (c === String(parseInt(c, 10))) ? (dig + 1) : dig;
+            });
+            sym = result.length - lcl - ucl - dig;
         }
-        else {
-            return result;
-        }
+
+        return result;
     }
 
     // config.saveToFile()
