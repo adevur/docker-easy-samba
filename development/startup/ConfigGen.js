@@ -3,6 +3,7 @@
 
     [static] ConfigGen.fromObject()
     [static] ConfigGen.fromJson()
+    [static] ConfigGen.fromFile()
     [static] ConfigGen.genRandomPassword()
 
     [property] config.easysambaVersion
@@ -921,6 +922,18 @@ const ConfigGen = class {
             assert(fnIsString(input));
             const json = JSON.parse(input);
             return this.fromObject(json);
+        }
+        catch (error){
+            throw new Error("ERROR: INVALID INPUT");
+        }
+    }
+
+    // ConfigGen.fromFile()
+    static fromFile(input){
+        try {
+            assert(fnIsString(input));
+            const file = fs.readFileSync(input, "utf8");
+            return this.fromJson(file);
         }
         catch (error){
             throw new Error("ERROR: INVALID INPUT");
