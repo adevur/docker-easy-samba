@@ -906,7 +906,15 @@ const ConfigGen = class {
         }
 
         if (fnHas(input, "groups") && fnIsArray(input["groups"])){
-            result.groups.addArray(input["groups"]);
+            const groups = fnCopy(input["groups"]);
+            groups.forEach((group) => {
+                if (fnHas(group, "users") && fnHas(group, "members") !== true && fnIsArray(group["users"]) && group["users"].every(fnIsString)){
+                    const backup = fnCopy(group["users"]);
+                    delete group["users"];
+                    group["members"] = backup;
+                }
+            });
+            result.groups.addArray(groups);
         }
 
         if (fnHas(input, "shares") && fnIsArray(input["shares"])){
