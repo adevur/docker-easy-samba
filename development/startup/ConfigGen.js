@@ -949,55 +949,89 @@ const ConfigGen = class {
     }
 
     // ConfigGen.genRandomPassword()
-    // TODO: performance could be improved
     static genRandomPassword(len = 12){
         // check parameter "len"
         if (fnIsInteger(len) !== true || len < 4){
             throw new Error("ERROR: PASSWORD LENGTH MUST BE AT LEAST 4");
         }
 
-        let result = undefined;
+        const TABLE = {};
+        TABLE["lcl"] = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
+        TABLE["ucl"] = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+        TABLE["dig"] = ["0","1","2","3","4","5","6","7","8","9"];
+        TABLE["sym"] = ["","!","\"","#","$","%","&","'","(",")","*","+",",","-",".","/",":",";","<","=",">","?","@","[","\\","]","^","_","`","{","|","}","~"];
+
+        let result = Array.from({ length: len }, () => { return undefined; });
         let lcl = 0;
         let ucl = 0;
         let dig = 0;
         let sym = 0;
+        let missing = undefined;
 
-        // generate a new random password
-        //   until the new password contains at least 1 lowecase letter, 1 uppercase letter, 1 digit and 1 symbol
-        while (lcl === 0 || ucl === 0 || dig === 0 || sym === 0){
-            // create a new empty array
-            result = Array.from({ length: len }, () => 0);
-
-            // fill the array with random numbers (between 0 and 255)
-            result = result.map(() => {
-                return crypto.randomBytes(1).readUInt8();
-            });
-
-            // adjust numbers to fit range from 32 to 126 (ASCII codes of printable chars)
+        while (result.includes(undefined)){
             result = result.map((e) => {
-                return (e % 95) + 32;
+                if (e === undefined && missing === undefined){
+                    let c = crypto.randomBytes(1).readUInt8();
+                    c = (c % 95) + 32;
+                    c = String.fromCharCode(c);
+                    return c;
+                }
+                else if (e === undefined && missing !== undefined){
+                    let c = crypto.randomBytes(1).readUInt8();
+                    c = c % TABLE[missing].length;
+                    c = TABLE[missing][c];
+                    return c;
+                }
+                else {
+                    return e;
+                }
             });
 
-            // convert ASCII codes to strings
-            result = result.map((e) => {
-                return String.fromCharCode(e);
-            });
-
-            // convert "result" from array of chars to string
-            result = result.join("");
-
-            // count lowercase letters, uppercase letters, digits and symbols in "result"
             lcl = 0;
             ucl = 0;
             dig = 0;
             sym = 0;
-            result.split("").forEach((c) => {
-                lcl = (c === c.toLowerCase() && c !== c.toUpperCase()) ? (lcl + 1) : lcl;
-                ucl = (c === c.toUpperCase() && c !== c.toLowerCase()) ? (ucl + 1) : ucl;
-                dig = (c === String(parseInt(c, 10))) ? (dig + 1) : dig;
+            missing = undefined;
+
+            result.forEach((c) => {
+                lcl = (TABLE["lcl"].includes(c)) ? (lcl + 1) : lcl;
+                ucl = (TABLE["ucl"].includes(c)) ? (ucl + 1) : ucl;
+                dig = (TABLE["dig"].includes(c)) ? (dig + 1) : dig;
             });
             sym = result.length - lcl - ucl - dig;
+
+            missing = (lcl === 0) ? "lcl" : missing;
+            missing = (ucl === 0) ? "ucl" : missing;
+            missing = (dig === 0) ? "dig" : missing;
+            missing = (sym === 0) ? "sym" : missing;
+
+            if (missing !== undefined){
+                let running = true;
+                result = result.map((e) => {
+                    if (running === true && lcl > 1 && TABLE["lcl"].includes(e)){
+                        running = false;
+                        return undefined;
+                    }
+                    else if (running === true && ucl > 1 && TABLE["ucl"].includes(e)){
+                        running = false;
+                        return undefined;
+                    }
+                    else if (running === true && dig > 1 && TABLE["dig"].includes(e)){
+                        running = false;
+                        return undefined;
+                    }
+                    else if (running === true && sym > 1 && TABLE["sym"].includes(e)){
+                        running = false;
+                        return undefined;
+                    }
+                    else {
+                        return e;
+                    }
+                });
+            }
         }
+
+        result = result.join("");
 
         return result;
     }
