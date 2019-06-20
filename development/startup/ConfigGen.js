@@ -50,7 +50,7 @@
     config.shares.setPath()
     config.shares.setGuest()
     config.shares.setFixedRules()
-    config.shares.unsetFixedRules()
+    [deprecated] config.shares.unsetFixedRules()
 
 */
 
