@@ -873,6 +873,7 @@ const ConfigGen = class {
 
             // config.shares.unsetFixedRules()
             unsetFixedRules: () => {
+                console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules([])'.`);
                 this.shares.setFixedRules([]);
                 return this;
             }
