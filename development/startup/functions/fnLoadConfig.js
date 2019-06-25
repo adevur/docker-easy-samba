@@ -22,7 +22,7 @@ function fnLoadConfig(path){
         return { config: parsed, rawConfig: raw };
     }
     catch (error){
-        return false;
+        return { config: false, rawConfig: false };
     }
 }
 
