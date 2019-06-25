@@ -2,11 +2,36 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.9.0`
+### Current stable release: `1.10.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.10.0 (2019-06-25 UTC)
+- New features:
+
+  - Now `easy-samba` has retro-compatibility for `config.json` files written before version `1.5`. `config.gen.js` files written before version `1.5` are still not supported anymore.
+
+  - In `ConfigGen.js` library, functions `ConfigGen.fromFile()`, `ConfigGen.fromObject()` and `ConfigGen.fromJson()` can import configurations older than version `1.5`.
+
+  - Implemented new function in `ConfigGen.js` library: `ConfigGen.fromFile()`.
+
+  - In `ConfigGen.js` library, function `ConfigGen.genRandomPassword()` is now much more performant.
+
+  - In `ConfigGen.js` library, function `config.shares.unsetFixedRules()` is now deprecated. Use `config.shares.setFixedRules([])`, instead.
+
+- Bug fixes:
+
+  - Fixed bug in case `config.json` file is not a valid JSON file.
+
+  - Fixed bug in case `config.json` file doesn't contain `guest` section.
+
+  - Other minor bugfixes.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.9.0 (2019-06-14 UTC)
 - New features:
