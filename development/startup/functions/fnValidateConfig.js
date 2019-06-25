@@ -29,7 +29,7 @@ function fnValidateConfig(config){
     const sharedb = { "users": [], "names": ["global", "homes", "printers"], "paths": [], "groups": {} };
 
     // "config" must contain "domain", "users" and "shares" properties
-    if (fnHas(config, ["domain", "guest", "users", "shares"]) !== true){
+    if (fnHas(config, ["domain", "users", "shares"]) !== true){
         return "MUST CONTAIN 'domain', 'users' AND 'shares' PROPERTIES";
     }
 
