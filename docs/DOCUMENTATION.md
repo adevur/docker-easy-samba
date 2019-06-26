@@ -251,6 +251,8 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromobject-static-method)
 
+- [`ConfigGen.fromFile()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromfile-static-method)
+
 - [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
 
 - [`config.easysambaVersion` property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configeasysambaversion-property)
@@ -327,8 +329,6 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
 
-    - [`config.shares.unsetFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesunsetfixedrules-method)
-
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
 
@@ -372,6 +372,27 @@ const raw = {
 };
 
 const config = ConfigGen.fromObject(raw);
+
+config.domain("NEWDOMAIN");
+config.users.add("new-user", "123456");
+
+config.saveToFile("./new-config.json");
+```
+
+### `ConfigGen.fromFile()` static method
+This is a static method that can be used in order to import an existing configuration file, that can be later modified and re-saved.
+
+- ARGUMENTS: `input`
+
+  - PARAMETER `input`: a string that contains the path to the configuration file
+
+- OUTPUT: an instance of ConfigGen
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = ConfigGen.fromFile("./sample-config.json");
 
 config.domain("NEWDOMAIN");
 config.users.add("new-user", "123456");
@@ -1326,52 +1347,12 @@ config.shares.add("folder2", "/share/folder2", ["ro:user2"]);
 // new share "folder2" is readable and writable by user "admin"
 console.log( config.shares.get("folder2")["access"] ); // ["ro:user2", "rw:admin"]
 
-// if we want to disable fixed rules completely, we use config.shares.unsetFixedRules()
-config.shares.unsetFixedRules(); // this is equivalent to config.shares.setFixedRules([])
+// if we want to disable fixed rules completely, we use:
+config.shares.setFixedRules([]);
 
 // next time we modify a share (or we create a new one), fixed rules aren't going to be applied anymore
 config.shares.add("folder3", "/share/folder3", ["ro:user3"]);
 console.log( config.shares.get("folder3")["access"] ); // ["ro:user3"]
-```
-
-### `config.shares.unsetFixedRules()` method
-This method can be used to remove fixed access rules settings.
-
-See also [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method).
-
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.6`.
-
-- ARGUMENTS: N/A
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-// let's set that all shares will always be readable and writable by user "admin"
-config.shares.setFixedRules(["rw:admin"]);
-
-// let's create a new share "folder1"
-config.shares.add("folder1", "/share/folder1", ["rw:user1"]);
-
-// "folder1" is automatically readable and writable by user "admin"
-console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin"]
-
-// now let's remove fixed rules
-config.shares.unsetFixedRules();
-
-// let's create another share, called "folder2"
-config.shares.add("folder2", "/share/folder2", ["rw:user2"]);
-
-// "folder2" is not anymore automatically readable and writable by user "admin"
-console.log( config.shares.get("folder2")["access"] ); // ["rw:user2"]
-
-// NOTE: old fixed rules will stay, and won't be removed
-console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin"]
-
-// CURIOSITY: config.shares.unsetFixedRules() is equivalent to:
-config.shares.setFixedRules([]);
 ```
 
 ## advanced use
