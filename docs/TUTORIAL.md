@@ -33,7 +33,7 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
 
 5) Let's analyze what this configuration file means:
 
-    - This file is a JSON object with 4 properties: `domain`, `users` and `shares`.
+    - This file is a JSON object with 3 properties: `domain`, `users` and `shares`.
 
     - `domain` property is a string that tells `easy-samba` what it will be the domain name of the SAMBA server.
 
