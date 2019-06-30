@@ -2,6 +2,9 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-06-30 UTC) upcoming feature `EasySamba Remote API`
+A new feature is under development, called `EasySamba Remote API`. It is an HTTPS-based API that will let you change `easy-samba`'s configuration through a remote API.
+
 ### (2019-06-25 UTC) easy-samba 1.10.0 released (with new features)
 Stable version 1.10.0 of `easy-samba` has been released.
 
