@@ -95,9 +95,9 @@ async function fnMain(){
 
 
 async function fnRun(){
-    // if there's a "/share/config.gen.js" file, and "/share/config.json" is missing,
+    // if there's a "/share/config.gen.js" file, and "/share/config.json" and "/share/remote-api.config.json" are missing,
     //   generate the new config.json running "node /share/config.gen.js"
-    if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true){
+    if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/remote-api.config.json") !== true){
         // if config.gen.js is already running, abort
         if (configgen === true){
             console.log(`[LOG] '/share/config.gen.js' is already running.`);
@@ -132,9 +132,9 @@ async function fnRun(){
         return false;
     }
 
-    // load configuration from JSON file "/share/config.json"
-    //  "rawConfig" is just plain text read from /share/config.json, it is needed in order to be returned as output
-    const { config, rawConfig } = fnLoadConfig("/share/config.json");
+    // load configuration from JSON file "/share/config.json" or "/share/remote-api.config.json"
+    //  "rawConfig" is just plain text read from the configuration file, it is needed in order to be returned as output
+    const { config, rawConfig } = fnLoadConfig();
     
     // if configuration file doesn't exist or it's not in JSON format, exit
     if (config === false){
