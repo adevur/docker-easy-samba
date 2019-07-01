@@ -53,13 +53,25 @@ async function fnMain(){
         console.log(`[WARNING] it's not been possible to display version information.`);
     }
 
+    // start EasySamba Remote API daemon
+    if (fnIsRunning("node /startup/remote-api/index.js") !== true){
+        spawn("node", ["/startup/remote-api/index.js"], { stdio: "ignore" })
+            .on("error", () => {
+                // do nothing
+            })
+            .on("exit", () => {
+                // do nothing
+            })
+        ;
+    }
+
     // loop every 10 seconds
     let previous = undefined;
     while (true){
         // get current config.json file
         let current = undefined;
         try {
-            current = fs.readFileSync("/share/config.json", "utf8");
+            current = (fs.existsSync("/share/config.json")) ? fs.readFileSync("/share/config.json", "utf8") : fs.readFileSync("/share/remote-api.config.json", "utf8");
             if (fnIsString(current) !== true || current.length < 1){
                 current = undefined;
             }
