@@ -4,6 +4,7 @@
     [static] ConfigGen.fromObject()
     [static] ConfigGen.fromJson()
     [static] ConfigGen.fromFile()
+    [static] ConfigGen.fromRemote()
     [static] ConfigGen.genRandomPassword()
 
     [property] config.easysambaVersion
@@ -949,6 +950,58 @@ const ConfigGen = class {
         catch (error){
             throw new Error("ERROR: INVALID INPUT");
         }
+    }
+
+    // ConfigGen.fromRemote()
+    static fromRemote(url, token){
+        if (fnIsString(url) !== true || fnIsString(token) !== true){
+            throw new Error("ERROR: PARAMS 'url' AND 'token' MUST BE STRINGS");
+        }
+
+        return new Promise((resolve, reject) => {
+            const id = crypto.randomBytes(16).toString("hex").toUpperCase();
+            const body = { "token": token };
+            const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": "get-config", "id": id, "params": body }), "utf8");
+
+            const options = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Content-Length": data.length
+                }
+            };
+
+            let result = [];
+
+            const req = http.request(url, options, (res) => {
+                res.on("data", (chunk) => {
+                    result.push(chunk);
+                });
+
+                res.on("end", () => {
+                    try {
+                        result = Buffer.concat(result).toString();
+                        result = JSON.parse(result);
+                        assert(fnHas(result, ["jsonrpc", "result", "id"]));
+                        assert(result["jsonrpc"] === "2.0");
+                        assert( fnIsString(result["result"]) );
+                        assert(result["id"] === id);
+                        const config = this.fromJson(result["result"]);
+                        resolve(config);
+                    }
+                    catch (error){
+                        reject("ERROR: INVALID RESPONSE FROM REMOTE API");
+                    }
+                });
+            });
+
+            req.on("error", () => {
+                reject("ERROR: COULD NOT CONNECT TO REMOTE API");
+            });
+
+            req.write(data);
+            req.end();
+        });
     }
 
     // ConfigGen.genRandomPassword()
