@@ -8,6 +8,21 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [STABLE] [FEATURE] 1.11.0 (2019-07-02 UTC)
+- New features:
+
+  - Implemented `EasySamba Remote API`: it an HTTPS-based API, that uses JSON-RPC protocol, and that can be used in order to read or to change the configuration of an `easy-samba` container through network.
+
+  - Implemented new functions in `ConfigGen.js` library: `ConfigGen.fromRemote()` and `config.saveToRemote()`. These functions can be used to connect to a remote `easy-samba` container using `EasySamba Remote API`.
+
+- Bug fixes:
+
+  - N/A
+
+- Security fixes:
+
+  - N/A
+
 ### [STABLE] [FEATURE] 1.10.0 (2019-06-25 UTC)
 - New features:
 

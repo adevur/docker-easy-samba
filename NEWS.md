@@ -2,6 +2,13 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-07-02 UTC) easy-samba 1.11.0 released (with new features)
+Stable version 1.11.0 of `easy-samba` has been released.
+
+This version brings new features to `easy-samba`.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1110-2019-07-02-utc) for changelog.
+
 ### (2019-06-30 UTC) upcoming feature `EasySamba Remote API`
 A new feature is under development, called `EasySamba Remote API`. It is an HTTPS-based API that will let you change `easy-samba`'s configuration through a remote API.
 
