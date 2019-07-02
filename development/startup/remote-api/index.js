@@ -74,21 +74,30 @@ async function fnMain(){
     }
 
     // start the HTTPS server
-    https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
-        if (req.url === "/api" && req.method === "POST"){
-            const body = [];
-            req.on("data", (chunk) => { body.push(chunk); });
-            req.on("end", () => {
-                const result = fnAPI(Buffer.concat(body).toString(), token);
+    try {
+        const server = https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
+            if (req.url === "/api" && req.method === "POST"){
+                const body = [];
+                req.on("data", (chunk) => { body.push(chunk); });
+                req.on("end", () => {
+                    const result = fnAPI(Buffer.concat(body).toString(), token);
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify(result), "utf8");
+                });
+            }
+            else {
                 res.writeHead(200, { "Content-Type": "application/json" });
-                res.end(JSON.stringify(result), "utf8");
-            });
-        }
-        else {
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "WRONG PAGE REQUEST" }), "utf8");
-        }
-    }).listen(port);
+                res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "WRONG PAGE REQUEST" }), "utf8");
+            }
+        }).listen(port, () => {
+            if (server.address().port !== port){
+                process.exit();
+            }
+        });
+    }
+    catch (error){
+        process.exit();
+    }
 }
 
 
