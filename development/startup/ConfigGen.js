@@ -11,6 +11,7 @@
     config.saveToJson()
     config.saveToFile()
     config.saveToObject()
+    config.saveToRemote()
 
     config.on()
 
@@ -60,6 +61,7 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const assert = require("assert");
+const http = require("http");
 
 
 
@@ -1085,6 +1087,59 @@ const ConfigGen = class {
     // config.saveToJson()
     saveToJson(){
         return JSON.stringify(this.saveToObject());
+    }
+
+    // config.saveToRemote()
+    saveToRemote(url, token){
+        if (fnIsString(url) !== true || fnIsString(token) !== true){
+            throw new Error("ERROR: PARAMS 'url' AND 'token' MUST BE STRINGS");
+        }
+
+        return new Promise((resolve, reject) => {
+            const configjson = this.saveToJson();
+            const id = crypto.randomBytes(16).toString("hex").toUpperCase();
+            const hash = crypto.createHash("SHA512").update(JSON.stringify({ "config.json": configjson, "id": id, "token": token }), "utf8").digest("hex").toUpperCase();
+            const body = { "config.json": configjson, "hash": hash };
+            const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": "easy-samba-remote-call", "id": id, "params": body }), "utf8");
+
+            const options = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Content-Length": data.length
+                }
+            };
+
+            let result = [];
+
+            const req = http.request(url, options, (res) => {
+                res.on("data", (chunk) => {
+                    result.push(chunk);
+                });
+
+                res.on("end", () => {
+                    try {
+                        result = Buffer.concat(result).toString();
+                        result = JSON.parse(result);
+                        assert(fnHas(result, ["jsonrpc", "result", "id"]));
+                        assert(result["jsonrpc"] === "2.0");
+                        assert(result["result"] === "SUCCESS");
+                        assert(result["id"] === id);
+                        resolve(true);
+                    }
+                    catch (error){
+                        reject("ERROR: INVALID RESPONSE FROM REMOTE API");
+                    }
+                });
+            });
+
+            req.on("error", () => {
+                reject("ERROR: COULD NOT CONNECT TO REMOTE API");
+            });
+
+            req.write(data);
+            req.end();
+        });
     }
 
     // config.on()
