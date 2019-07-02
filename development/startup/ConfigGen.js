@@ -1098,9 +1098,8 @@ const ConfigGen = class {
         return new Promise((resolve, reject) => {
             const configjson = this.saveToJson();
             const id = crypto.randomBytes(16).toString("hex").toUpperCase();
-            const hash = crypto.createHash("SHA512").update(JSON.stringify({ "config.json": configjson, "id": id, "token": token }), "utf8").digest("hex").toUpperCase();
-            const body = { "config.json": configjson, "hash": hash };
-            const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": "easy-samba-remote-call", "id": id, "params": body }), "utf8");
+            const body = { "config.json": configjson, "token": token };
+            const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": "set-config", "id": id, "params": body }), "utf8");
 
             const options = {
                 method: "POST",

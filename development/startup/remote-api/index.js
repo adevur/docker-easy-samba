@@ -66,31 +66,34 @@ function fnAPI(str, token){
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
-        assert( input["method"] === "easy-samba-remote-call" );
+        assert( input["method"] === "set-config" || input["method"] === "get-config" );
         assert( fnIsString(input["id"]) );
 
         const id = input["id"];
         const params = input["params"];
 
-        if (fnHas(params, ["config.json", "hash"]) !== true || fnIsString(params["config.json"]) !== true || fnIsString(params["hash"]) !== true){
-            return { "jsonrpc": "2.0", "result": null, "error": `MISSING PARAMETERS 'config.json' AND 'hash'`, "id": id };
-        }
+        assert( fnHas(params, "token") && (input["method"] === "set-config") ? fnHas(params, "config.json") : true );
+        assert( fnIsString(params["token"]) && (input["method"] === "set-config") ? fnIsString(params["config.json"]) : true );
 
-        const hash = crypto.createHash("SHA512").update(JSON.stringify({ "config.json": params["config.json"], "id": id, "token": token }), "utf8").digest("hex").toUpperCase();
-        if (params["hash"] !== hash){
+        if (params["token"] !== token){
             return { "jsonrpc": "2.0", "result": null, "error": `AUTHORIZATION FAILED`, "id": id };
         }
 
         try {
-            fs.writeFileSync("/share/remote-api.config.json", params["config.json"]);
-            return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
+            if (input["method"] === "set-config"){
+                fs.writeFileSync("/share/remote-api.config.json", params["config.json"]);
+                return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
+            }
+            else {
+                const configjson = (fs.existsSync("/share/remote-api.config.json")) ? fs.readFileSync("/share/remote-api.config.json", "utf8") : "";
+                return { "jsonrpc": "2.0", "result": configjson, "error": null, "id": id };
+            }
         }
         catch (error){
-            return { "jsonrpc": "2.0", "result": null, "error": `COULD NOT WRITE '/share/remote-api.config.json' FILE`, "id": id };
+            return { "jsonrpc": "2.0", "result": null, "error": `COULD NOT READ/WRITE '/share/remote-api.config.json' FILE`, "id": id };
         }
     }
     catch (error){
-        console.log(error);
         return { "jsonrpc": "2.0", "result": null, "error": "INVALID INPUT" };
     }
 }
