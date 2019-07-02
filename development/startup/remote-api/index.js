@@ -2,10 +2,12 @@
 // dependencies
 const fs = require("fs");
 const assert = require("assert");
-const http = require("http");
+const https = require("https");
 const crypto = require("crypto");
+const { spawnSync } = require("child_process");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
+const fnIsInteger = require("/startup/functions/fnIsInteger.js");
 
 
 
@@ -33,16 +35,46 @@ async function fnMain(){
     const token = config["token"];
 
     // load private key and certificate for the HTTPS server
-    // TODO
+    //   if they don't exist, generate new ones
     let httpsKey = undefined;
     let httpsCert = undefined;
+    try {
+        assert( fs.existsSync("/share/remote-api.key") );
+        assert( fs.existsSync("/share/remote-api.cert") );
+        httpsKey = fs.readFileSync("/share/remote-api.key", "ascii");
+        httpsCert = fs.readFileSync("/share/remote-api.cert", "ascii");
+    }
+    catch (error){
+        try {
+            if (fs.existsSync("/share/remote-api.key")){
+                fs.unlinkSync("/share/remote-api.key");
+                assert( fs.existsSync("/share/remote-api.key") !== true );
+            }
+            if (fs.existsSync("/share/remote-api.cert")){
+                fs.unlinkSync("/share/remote-api.cert");
+                assert( fs.existsSync("/share/remote-api.cert") !== true );
+            }
+
+            spawnSync("openssl", ["req", "-nodes", "-days", "7300", "-new", "-x509", "-keyout", "/share/remote-api.key", "-out", "/share/remote-api.cert", "-subj", "/C=US/ST=Some-State/O=localhost/CN=localhost"], { stdio: "ignore" });
+
+            assert( fs.existsSync("/share/remote-api.key") );
+            assert( fs.existsSync("/share/remote-api.cert") );
+            httpsKey = fs.readFileSync("/share/remote-api.key", "ascii");
+            httpsCert = fs.readFileSync("/share/remote-api.cert", "ascii");
+        }
+        catch (error){
+            process.exit();
+        }
+    }
 
     // load the port to use
     let port = 9595;
-    // TODO: load from config
+    if (fnHas(config, "port") && fnIsInteger(config["port"])){
+        port = config["port"];
+    }
 
     // start the HTTPS server
-    http.createServer((req, res) => {
+    https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
         if (req.url === "/api" && req.method === "POST"){
             const body = [];
             req.on("data", (chunk) => { body.push(chunk); });

@@ -62,7 +62,7 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const assert = require("assert");
-const http = require("http");
+const https = require("https");
 
 
 
@@ -953,7 +953,7 @@ const ConfigGen = class {
     }
 
     // ConfigGen.fromRemote()
-    static fromRemote(url, token){
+    static fromRemote(url, token, ca = undefined){
         if (fnIsString(url) !== true || fnIsString(token) !== true){
             throw new Error("ERROR: PARAMS 'url' AND 'token' MUST BE STRINGS");
         }
@@ -970,37 +970,49 @@ const ConfigGen = class {
                     "Content-Length": data.length
                 }
             };
+            if (ca === "unsafe") {
+                options.rejectUnauthorized = false;
+                options.requestCert = true;
+            }
+            else if (fnIsString(ca)){
+                options.ca = ca;
+            }
 
             let result = [];
 
-            const req = http.request(url, options, (res) => {
-                res.on("data", (chunk) => {
-                    result.push(chunk);
+            try {
+                const req = https.request(url, options, (res) => {
+                    res.on("data", (chunk) => {
+                        result.push(chunk);
+                    });
+
+                    res.on("end", () => {
+                        try {
+                            result = Buffer.concat(result).toString();
+                            result = JSON.parse(result);
+                            assert(fnHas(result, ["jsonrpc", "result", "id"]));
+                            assert(result["jsonrpc"] === "2.0");
+                            assert( fnIsString(result["result"]) );
+                            assert(result["id"] === id);
+                            const config = this.fromJson(result["result"]);
+                            resolve(config);
+                        }
+                        catch (error){
+                            reject("ERROR: INVALID RESPONSE FROM REMOTE API");
+                        }
+                    });
                 });
 
-                res.on("end", () => {
-                    try {
-                        result = Buffer.concat(result).toString();
-                        result = JSON.parse(result);
-                        assert(fnHas(result, ["jsonrpc", "result", "id"]));
-                        assert(result["jsonrpc"] === "2.0");
-                        assert( fnIsString(result["result"]) );
-                        assert(result["id"] === id);
-                        const config = this.fromJson(result["result"]);
-                        resolve(config);
-                    }
-                    catch (error){
-                        reject("ERROR: INVALID RESPONSE FROM REMOTE API");
-                    }
+                req.on("error", () => {
+                    reject("ERROR: COULD NOT CONNECT TO REMOTE API");
                 });
-            });
 
-            req.on("error", () => {
+                req.write(data);
+                req.end();
+            }
+            catch (error){
                 reject("ERROR: COULD NOT CONNECT TO REMOTE API");
-            });
-
-            req.write(data);
-            req.end();
+            }
         });
     }
 
@@ -1143,7 +1155,7 @@ const ConfigGen = class {
     }
 
     // config.saveToRemote()
-    saveToRemote(url, token){
+    saveToRemote(url, token, ca = undefined){
         if (fnIsString(url) !== true || fnIsString(token) !== true){
             throw new Error("ERROR: PARAMS 'url' AND 'token' MUST BE STRINGS");
         }
@@ -1161,36 +1173,48 @@ const ConfigGen = class {
                     "Content-Length": data.length
                 }
             };
+            if (ca === "unsafe") {
+                options.rejectUnauthorized = false;
+                options.requestCert = true;
+            }
+            else if (fnIsString(ca)){
+                options.ca = ca;
+            }
 
             let result = [];
 
-            const req = http.request(url, options, (res) => {
-                res.on("data", (chunk) => {
-                    result.push(chunk);
+            try {
+                const req = https.request(url, options, (res) => {
+                    res.on("data", (chunk) => {
+                        result.push(chunk);
+                    });
+
+                    res.on("end", () => {
+                        try {
+                            result = Buffer.concat(result).toString();
+                            result = JSON.parse(result);
+                            assert(fnHas(result, ["jsonrpc", "result", "id"]));
+                            assert(result["jsonrpc"] === "2.0");
+                            assert(result["result"] === "SUCCESS");
+                            assert(result["id"] === id);
+                            resolve(true);
+                        }
+                        catch (error){
+                            reject("ERROR: INVALID RESPONSE FROM REMOTE API");
+                        }
+                    });
                 });
 
-                res.on("end", () => {
-                    try {
-                        result = Buffer.concat(result).toString();
-                        result = JSON.parse(result);
-                        assert(fnHas(result, ["jsonrpc", "result", "id"]));
-                        assert(result["jsonrpc"] === "2.0");
-                        assert(result["result"] === "SUCCESS");
-                        assert(result["id"] === id);
-                        resolve(true);
-                    }
-                    catch (error){
-                        reject("ERROR: INVALID RESPONSE FROM REMOTE API");
-                    }
+                req.on("error", () => {
+                    reject("ERROR: COULD NOT CONNECT TO REMOTE API");
                 });
-            });
 
-            req.on("error", () => {
+                req.write(data);
+                req.end();
+            }
+            catch (error){
                 reject("ERROR: COULD NOT CONNECT TO REMOTE API");
-            });
-
-            req.write(data);
-            req.end();
+            }
         });
     }
 
