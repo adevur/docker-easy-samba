@@ -56,7 +56,6 @@ function fnGenSmbConf(config){
         else {
             // add the share in the configuration
             // EXAMPLE: share == { "name": "public", "path": "/share/public", "users": ["rw:user1", "ro:user2"] } --->
-            //   result += "
             //     [public]
             //     path = /share/public
             //     browsable = yes
@@ -64,18 +63,22 @@ function fnGenSmbConf(config){
             //     read only = no
             //     guest ok = no
             //     valid users = user1 user2
-            //   ";
-            const users = [];
-            share["users"].forEach((user) => {
-                users.push(user.substring(3));
-            });
+            //     read list = user2
+            //     write list = user1
+
+            const all_users = share["users"].map((e) => { return e.substring(3); }).join(" ");
+            const read_users = share["users"].filter((e) => { return e.startsWith("ro:"); }).map((e) => { return e.substring(3); }).join(" ");
+            const write_users = share["users"].filter((e) => { return e.startsWith("rw:"); }).map((e) => { return e.substring(3); }).join(" ");
+
             result += `[${share["name"]}]\n`;
             result += `path = "${share["path"]}"\n`;
             result += `browsable = yes\n`;
             result += `writable = yes\n`;
             result += `read only = no\n`;
             result += `guest ok = no\n`;
-            result += `valid users = ${users.join(" ")}\n\n`;
+            result += `valid users = ${all_users}\n`;
+            result += `read list = ${read_users}\n`;
+            result += `write list = ${write_users}\n\n`;
         }
     });
 
