@@ -21,6 +21,6 @@ COPY ./startup /startup
 
 CMD ["node", "/startup/index.js"]
 
-EXPOSE 137/udp 138/udp 139/tcp 445/tcp
+EXPOSE 137/udp 138/udp 139/tcp 445/tcp 9595/tcp
 
 
