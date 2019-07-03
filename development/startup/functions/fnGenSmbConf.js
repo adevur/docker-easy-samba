@@ -77,8 +77,9 @@ function fnGenSmbConf(config){
             result += `read only = no\n`;
             result += `guest ok = no\n`;
             result += `valid users = ${all_users}\n`;
-            result += `read list = ${read_users}\n`;
-            result += `write list = ${write_users}\n\n`;
+            result += (read_users.length > 0) ? `read list = ${read_users}\n` : ``;
+            result += (write_users.length > 0) ? `write list = ${write_users}\n` : ``;
+            result += `\n`;
         }
     });
 
