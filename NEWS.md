@@ -2,6 +2,11 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-07-03 UTC) easy-samba 1.11.1 released
+Stable version 1.11.1 of `easy-samba` has been released.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-1111-2019-07-03-utc) for changelog.
+
 ### (2019-07-02 UTC) easy-samba 1.11.0 released (with new features)
 Stable version 1.11.0 of `easy-samba` has been released.
 

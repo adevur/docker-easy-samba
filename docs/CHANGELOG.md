@@ -2,11 +2,32 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.11.0`
+### Current stable release: `1.11.1`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] 1.11.1 (2019-07-03 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Fixed typo in `easy-samba`'s versioning.
+
+  - Now, `EasySamba Remote API` is more reliable: in case of crash, it will re-start itself in 10 seconds.
+
+  - `easy-samba`'s logs now will tell you if `EasySamba Remote API` has started successfully or not.
+
+  - `easy-samba` now correctly starts `EasySamba Remote API` only in case both `/share/config.json` and `/share/config.gen.js` files are missing.
+
+  - Now, `easy-samba`'s Dockerfile exposes default `Remote API` TCP port `9595`; this way, you can correctly open it in case you run `easy-samba`'s container with parameter `--network bridge`.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.11.0 (2019-07-02 UTC)
 - New features:
