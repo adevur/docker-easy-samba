@@ -54,7 +54,9 @@ async function fnMain(){
     }
 
     // start EasySamba Remote API daemon
-    if (fnIsRunning("node /startup/remote-api/index.js") !== true){
+    if (fnIsRunning("node /startup/remote-api/index.js") !== true && fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/config.gen.js") !== true){
+        try { fs.unlinkSync("/startup/remote-api.started"); } catch(error) {}
+
         spawn("node", ["/startup/remote-api/index.js"], { stdio: "ignore" })
             .on("error", () => {
                 // do nothing
@@ -63,6 +65,10 @@ async function fnMain(){
                 // do nothing
             })
         ;
+
+        await fnSleep(2000);
+
+        console.log((fs.existsSync("/startup/remote-api.started")) ? `[LOG] EasySamba Remote API started successfully.` : `[ERROR] it's not been possible to start EasySamba Remote API.`);
     }
 
     // loop every 10 seconds

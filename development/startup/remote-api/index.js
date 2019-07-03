@@ -8,6 +8,7 @@ const { spawnSync } = require("child_process");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsInteger = require("/startup/functions/fnIsInteger.js");
+const fnSleep = require("/startup/functions/fnSleep.js");
 
 
 
@@ -18,6 +19,21 @@ fnMain().catch((error) => {
 
 
 async function fnMain(){
+    // start the API server
+    while (true){
+        try {
+            await fnStartServer();
+        }
+        catch (error){
+            // in case of errors, re-try in 10 seconds
+            await fnSleep(10000);
+        }
+    }
+}
+
+
+
+async function fnStartServer(){
     // load "/share/remote-api.json"
     let config = false;
     try {
@@ -63,7 +79,7 @@ async function fnMain(){
             httpsCert = fs.readFileSync("/share/remote-api.cert", "ascii");
         }
         catch (error){
-            process.exit();
+            assert(false);
         }
     }
 
@@ -91,12 +107,15 @@ async function fnMain(){
             }
         }).listen(port, () => {
             if (server.address().port !== port){
-                process.exit();
+                assert(false);
+            }
+            else {
+                try { fs.writeFileSync("/startup/remote-api.started", ""); } catch(error) { }
             }
         });
     }
     catch (error){
-        process.exit();
+        assert(false);
     }
 }
 
