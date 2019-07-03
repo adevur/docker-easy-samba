@@ -519,7 +519,28 @@ const ConfigGen = class {
         //   where functions like "config.shares.add(...)" are located
         this.shares = {
             // config.shares.add()
-            add: (sharename, path, rules) => {
+            add: (...args) => {
+                let sharename = undefined;
+                let path = undefined;
+                let access = undefined;
+                let guest = "no";
+
+                if (args.length === 3){
+                    sharename = args[0];
+                    path = args[1];
+                    access = (fnIsArray(args[2])) ? args[2] : [];
+                    guest = (fnIsString(args[2])) ? args[2] : "no";
+                }
+                else if (args.length === 4){
+                    sharename = args[0];
+                    path = args[1];
+                    access = args[2];
+                    guest = args[3];
+                }
+                else {
+                    throw new Error("ERROR: INPUT IS NOT VALID");
+                }
+
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
                 }
@@ -532,15 +553,19 @@ const ConfigGen = class {
                     throw new Error("ERROR: SHARE ALREADY EXISTS");
                 }
 
-                if (fnIsArray(rules) && rules.every(fnIsString)){
-                    this["$shares"].push({ "name": sharename, "path": path, "access": fnCopy(rules) });
+                if (fnIsArray(access) !== true || access.every(fnIsString) !== true){
+                    throw new Error("ERROR: SHARE ACCESS RULES MUST BE AN ARRAY OF STRINGS");
                 }
-                else if (fnIsString(rules) && (rules === "rw" || rules === "ro")) {
-                    this["$shares"].push({ "name": sharename, "path": path, "access": [], "guest": rules });
+
+                if (guest !== "rw" && guest !== "ro" && guest !== "no") {
+                    throw new Error("ERROR: SHARE GUEST PROPERTY MUST BE EQUAL TO 'rw', 'ro' OR 'no'");
                 }
-                else {
-                    throw new Error("ERROR: INPUT IS NOT VALID");
+
+                const share = { "name": sharename, "path": path, "access": fnCopy(access) };
+                if (guest !== "no"){
+                    share["guest"] = guest;
                 }
+                this["$shares"].push(share);
 
                 // trigger event "share-add"
                 this["$trigger"]("share-add", this.shares.get(sharename));
@@ -561,7 +586,7 @@ const ConfigGen = class {
                     if (fnHas(elem, "access") !== true && fnHas(elem, "guest") !== true){
                         throw new Error("ERROR: INPUT IS NOT VALID");
                     }
-                    this.shares.add(elem["name"], elem["path"], (fnHas(elem, "guest")) ? elem["guest"] : elem["access"]);
+                    this.shares.add(elem["name"], elem["path"], (fnHas(elem, "access")) ? elem["access"] : [], (fnHas(elem, "guest")) ? elem["guest"] : "no");
                 });
 
                 return this;
@@ -1140,13 +1165,8 @@ const ConfigGen = class {
         }
 
         result["shares"] = this["$shares"];
-        result["shares"].forEach((e) => {
-            if (fnHas(e, ["guest", "access"])){
-                delete e["access"];
-            }
-        });
 
-        return result;
+        return fnCopy(result);
     }
 
     // config.saveToJson()
