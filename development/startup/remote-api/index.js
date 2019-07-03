@@ -9,6 +9,7 @@ const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsInteger = require("/startup/functions/fnIsInteger.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
+const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 
 
 
@@ -39,6 +40,10 @@ async function fnStartServer(){
     try {
         assert( fs.existsSync("/share/remote-api.json") );
         config = JSON.parse(fs.readFileSync("/share/remote-api.json", "utf8"));
+        if (fnHas(config, "token") !== true){
+            config["token"] = ConfigGen.genRandomPassword(12);
+            fs.writeFileSync("/share/remote-api.json", JSON.stringify(config));
+        }
         assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
     }
     catch (error){
