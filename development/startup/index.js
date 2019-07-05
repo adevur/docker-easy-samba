@@ -113,9 +113,9 @@ async function fnMain(){
 
 
 async function fnRun(){
-    // if there's a "/share/config.gen.js" file, and "/share/config.json" and "/share/remote-api.config.json" are missing,
+    // if there's a "/share/config.gen.js" file, and "/share/config.json" is missing,
     //   generate the new config.json running "node /share/config.gen.js"
-    if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/remote-api.config.json") !== true){
+    if (fs.existsSync("/share/config.gen.js") === true && fs.existsSync("/share/config.json") !== true){
         // if config.gen.js is already running, abort
         if (configgen === true){
             console.log(`[LOG] '/share/config.gen.js' is already running.`);
