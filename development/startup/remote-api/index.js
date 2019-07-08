@@ -26,9 +26,10 @@ async function fnMain(){
             await fnStartServer();
         }
         catch (error){
-            // in case of errors, re-try in 10 seconds
-            await fnSleep(10000);
+            // do nothing
         }
+        // in case of errors, re-try in 10 seconds
+        await fnSleep(10000);
     }
 }
 
@@ -96,31 +97,10 @@ async function fnStartServer(){
 
     // start the HTTPS server
     try {
-        const server = https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
-            if (req.url === "/api" && req.method === "POST"){
-                const body = [];
-                req.on("data", (chunk) => { body.push(chunk); });
-                req.on("end", () => {
-                    const result = fnAPI(Buffer.concat(body).toString(), token);
-                    res.writeHead(200, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify(result), "utf8");
-                });
-            }
-            else {
-                res.writeHead(200, { "Content-Type": "application/json" });
-                res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "WRONG PAGE REQUEST" }), "utf8");
-            }
-        }).listen(port, () => {
-            if (server.address().port !== port){
-                assert(false);
-            }
-            else {
-                try { fs.writeFileSync("/startup/remote-api.started", ""); } catch(error) { }
-            }
-        });
+        await fnCreateServer(httpsKey, httpsCert, port, token);
     }
     catch (error){
-        assert(false);
+        throw error;
     }
 }
 
@@ -131,7 +111,7 @@ function fnAPI(str, token){
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
-        assert( input["method"] === "set-config" || input["method"] === "get-config" );
+        assert( input["method"] === "set-config" || input["method"] === "get-config" || input["method"] === "get-info" );
         assert( fnIsString(input["id"]) );
 
         const id = input["id"];
@@ -149,18 +129,60 @@ function fnAPI(str, token){
                 fs.writeFileSync("/share/remote-api.config.json", params["config.json"]);
                 return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
             }
-            else {
-                const configjson = (fs.existsSync("/share/remote-api.config.json")) ? fs.readFileSync("/share/remote-api.config.json", "utf8") : "";
+            else if (input["method"] === "get-config"){
+                const configjson = (fs.existsSync("/share/remote-api.config.json")) ? fs.readFileSync("/share/remote-api.config.json", "utf8") : "{}";
                 return { "jsonrpc": "2.0", "result": configjson, "error": null, "id": id };
+            }
+            else if (input["method"] === "get-info"){
+                const running = fs.existsSync("/startup/easy-samba.running");
+                const version = fs.readFileSync("/startup/version.txt", "utf8").split("\n")[1].split("VERSION: ")[1];
+                return { "jsonrpc": "2.0", "result": { "running": running, "version": version }, "error": null, "id": id };
+            }
+            else {
+                return { "jsonrpc": "2.0", "result": null, "error": `UNKNOWN ERROR`, "id": id };
             }
         }
         catch (error){
-            return { "jsonrpc": "2.0", "result": null, "error": `COULD NOT READ/WRITE '/share/remote-api.config.json' FILE`, "id": id };
+            return { "jsonrpc": "2.0", "result": null, "error": `UNKNOWN ERROR`, "id": id };
         }
     }
     catch (error){
         return { "jsonrpc": "2.0", "result": null, "error": "INVALID INPUT" };
     }
+}
+
+
+
+function fnCreateServer(httpsKey, httpsCert, port, token){
+    return new Promise((resolve, reject) => {
+        try {
+            const server = https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
+                if (req.url === "/api" && req.method === "POST"){
+                    const body = [];
+                    req.on("data", (chunk) => { body.push(chunk); });
+                    req.on("end", () => {
+                        const result = fnAPI(Buffer.concat(body).toString(), token);
+                        res.writeHead(200, { "Content-Type": "application/json" });
+                        res.end(JSON.stringify(result), "utf8");
+                    });
+                }
+                else {
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "WRONG PAGE REQUEST" }), "utf8");
+                }
+            }).listen(port, () => {
+                if (server.address().port !== port){
+                    reject(new Error("ERROR"));
+                }
+                else {
+                    try { fs.writeFileSync("/startup/remote-api.started", ""); } catch(error) { }
+                }
+            });
+        }
+        catch (error){
+            reject(error);
+        }
+    });
 }
 
 

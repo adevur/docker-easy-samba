@@ -91,7 +91,11 @@ async function fnMain(){
             console.log(`[LOG] SAMBA server configuration process has started.`);
             const result = await fnRun();
             if (result === false){
+                try { fs.unlinkSync("/startup/easy-samba.running"); } catch(error) {}
                 console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
+            }
+            else {
+                try { fs.writeFileSync("/startup/easy-samba.running", ""); } catch(error) {}
             }
             previous = (fnIsString(result) && result.length > 0) ? result : undefined;
         };

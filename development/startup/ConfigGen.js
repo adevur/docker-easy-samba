@@ -54,6 +54,10 @@
     config.shares.setFixedRules()
     [deprecated] config.shares.unsetFixedRules()
 
+    [static] ConfigGen.remote()
+    remote.getConfig()
+    remote.setConfig()
+
 */
 
 
@@ -978,67 +982,154 @@ const ConfigGen = class {
     }
 
     // ConfigGen.fromRemote()
-    static fromRemote(url, token, ca = undefined){
-        if (fnIsString(url) !== true || fnIsString(token) !== true){
-            throw new Error("ERROR: PARAMS 'url' AND 'token' MUST BE STRINGS");
+    static async fromRemote(url, token, ca = undefined){
+        let remote = undefined;
+        try {
+            assert( fnIsString(url) && fnIsString(token) );
+            const u = new URL(url);
+            remote = this.remote(u.hostname, parseInt(u.port, 10), token, ca);
+        }
+        catch (error){
+            throw new Error("ERROR: INVALID INPUT");
         }
 
-        return new Promise((resolve, reject) => {
-            const id = crypto.randomBytes(16).toString("hex").toUpperCase();
-            const body = { "token": token };
-            const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": "get-config", "id": id, "params": body }), "utf8");
+        let res = undefined;
+        try {
+            res = await remote.getConfig();
+            assert( fnIsString(res) );
+        }
+        catch (error){
+            throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+        }
 
-            const options = {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Content-Length": data.length
+        try {
+            return this.fromJson(res);
+        }
+        catch (error){
+            throw new Error("ERROR: REMOTE CONFIGURATION FILE IS NOT VALID");
+        }
+    }
+
+    // ConfigGen.remote()
+    static remote(hostname, port, token, ca = undefined){
+        const c = class {
+            constructor(hostname, port, token, ca = undefined){
+                assert( fnIsString(hostname) );
+                assert( fnIsInteger(port) );
+                assert( fnIsString(token) );
+                assert( ca === undefined || fnIsString(ca) );
+
+                this.url = new URL("https://localhost:9595/api");
+                this.url.hostname = hostname;
+                this.url.port = port;
+                this.url = this.url.toString();
+                this.token = token;
+                this.ca = ca;
+
+                return this;
+            }
+
+            cmd(method, other = {}){
+                const url = this.url;
+                const token = this.token;
+                const ca = this.ca;
+
+                return new Promise((resolve, reject) => {
+                    const id = crypto.randomBytes(16).toString("hex").toUpperCase();
+                    const body = { "token": token };
+                    if (fnHas(other, "config.json")){
+                        body["config.json"] = other["config.json"];
+                    }
+                    const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
+
+                    const options = {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Content-Length": data.length
+                        }
+                    };
+                    if (ca === "unsafe") {
+                        options.rejectUnauthorized = false;
+                        options.requestCert = true;
+                    }
+                    else if (fnIsString(ca)){
+                        options.ca = ca;
+                    }
+
+                    let result = [];
+
+                    try {
+                        const req = https.request(url, options, (res) => {
+                            res.on("data", (chunk) => {
+                                result.push(chunk);
+                            });
+
+                            res.on("end", () => {
+                                try {
+                                    result = Buffer.concat(result).toString();
+                                    result = JSON.parse(result);
+                                    assert(fnHas(result, ["jsonrpc", "result", "id"]));
+                                    assert(result["jsonrpc"] === "2.0");
+                                    assert(result["id"] === id);
+                                    resolve({ res: result["result"], err: false });
+                                }
+                                catch (error){
+                                    resolve({ res: undefined, err: "INVALID RESPONSE FROM REMOTE API" });
+                                }
+                            });
+                        });
+
+                        req.on("error", () => {
+                            resolve({ res: undefined, err: "COULD NOT CONNECT TO REMOTE API" });
+                        });
+
+                        req.write(data);
+                        req.end();
+                    }
+                    catch (error){
+                        resolve({ res: undefined, err: "COULD NOT CONNECT TO REMOTE API" });
+                    }
+                });
+            }
+
+            // remote.getConfig()
+            async getConfig(){
+                const { res, err } = await this.cmd("get-config");
+                if (err !== false){
+                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
                 }
-            };
-            if (ca === "unsafe") {
-                options.rejectUnauthorized = false;
-                options.requestCert = true;
-            }
-            else if (fnIsString(ca)){
-                options.ca = ca;
+                return res;
             }
 
-            let result = [];
-
-            try {
-                const req = https.request(url, options, (res) => {
-                    res.on("data", (chunk) => {
-                        result.push(chunk);
-                    });
-
-                    res.on("end", () => {
-                        try {
-                            result = Buffer.concat(result).toString();
-                            result = JSON.parse(result);
-                            assert(fnHas(result, ["jsonrpc", "result", "id"]));
-                            assert(result["jsonrpc"] === "2.0");
-                            assert( fnIsString(result["result"]) );
-                            assert(result["id"] === id);
-                            const config = this.fromJson(result["result"]);
-                            resolve(config);
-                        }
-                        catch (error){
-                            reject("ERROR: INVALID RESPONSE FROM REMOTE API");
-                        }
-                    });
-                });
-
-                req.on("error", () => {
-                    reject("ERROR: COULD NOT CONNECT TO REMOTE API");
-                });
-
-                req.write(data);
-                req.end();
+            // remote.setConfig()
+            async setConfig(configjson){
+                const { res, err } = await this.cmd("set-config", { "config.json": configjson });
+                if (err !== false || res !== "SUCCESS"){
+                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                }
+                return true;
             }
-            catch (error){
-                reject("ERROR: COULD NOT CONNECT TO REMOTE API");
+
+            // remote.getInfo()
+            async getInfo(){
+                const { res, err } = await this.cmd("get-info");
+                if (err !== false || fnHas(res, ["running", "version"]) !== true){
+                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                }
+                return { running: res.running, version: res.version };
             }
-        });
+        };
+
+        let ret = undefined;
+        try {
+            ret = new c(hostname, port, token, ca);
+        }
+        catch (error){
+            throw new Error("ERROR: INVALID INPUT");
+        }
+
+        return ret;
     }
 
     // ConfigGen.genRandomPassword()
@@ -1175,67 +1266,25 @@ const ConfigGen = class {
     }
 
     // config.saveToRemote()
-    saveToRemote(url, token, ca = undefined){
-        if (fnIsString(url) !== true || fnIsString(token) !== true){
-            throw new Error("ERROR: PARAMS 'url' AND 'token' MUST BE STRINGS");
+    async saveToRemote(url, token, ca = undefined){
+        let remote = undefined;
+        try {
+            assert( fnIsString(url) && fnIsString(token) );
+            const u = new URL(url);
+            remote = this.constructor.remote(u.hostname, parseInt(u.port, 10), token, ca);
+        }
+        catch (error){
+            throw new Error("ERROR: INVALID INPUT");
         }
 
-        return new Promise((resolve, reject) => {
-            const configjson = this.saveToJson();
-            const id = crypto.randomBytes(16).toString("hex").toUpperCase();
-            const body = { "config.json": configjson, "token": token };
-            const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": "set-config", "id": id, "params": body }), "utf8");
-
-            const options = {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Content-Length": data.length
-                }
-            };
-            if (ca === "unsafe") {
-                options.rejectUnauthorized = false;
-                options.requestCert = true;
-            }
-            else if (fnIsString(ca)){
-                options.ca = ca;
-            }
-
-            let result = [];
-
-            try {
-                const req = https.request(url, options, (res) => {
-                    res.on("data", (chunk) => {
-                        result.push(chunk);
-                    });
-
-                    res.on("end", () => {
-                        try {
-                            result = Buffer.concat(result).toString();
-                            result = JSON.parse(result);
-                            assert(fnHas(result, ["jsonrpc", "result", "id"]));
-                            assert(result["jsonrpc"] === "2.0");
-                            assert(result["result"] === "SUCCESS");
-                            assert(result["id"] === id);
-                            resolve(true);
-                        }
-                        catch (error){
-                            reject("ERROR: INVALID RESPONSE FROM REMOTE API");
-                        }
-                    });
-                });
-
-                req.on("error", () => {
-                    reject("ERROR: COULD NOT CONNECT TO REMOTE API");
-                });
-
-                req.write(data);
-                req.end();
-            }
-            catch (error){
-                reject("ERROR: COULD NOT CONNECT TO REMOTE API");
-            }
-        });
+        try {
+            const res = await remote.setConfig(this.saveToJson());
+            assert( res === true );
+            return true;
+        }
+        catch (error){
+            throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+        }
     }
 
     // config.on()
