@@ -57,6 +57,7 @@
     [static] ConfigGen.remote()
     remote.getConfig()
     remote.setConfig()
+    remote.getInfo()
 
 */
 
