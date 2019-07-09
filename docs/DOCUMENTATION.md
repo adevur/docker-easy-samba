@@ -9,7 +9,7 @@ and all the things you can do with it.
 
 - [`ConfigGen.js library`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library): it describes in detail how to use `ConfigGen.js` Javascript library, whose purpose is to generate `config.json` files. It is usually used in `config.gen.js` scripts.
 
-- [`EasySamba Remote API`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#easysamba-remote-api): it describes in detail how to enable `EasySamba Remote API` and how to use them to manage an `easy-samba` container from a remote client via network.
+- [`EasySamba Remote API`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#easysamba-remote-api): it describes in detail how to enable `EasySamba Remote API` and how to use it to manage an `easy-samba` container from a remote client via network.
 
 - [`docker options`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options): it describes what parameters you can pass to `docker run`.
 
@@ -76,11 +76,11 @@ It's a string that contains the domain name of the SAMBA server. It must be a va
 
 - It must have a length of minimum 1 char and maximum 15 chars.
 
-- First char must be alphanumeric (i.e. from "a" to "z", from "A" to "Z" or from "0" to "9").
+- First char must be alphanumeric (i.e. from `a` to `z`, from `A` to `Z` or from `0` to `9`).
 
 - Last char must also be alphanumeric.
 
-- It cannot be made entirely of digits (e.g. "123" is not a valid domain name).
+- It cannot be made entirely of digits (e.g. `123` is not a valid domain name).
 
 - All characters of `domain` must be either alphanumeric or hyphen (`-`).
 This rule is valid only for chars that are not the first or the last.
@@ -129,9 +129,9 @@ This section can also be an empty array. An element of `shares` array looks like
 
   - It cannot be equal to any of the other paths used in the `shares` section of `config.json`.
 
-- `guest` is an optional property. If it's present, it is a string (equal to `"rw"` or to `"ro"`) that specifies if the shared folder can be accessed without login (i.e. if the share is an anonymous shared folder). In case it's equal to `"rw"`, it means that guest users (i.e. users without login) can read and write inside the shared folder; in case it's equal to `"ro"`, it means that guest users can only read contents inside the shared folder. These permissions also apply to regular users of the SAMBA server. If `guest` property is missing, it means that this shared folder cannot be accessed by users without login.
+- `guest` is an optional property. If it's present, it is a string (equal to `"rw"` or to `"ro"`) that specifies if the shared folder can be accessed without login (i.e. if the share is an anonymous shared folder). In case it's equal to `"rw"`, it means that guest users (i.e. users without login) can read and write inside the shared folder; in case it's equal to `"ro"`, it means that guest users can only read contents inside the shared folder. If `guest` property is missing, it means that this shared folder cannot be accessed by users without login.
 
-- `access` is a non-empty array of strings that contains all the "access rules" for the shared folder. This property is ignored if `guest` property is present; if `guest` property is absent, `access` property is mandatory and defines the rules that `easy-samba` must apply to the shared folder. An access rule is a string that tells `easy-samba` who can access the shared folder, and with what permissions. See below for more info.
+- `access` is an array of strings that contains all the "access rules" for the shared folder. This property is optional if `guest` property is present. If `guest` property is absent, `access` property is mandatory and defines the rules that `easy-samba` must apply to the shared folder. An access rule is a string that tells `easy-samba` who can access the shared folder, and with what permissions. See below for more info.
 
 ACCESS RULE SYNTAX: these are the types of access rules supported:
 
@@ -243,91 +243,105 @@ config.saveToFile("./config.json");
 
 This is a list of all available methods of `ConfigGen.js` library:
 
-- [`ConfigGen.fromJson()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromjson-static-method)
+- static methods:
 
-- [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromobject-static-method)
+    - [`ConfigGen.fromJson()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromjson-static-method)
 
-- [`ConfigGen.fromFile()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromfile-static-method)
+    - [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromobject-static-method)
 
-- [`ConfigGen.fromRemote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromremote-static-method)
+    - [`ConfigGen.fromFile()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromfile-static-method)
 
-- [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
+    - [`ConfigGen.fromRemote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromremote-static-method)
 
-- [`config.easysambaVersion` property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configeasysambaversion-property)
+    - [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
 
-- [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
+    - [`ConfigGen.remote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenremote-static-method)
 
-- [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
+- `remote` namespace methods:
 
-- [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
+    - [`remote.setConfig()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotesetconfig-method)
 
-- [`config.on()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configon-method)
+    - [`remote.getConfig()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfig-method)
 
-- [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetojson-method)
+    - [`remote.getInfo()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetinfo-method)
 
-- [`config.saveToObject()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoobject-method)
+- `config` namespace methods:
 
-- [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
+    - [`config.easysambaVersion` property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configeasysambaversion-property)
 
-- [`config.saveToRemote()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoremote-method)
+    - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
 
-- `config.users` methods:
+    - [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
 
-    - [`config.users.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersadd-method)
+    - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
 
-    - [`config.users.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersaddarray-method)
+    - [`config.on()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configon-method)
 
-    - [`config.users.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersremove-method)
+    - [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetojson-method)
 
-    - [`config.users.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersget-method)
+    - [`config.saveToObject()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoobject-method)
 
-    - [`config.users.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersgetall-method)
+    - [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
 
-    - [`config.users.setPassword()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configuserssetpassword-method)
+    - [`config.saveToRemote()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoremote-method)
 
-- `config.groups` methods:
+    - `config.users` namespace methods:
 
-    - [`config.groups.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadd-method)
+        - [`config.users.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersadd-method)
 
-    - [`config.groups.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddarray-method)
+        - [`config.users.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersaddarray-method)
 
-    - [`config.groups.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremove-method)
+        - [`config.users.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersremove-method)
 
-    - [`config.groups.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsget-method)
+        - [`config.users.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersget-method)
 
-    - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetall-method)
+        - [`config.users.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersgetall-method)
 
-    - [`config.groups.addMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmembers-method)
+        - [`config.users.setPassword()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configuserssetpassword-method)
 
-    - [`config.groups.removeMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremovemembers-method)
+    - `config.groups` namespace methods:
 
-- `config.shares` methods:
+        - [`config.groups.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadd-method)
 
-    - [`config.shares.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesadd-method)
+        - [`config.groups.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddarray-method)
 
-    - [`config.shares.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddarray-method)
+        - [`config.groups.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremove-method)
 
-    - [`config.shares.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremove-method)
+        - [`config.groups.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsget-method)
 
-    - [`config.shares.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesget-method)
+        - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetall-method)
 
-    - [`config.shares.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetall-method)
+        - [`config.groups.addMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmembers-method)
 
-    - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrules-method)
+        - [`config.groups.removeMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremovemembers-method)
 
-    - [`config.shares.addRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddruleat-method)
+    - `config.shares` namespace methods:
 
-    - [`config.shares.removeRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverules-method)
+        - [`config.shares.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesadd-method)
 
-    - [`config.shares.removeRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveruleat-method)
+        - [`config.shares.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddarray-method)
 
-    - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveallrules-method)
+        - [`config.shares.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremove-method)
 
-    - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetpath-method)
+        - [`config.shares.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesget-method)
 
-    - [`config.shares.setGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetguest-method)
+        - [`config.shares.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetall-method)
 
-    - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
+        - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrules-method)
+
+        - [`config.shares.addRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddruleat-method)
+
+        - [`config.shares.removeRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverules-method)
+
+        - [`config.shares.removeRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveruleat-method)
+
+        - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveallrules-method)
+
+        - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetpath-method)
+
+        - [`config.shares.setGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetguest-method)
+
+        - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
 
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
@@ -472,7 +486,7 @@ This is a property of an instance of `ConfigGen`. It is a string, and its purpos
 
 This can be useful in case you don't know if you can use a specific feature of `easy-samba` in your `config.gen.js` script. Reading `config.easysambaVersion` property, you can check if this `ConfigGen.js` library is aware of the new changes made in `easy-samba` (e.g. in order to know if the current `ConfigGen.js` library knows about new sections introduced in `easy-samba` configuration files).
 
-> NOTE: `ConfigGen.js` has been introduced in `easy-samba` version `1.3`, therefore its `config.easysambaVersion` property will always be at least `1.3`.
+> NOTE: `ConfigGen.js` has been introduced in `easy-samba` version `1.3`, therefore its `config.easysambaVersion` property will always be at least `"1.3"`.
 
 EXAMPLE:
 ```js
@@ -1062,13 +1076,15 @@ console.log( config.groups.get("group1")["members"] ); // []
 ### `config.shares.add()` method
 This is a method that can be used in order to add a share to the `shares` section of an instance of `ConfigGen`.
 
-- ARGUMENTS: `sharename`, `path` and `access`
+- ARGUMENTS: `sharename`, `path`, `access` and `guest` (optional)
 
   - PARAMETER `sharename`: it is a string that contains the name of the new share
 
   - PARAMETER `path`: it is a string that contains the path of the new share
 
-  - PARAMETER `access`: it can be a string equal to `"rw"` or to `"ro"` (in this case, this parameter represents the `guest` property of the share); or it can be an array of strings that contains the list of access rules of the share (in this case, this parameter represents the `access` property of the share)
+  - PARAMETER `access`: it is an array of strings that contains the list of access rules of the share
+
+  - PARAMETER `guest`: it is a string equal to `"rw"`, `"ro"` or `"no"`. It represents the `guest` property of the share. In case it's equal to `"no"`, it means that the share doesn't have a `guest` property. It this parameter is missing, it is set to `"no"`.
 
 EXAMPLE:
 ```js
@@ -1080,9 +1096,17 @@ config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
 console.log( config.shares.get("public") ); // { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] }
 console.log( config.shares.get("public")["guest"] ); // undefined
 
-config.shares.add("anon", "/share/anon", "ro");
-console.log( config.shares.get("anon") ); // { "name": "anon", "path": "/share/anon", "guest": "ro", "access": [] }
+config.shares.add("anon", "/share/anon", [], "ro");
+console.log( config.shares.get("anon") ); // { "name": "anon", "path": "/share/anon", "access": [], "guest": "ro" }
 console.log( config.shares.get("anon")["guest"] ); // ro
+
+config.shares.add("anon2", "/share/anon2", ["ro:*", "rw:admin"], "ro");
+console.log( config.shares.get("anon2") ); // { "name": "anon2", "path": "/share/anon2", "access": ["ro:*", "rw:admin"], "guest": "ro" }
+console.log( config.shares.get("anon2")["guest"] ); // ro
+
+config.shares.add("folder", "/share/folder", ["admin"], "no");
+console.log( config.shares.get("folder") ); // { "name": "folder", "path": "/share/folder", "access": ["admin"] }
+console.log( config.shares.get("folder")["guest"] ); // undefined
 ```
 
 ### `config.shares.addArray()` method
@@ -1100,11 +1124,13 @@ const config = new ConfigGen();
 
 config.shares.addArray([
     { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
-    { "name": "anon", "path": "/share/anon", "guest": "ro" }
+    { "name": "anon", "path": "/share/anon", "guest": "ro" },
+    { "name": "anon2", "path": "/share/anon2", "access": ["ro:*", "rw:admin"], "guest": "ro" }
 ]);
 // this is equivalent to writing:
-config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
-config.shares.add("anon", "/share/anon", "ro");
+config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"], "no");
+config.shares.add("anon", "/share/anon", [], "ro");
+config.shares.add("anon2", "/share/anon2", ["ro:*", "rw:admin"], "ro");
 ```
 
 ### `config.shares.remove()` method
@@ -1373,16 +1399,13 @@ const ConfigGen = require("./ConfigGen.js");
 
 const config = new ConfigGen();
 
-config.shares.add("folder1", "/share/folder1", "rw");
-
-console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "guest": "rw", "access": [] }
+config.shares.add("folder1", "/share/folder1", [], "rw");
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [], "guest": "rw" }
 
 config.shares.setGuest("folder1", "ro");
-
-console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "guest": "ro", "access": [] }
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [], "guest": "ro" }
 
 config.shares.setGuest("folder1", "no");
-
 console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [] }
 console.log( config.shares.get("folder1")["guest"] ); // undefined
 ```
@@ -1392,11 +1415,11 @@ This method can be used to set specific access rules to be always added at the e
 
 Fixed rules are a global setting; therefore, every time you call `config.shares.setFixedRules()` function, you are overwriting global fixed rules settings.
 
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.6`.
+Fixed rules are applied when you generate the final configuration file (using, for example, `config.saveToObject()`, `config.saveToJson()`, `config.saveToFile()`, etc.).
 
 - ARGUMENTS: `shares` (optional) and `rules`
 
-  - PARAMETER `shares`: it's an array which contains the name of the shares that the specified fixed rules apply to; if this parameter is missing, it means "all the existing and future-created shares"
+  - PARAMETER `shares`: it's an array which contains the name of the shares that the specified fixed rules apply to; if this parameter is missing, it means "all the shared folders"
 
   - PARAMETER `rules`: it's an array which contains the access rules that the specified shares will always have
 
@@ -1408,19 +1431,16 @@ const config = new ConfigGen();
 
 // let's create a new share "folder1" and set its rules to ["rw:user1"]
 config.shares.add("folder1", "/share/folder1", ["rw:user1"]);
-console.log( config.shares.get("folder1")["access"] ); // ["rw:user1"]
+console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1"] } ]
 
 // we want that share "folder1" will always be readable and writable by user "admin"
 config.shares.setFixedRules(["folder1"], ["rw:admin"]);
-
-// let's check access rules of "folder1"
-console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "rw:admin"]
 
 // now let's add access rule "no:admin" to "folder1"
 config.shares.addRules("folder1", ["no:admin"]);
 
 // user "admin" will still be able to read and write
-console.log( config.shares.get("folder1")["access"] ); // ["rw:user1", "no:admin", "rw:admin"]
+console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin", "rw:admin"] } ]
 
 // now let's modify fixed rules, applying them to all shares (this is done by not passing a "shares" parameter)
 config.shares.setFixedRules(["rw:admin"]);
@@ -1429,14 +1449,13 @@ config.shares.setFixedRules(["rw:admin"]);
 config.shares.add("folder2", "/share/folder2", ["ro:user2"]);
 
 // new share "folder2" is readable and writable by user "admin"
-console.log( config.shares.get("folder2")["access"] ); // ["ro:user2", "rw:admin"]
+console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin", "rw:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2", "rw:admin"] } ]
 
 // if we want to disable fixed rules completely, we use:
 config.shares.setFixedRules([]);
 
-// next time we modify a share (or we create a new one), fixed rules aren't going to be applied anymore
-config.shares.add("folder3", "/share/folder3", ["ro:user3"]);
-console.log( config.shares.get("folder3")["access"] ); // ["ro:user3"]
+// next time we generate a configuration file, fixed rules aren't going to be applied anymore
+console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2"] } ]
 ```
 
 ## advanced use
