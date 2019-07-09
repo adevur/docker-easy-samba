@@ -340,7 +340,7 @@ This is a list of all available methods of `ConfigGen.js` library:
 ### `ConfigGen.version` static property
 This is a static property of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
 
-This can be useful in case you don't know if you can use a specific feature of `easy-samba` in your `config.gen.js` script. Reading `config.easysambaVersion` property, you can check if this `ConfigGen.js` library is aware of the new changes made in `easy-samba` (e.g. in order to know if the current `ConfigGen.js` library knows about new sections introduced in `easy-samba` configuration files).
+This can be useful in case you don't know if you can use a specific feature of `easy-samba` in your `config.gen.js` script. By reading `ConfigGen.version` property, you can check if this `ConfigGen.js` library is aware of the new changes made in `easy-samba` (e.g. in order to know if the current `ConfigGen.js` library knows about new sections introduced in `easy-samba` configuration files).
 
 EXAMPLE:
 ```js
