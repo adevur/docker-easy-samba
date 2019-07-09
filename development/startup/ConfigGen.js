@@ -54,6 +54,7 @@
     config.shares.setGuest()
     config.shares.setFixedRules()
     [deprecated] config.shares.unsetFixedRules()
+    config.shares.setBaseRules()
 
     [static] ConfigGen.remote()
     remote.getConfig()
@@ -71,7 +72,7 @@ const assert = require("assert");
 const https = require("https");
 
 // global variables
-const globalVersion = "1.12";
+const globalVersion = "1.13";
 
 
 
@@ -111,23 +112,6 @@ const fnIsFunction = (obj) => {
     return (obj && {}.toString.call(obj) === "[object Function]");
 };
 
-// fnArrayEndsWith()
-//   checks if a given array "obj" ends with elements "elems"
-const fnArrayEndsWith = (obj, elems) => {
-    if (elems.length === 0){
-        return true;
-    }
-    if (obj.length < elems.length){
-        return false;
-    }
-    const end = obj.slice(obj.length - elems.length, obj.length);
-    const check = end.every((e, i) => { return (e === elems[i]); });
-    if (check !== true){
-        return false;
-    }
-    return true;
-};
-
 // fnCopy()
 //   makes a copy of a Javascript object
 const fnCopy = (obj) => {
@@ -138,6 +122,32 @@ const fnCopy = (obj) => {
 //   checks if two arrays are equal
 const fnEqualArrays = (arr1, arr2) => {
     return (arr1.length === arr2.length && arr1.filter((e, i) => { return (e === arr2[i]); }).length === arr1.length);
+};
+
+// fnArrayEndsWith()
+//   checks if a given array "obj" ends with elements "elems"
+const fnArrayEndsWith = (obj, elems) => {
+    if (elems.length === 0){
+        return true;
+    }
+    if (obj.length < elems.length){
+        return false;
+    }
+    const end = obj.slice(obj.length - elems.length, obj.length);
+    return fnEqualArrays(end, elems);
+};
+
+// fnArrayStartsWith()
+//   checks if a given array "obj" starts with elements "elems"
+const fnArrayStartsWith = (obj, elems) => {
+    if (elems.length === 0){
+        return true;
+    }
+    if (obj.length < elems.length){
+        return false;
+    }
+    const start = obj.slice(0, elems.length);
+    return fnEqualArrays(start, elems);
 };
 
 
@@ -195,6 +205,9 @@ const ConfigGen = class {
 
         // internal variable for config.shares.setFixedRules() function
         this["$fixedrules"] = { "shares": undefined, "rules": [] };
+
+        // internal variable for config.shares.setBaseRules() function
+        this["$baserules"] = { "shares": undefined, "rules": [] };
 
         // "users" namespace
         //   where functions like "config.users.add(...)" are located
@@ -890,6 +903,28 @@ const ConfigGen = class {
                 console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules([])'.`);
                 this.shares.setFixedRules([]);
                 return this;
+            },
+
+            // config.shares.setBaseRules()
+            setBaseRules: (...args) => {
+                let shares = undefined;
+                let rules = undefined;
+
+                if (args.length === 1 && fnIsArray(args[0]) && args[0].every(fnIsString)){
+                    rules = args[0];
+                }
+                else if (args.length === 2 && fnIsArray(args[0]) && args[0].every(fnIsString) && fnIsArray(args[1]) && args[1].every(fnIsString)){
+                    shares = args[0];
+                    rules = args[1];
+                }
+                else {
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+
+                this["$baserules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
+                this["$baserules"]["rules"] = fnCopy(rules);
+
+                return this;
             }
         };
 
@@ -1245,6 +1280,16 @@ const ConfigGen = class {
         }
 
         result["shares"] = fnCopy(this["$shares"]);
+
+        // apply base rules
+        result["shares"].forEach((share) => {
+            if (this["$baserules"]["shares"] !== undefined && this["$baserules"]["shares"].includes(share["name"]) !== true){
+                return;
+            }
+            if (fnArrayStartsWith(share["access"], this["$baserules"]["rules"]) !== true){
+                share["access"] = this["$baserules"]["rules"].concat(share["access"]);
+            }
+        });
 
         // apply fixed rules
         result["shares"].forEach((share) => {
