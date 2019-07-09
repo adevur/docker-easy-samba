@@ -243,7 +243,9 @@ config.saveToFile("./config.json");
 
 This is a list of all available methods of `ConfigGen.js` library:
 
-- static methods:
+- static methods and properties:
+
+    - [`ConfigGen.version` static property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenversion-static-property)
 
     - [`ConfigGen.fromJson()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromjson-static-method)
 
@@ -264,8 +266,6 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`remote.getInfo()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetinfo-method)
 
 - `config` namespace methods:
-
-    - [`config.easysambaVersion` property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configeasysambaversion-property)
 
     - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
 
@@ -327,8 +327,6 @@ This is a list of all available methods of `ConfigGen.js` library:
 
         - [`config.shares.addRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddruleat-method)
 
-        - [`config.shares.removeRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoverules-method)
-
         - [`config.shares.removeRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveruleat-method)
 
         - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveallrules-method)
@@ -338,6 +336,18 @@ This is a list of all available methods of `ConfigGen.js` library:
         - [`config.shares.setGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetguest-method)
 
         - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
+
+### `ConfigGen.version` static property
+This is a static property of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
+
+This can be useful in case you don't know if you can use a specific feature of `easy-samba` in your `config.gen.js` script. Reading `config.easysambaVersion` property, you can check if this `ConfigGen.js` library is aware of the new changes made in `easy-samba` (e.g. in order to know if the current `ConfigGen.js` library knows about new sections introduced in `easy-samba` configuration files).
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+console.log( ConfigGen.version ); // 1.12
+```
 
 ### `ConfigGen.fromJson()` static method
 This is a static method that can be used in order to import an existing JSON configuration file, that can be later modified and re-saved.
@@ -559,22 +569,6 @@ async function myAsyncFunction(){
     console.log("easy-samba status: " + (info.running) ? "running" : "not running");
     console.log("easy-samba version: " + info.version);
 }
-```
-
-### `config.easysambaVersion` property
-This is a property of an instance of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
-
-This can be useful in case you don't know if you can use a specific feature of `easy-samba` in your `config.gen.js` script. Reading `config.easysambaVersion` property, you can check if this `ConfigGen.js` library is aware of the new changes made in `easy-samba` (e.g. in order to know if the current `ConfigGen.js` library knows about new sections introduced in `easy-samba` configuration files).
-
-> NOTE: `ConfigGen.js` has been introduced in `easy-samba` version `1.3`, therefore its `config.easysambaVersion` property will always be at least `"1.3"`.
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-console.log( config.easysambaVersion ); // 1.3
 ```
 
 ### `config.domain()` method
@@ -1301,41 +1295,6 @@ console.log( config.shares.get("public")["access"] ); // ["ro:*", "rw:user1", "r
 
 config.shares.addRuleAt("public", ["a", "b"], 1);
 console.log( config.shares.get("public")["access"] ); // ["ro:*", "a", "b", "rw:user1", "ro:user2", "rw:user3"]
-```
-
-### `config.shares.removeRules()` method
-This is a method that can be used in order to remove one or more access rules from an existing share of the `shares` section of an instance of `ConfigGen`.
-
-- ARGUMENTS: `sharename` and `rules`
-
-  - PARAMETER `sharename`: it is a string that contains the name of the share
-
-  - PARAMETER `rules`: it is an array of strings that contains all the access rules to remove from the specified share
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"]);
-
-console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
-
-config.shares.removeRules("public", ["rw:user1", "ro:user2"]);
-
-console.log( config.shares.get("public")["access"] ); // []
-
-// NOTE: config.shares.removeRules() will only remove the first occurency of each one of the specified access rules
-// EXAMPLE:
-config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
-config.shares.removeRules("test", ["rw:user1"]);
-console.log( config.shares.get("test")["access"] ); // ["ro:user2", "rw:user1"]
-
-// HINT: if you want to delete all the occurrencies of the specified access rules, use config.shares.removeAllRules() instead:
-config.shares.add("test", "/share/test", ["rw:user1", "ro:user2", "rw:user1"]);
-config.shares.removeAllRules("test", ["rw:user1"]);
-console.log( config.shares.get("test")["access"] ); // ["ro:user2"]
 ```
 
 ### `config.shares.removeRuleAt()` method
