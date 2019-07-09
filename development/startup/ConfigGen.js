@@ -935,6 +935,9 @@ const ConfigGen = class {
     static get version(){
         return globalVersion;
     }
+    static set version(value){
+        throw new Error("ERROR: YOU CANNOT MODIFY 'ConfigGen.version' PROPERTY");
+    }
 
     // ConfigGen.fromObject()
     static fromObject(input){
