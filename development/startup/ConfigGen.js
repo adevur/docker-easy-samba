@@ -4,7 +4,7 @@
     [static] ConfigGen.fromObject()
     [static] ConfigGen.fromJson()
     [static] ConfigGen.fromFile()
-    [static] ConfigGen.fromRemote()
+    [deprecated] [static] ConfigGen.fromRemote()
     [static] ConfigGen.genRandomPassword()
 
     [property] config.easysambaVersion
@@ -12,7 +12,7 @@
     config.saveToJson()
     config.saveToFile()
     config.saveToObject()
-    config.saveToRemote()
+    [deprecated] config.saveToRemote()
 
     config.on()
 
@@ -959,6 +959,8 @@ const ConfigGen = class {
 
     // ConfigGen.fromRemote()
     static async fromRemote(url, token, ca = undefined){
+        console.log("[WARNING] 'ConfigGen.fromRemote()' is deprecated. Use 'remote.getConfig()', instead.");
+
         let remote = undefined;
         try {
             assert( fnIsString(url) && fnIsString(token) );
@@ -1260,6 +1262,8 @@ const ConfigGen = class {
 
     // config.saveToRemote()
     async saveToRemote(url, token, ca = undefined){
+        console.log("[WARNING] 'config.saveToRemote()' is deprecated. Use 'remote.setConfig()', instead.");
+
         let remote = undefined;
         try {
             assert( fnIsString(url) && fnIsString(token) );
