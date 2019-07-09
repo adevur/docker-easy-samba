@@ -251,8 +251,6 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`ConfigGen.fromFile()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromfile-static-method)
 
-    - [`ConfigGen.fromRemote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromremote-static-method)
-
     - [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
 
     - [`ConfigGen.remote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenremote-static-method)
@@ -282,8 +280,6 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`config.saveToObject()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoobject-method)
 
     - [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
-
-    - [`config.saveToRemote()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoremote-method)
 
     - `config.users` namespace methods:
 
@@ -414,49 +410,6 @@ config.users.add("new-user", "123456");
 config.saveToFile("./new-config.json");
 ```
 
-### `ConfigGen.fromRemote()` static method
-This is a static method that can be used in order to import an existing configuration, that can be later modified and re-saved.
-
-The configuration is retrieved from a remote `easy-samba` container using `EasySamba Remote API`.
-
-> NOTE: this function is async and returns a Promise.
-
-- ARGUMENTS: `url`, `token` and `ca` (optional)
-
-  - PARAMETER `url`: a string that contains the network address of the remote container (in this format: `https://hostname:port/api`)
-
-  - PARAMETER `token`: a string that contains the secret token used to authenticate on the remote container
-
-  - PARAMETER `ca`: a string that contains the certificate used by the remote container for the HTTPS protocol (i.e. in case the remote container's certificate is self-signed); this parameter can be set to `"unsafe"` if you don't want to verify the remote certificate (i.e. in case you're just debugging or testing); if this parameter is missing, certificate will be verified against a list of known certificates (i.e. in case the remote container's certificate is signed by a recognized global certification authority)
-
-- OUTPUT: a Promise that resolves to an instance of ConfigGen
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-const fs = require("fs");
-
-myAsyncFunction();
-
-async function myAsyncFunction(){
-    // if the remote container has a self-signed certificate, you should pass it to this function
-    //  NOTE: the self-signed certificate is located into the remote container at path "/share/remote-api.cert" (so you can copy it to all the clients)
-    const config = await ConfigGen.fromRemote("https://localhost:9595/api", "my-secret-token", fs.readFileSync("/path/to/remote-api.cert", "ascii"));
-
-    // if the remote container has a certificate that's been signed by a global-recognized Certification Authority, you don't have to pass a certificate
-    const config = await ConfigGen.fromRemote("https://www.example.com:9595/api", "my-secret-token");
-
-    // if you don't care about security (e.g. you're just testing), you can also disable certificate verification process
-    //  NOTE: this will work with both self-signed certificates and global-recognized Certification Authorities
-    const config = await ConfigGen.fromRemote("https://localhost:9595/api", "my-secret-token", "unsafe");
-
-    config.domain("NEWDOMAIN");
-    config.users.add("new-user", "123456");
-
-    config.saveToFile("./new-config.json");
-}
-```
-
 ### `ConfigGen.genRandomPassword()` static method
 This is a static method that can be used in order to generate a random password. This is useful in case you want users to have a random password, instead of a manually generated one.
 
@@ -479,6 +432,133 @@ console.log( passw1 ); // M]K:IF`4"#bN
 const passw2 = ConfigGen.genRandomPassword(4);
 
 console.log( passw2 ); // 2[gT
+```
+
+### `ConfigGen.remote()` static method
+This static method can be used to create a new object of type `remote`; the latter can be used to interact with a remote `easy-samba` container using `EasySamba Remote API`.
+
+All the methods available for `remote` objects are listed as "`remote` namespace methods" in the [`ConfigGen.js` library section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
+
+- ARGUMENTS: `hostname`, `port`, `token` and `ca` (optional)
+
+  - PARAMETER `hostname`: a string that contains the hostname of the remote container (e.g. `localhost`)
+
+  - PARAMETER `port`: an integer that represents the port, which the remote container's `Remote API` is listening to (by default, it's `9595`)
+
+  - PARAMETER `token`: a string that contains the secret token used to authenticate on the remote container
+
+  - PARAMETER `ca`: a string that contains the certificate used by the remote container for the HTTPS protocol (i.e. in case the remote container's certificate is self-signed); this parameter can be set to `"unsafe"` if you don't want to verify the remote certificate (i.e. in case you're just debugging or testing); if this parameter is missing, certificate will be verified against a list of known certificates (i.e. in case the remote container's certificate is signed by a recognized global certification authority)
+
+- OUTPUT: an instance of `remote` object
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+
+remote.getInfo().then((result) => {
+    console.log(`Remote container localhost is using easy-samba version ${result.version}`);
+});
+
+
+// about "ca" parameter:
+    // if the remote container has a self-signed certificate, you should pass it to this function
+    //  NOTE: the self-signed certificate is located into the remote container at path "/share/remote-api.cert" (so you can copy it to all the clients)
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", require("fs").readFileSync("/path/to/remote-api.cert", "ascii"));
+
+    // if the remote container has a certificate that's been signed by a global-recognized Certification Authority, you don't have to pass a certificate
+    const remote = ConfigGen.remote("www.example.com", 9595, "my-secret-token");
+
+    // if you don't care about security (e.g. you're just testing), you can also disable certificate verification process
+    //  NOTE: this will work with both self-signed certificates and global-recognized Certification Authorities
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+```
+
+### `remote.setConfig()` method
+This method can be used to set the configuration of a remote container using `EasySamba Remote API`.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: `configjson`
+
+  - PARAMETER `configjson`: a string that contains the configuration in JSON format, to be sent to the remote container
+
+- OUTPUT: it returns a Promise that resolves to `true`, in case of success
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+const assert = require("assert");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    // let's create a new sample configuration, that will be sent to the remote container
+    const config = new ConfigGen();
+    config.users.add("test");
+    const configjson = config.saveToJson();
+
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    try {
+        const result = await remote.setConfig(configjson);
+        assert(result === true);
+        console.log("SUCCESS");
+    }
+    catch (error){
+        console.log("ERROR");
+    }
+}
+```
+
+### `remote.getConfig()` method
+This method can be used to get the configuration of a remote container using `EasySamba Remote API`.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a Promise that resolves to a string that contains the remote configuration in JSON format
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    // let's retrieve the remote configuration
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const configjson = await remote.getConfig();
+
+    // let's create a new config based on the retrieved configuration
+    const config = ConfigGen.fromJson(configjson);
+}
+```
+
+### `remote.getInfo()` method
+This method can be used to get some information about a remote container using `EasySamba Remote API`.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a Promise that resolves to an object like this: `{ running: true, version: "1.12.0" }`; where `running` can be equal to `true` or `false` and tells us if the remote `easy-samba` container is currently working (in case no errors have been encountered during configuration validation process); and where `version` is a string that tells us which version of `easy-samba` is running in the remote container
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    // let's retrieve remote information
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const info = await remote.getInfo();
+
+    console.log("easy-samba status: " + (info.running) ? "running" : "not running");
+    console.log("easy-samba version: " + info.version);
+}
 ```
 
 ### `config.easysambaVersion` property
@@ -713,47 +793,6 @@ config.users.add("user1", "123456");
 config.shares.add("user1", "/share/user1", ["rw:user1"]);
 
 config.saveToFile("./config.json");
-```
-
-### `config.saveToRemote()` method
-This method can be used to save an instance of `ConfigGen` to a remote `easy-samba` container.
-
-The configuration is sent to a remote `easy-samba` container using `EasySamba Remote API`.
-
-> NOTE: this function is async and returns a Promise.
-
-- ARGUMENTS: `url`, `token` and `ca` (optional)
-
-  - PARAMETER `url`: a string that contains the network address of the remote container (in this format: `https://hostname:port/api`)
-
-  - PARAMETER `token`: a string that contains the secret token used to authenticate on the remote container
-
-  - PARAMETER `ca`: a string that contains the certificate used by the remote container for the HTTPS protocol (i.e. in case the remote container's certificate is self-signed); this parameter can be set to `"unsafe"` if you don't want to verify the remote certificate (i.e. in case you're just debugging or testing); if this parameter is missing, certificate will be verified against a list of known certificates (i.e. in case the remote container's certificate is signed by a recognized global certification authority)
-
-- OUTPUT: a Promise that resolves to `true` in case of success
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-const fs = require("fs");
-
-myAsyncFunction();
-
-async function myAsyncFunction(){
-    const config = new ConfigGen();
-    config.users.add("user1");
-
-    // if the remote container has a self-signed certificate, you should pass it to this function
-    //  NOTE: the self-signed certificate is located into the remote container at path "/share/remote-api.cert" (so you can copy it to all the clients)
-    await config.saveToRemote("https://localhost:9595/api", "my-secret-token", fs.readFileSync("/path/to/remote-api.cert", "ascii"));
-
-    // if the remote container has a certificate that's been signed by a global-recognized Certification Authority, you don't have to pass a certificate
-    await config.saveToRemote("https://www.example.com:9595/api", "my-secret-token");
-
-    // if you don't care about security (e.g. you're just testing), you can also disable certificate verification process
-    //  NOTE: this will work with both self-signed certificates and global-recognized Certification Authorities
-    await config.saveToRemote("https://localhost:9595/api", "my-secret-token", "unsafe");
-}
 ```
 
 ### `config.users.add()` method
@@ -1190,8 +1229,6 @@ console.log( config.shares.get() ); // ["public", "user3"]
 console.log( config.shares.get("public")["access"] ); // ["rw:user1", "ro:user2"]
 ```
 
-> NOTE: `config.shares.get(undefined)` is equivalent to `config.shares.get()`.
-
 ### `config.shares.getAll()` method
 This is a method that can be used in order to retrieve detailed information about all shares from the `shares` section of an instance of `ConfigGen`.
 
@@ -1431,7 +1468,7 @@ const config = new ConfigGen();
 
 // let's create a new share "folder1" and set its rules to ["rw:user1"]
 config.shares.add("folder1", "/share/folder1", ["rw:user1"]);
-console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1"] } ]
+console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1"] } ]
 
 // we want that share "folder1" will always be readable and writable by user "admin"
 config.shares.setFixedRules(["folder1"], ["rw:admin"]);
@@ -1440,7 +1477,7 @@ config.shares.setFixedRules(["folder1"], ["rw:admin"]);
 config.shares.addRules("folder1", ["no:admin"]);
 
 // user "admin" will still be able to read and write
-console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin", "rw:admin"] } ]
+console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin", "rw:admin"] } ]
 
 // now let's modify fixed rules, applying them to all shares (this is done by not passing a "shares" parameter)
 config.shares.setFixedRules(["rw:admin"]);
@@ -1449,13 +1486,13 @@ config.shares.setFixedRules(["rw:admin"]);
 config.shares.add("folder2", "/share/folder2", ["ro:user2"]);
 
 // new share "folder2" is readable and writable by user "admin"
-console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin", "rw:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2", "rw:admin"] } ]
+console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin", "rw:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2", "rw:admin"] } ]
 
 // if we want to disable fixed rules completely, we use:
 config.shares.setFixedRules([]);
 
 // next time we generate a configuration file, fixed rules aren't going to be applied anymore
-console.log( config.saveToJson()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2"] } ]
+console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2"] } ]
 ```
 
 ## advanced use
