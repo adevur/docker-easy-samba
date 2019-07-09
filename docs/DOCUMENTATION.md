@@ -1327,9 +1327,7 @@ console.log( config.shares.get("public")["access"] ); // []
 ### `config.shares.removeAllRules()` method
 This is a method that can be used in order to remove one or more access rules from an existing share of the `shares` section of an instance of `ConfigGen`.
 
-The difference between `config.shares.removeRules()` and `config.shares.removeAllRules()` is that the former will only remove the first occurrency of the specified access rules, while the latter will remove all the occurrencies of the specified access rules.
-
-> NOTE: this method has been introduced in `ConfigGen.js` version `1.4`.
+This function will remove all the occurrencies of the specified access rules.
 
 - ARGUMENTS: `sharename` and `rules` (optional)
 
