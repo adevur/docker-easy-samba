@@ -18,8 +18,8 @@ function fnValidateConfigSharesAccess(share, sharedb){
     const access = share["access"];
 
     // must be an array and it cannot be empty
-    if (fnIsArray(access) !== true || access.length < 1){
-        return `PROPERTY 'access' OF SHARE '${share["name"]}' MUST BE A NON-EMPTY ARRAY`;
+    if (fnIsArray(access) !== true){
+        return `PROPERTY 'access' OF SHARE '${share["name"]}' MUST BE AN ARRAY`;
     }
 
     // must contain only users or groups defined early in config["users"] and config["groups"]
