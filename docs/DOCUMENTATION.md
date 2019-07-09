@@ -1117,7 +1117,7 @@ This is a method that can be used in order to add a share to the `shares` sectio
 
   - PARAMETER `access`: it is an array of strings that contains the list of access rules of the share
 
-  - PARAMETER `guest`: it is a string equal to `"rw"`, `"ro"` or `"no"`. It represents the `guest` property of the share. In case it's equal to `"no"`, it means that the share doesn't have a `guest` property. It this parameter is missing, it is set to `"no"`.
+  - PARAMETER `guest`: it is a string equal to `"rw"`, `"ro"` or `"no"`. It represents the `guest` property of the share. In case it's equal to `"no"`, it means that the share doesn't have a `guest` property. If this parameter is missing, it is set to `"no"`.
 
 EXAMPLE:
 ```js
