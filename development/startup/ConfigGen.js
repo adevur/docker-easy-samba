@@ -1,13 +1,14 @@
 /*
     LIST OF METHODS
 
+    [static] [property] ConfigGen.version
     [static] ConfigGen.fromObject()
     [static] ConfigGen.fromJson()
     [static] ConfigGen.fromFile()
     [deprecated] [static] ConfigGen.fromRemote()
     [static] ConfigGen.genRandomPassword()
 
-    [property] config.easysambaVersion
+    [deprecated] [property] config.easysambaVersion
 
     config.saveToJson()
     config.saveToFile()
@@ -68,6 +69,9 @@ const fs = require("fs");
 const crypto = require("crypto");
 const assert = require("assert");
 const https = require("https");
+
+// global variables
+const globalVersion = "1.12";
 
 
 
@@ -146,7 +150,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
-        this.easysambaVersion = "1.12";
+        this.easysambaVersion = globalVersion;
 
         // internal variables used by an instance of ConfigGen
         this["$domain"] = "WORKGROUP";
@@ -888,6 +892,11 @@ const ConfigGen = class {
         };
 
         return this;
+    }
+
+    // ConfigGen.version
+    static get version(){
+        return globalVersion;
     }
 
     // ConfigGen.fromObject()
