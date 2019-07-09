@@ -47,7 +47,7 @@
     config.shares.getAll()
     config.shares.addRules()
     config.shares.addRuleAt()
-    config.shares.removeRules()
+    [deprecated] config.shares.removeRules()
     config.shares.removeRuleAt()
     config.shares.removeAllRules()
     config.shares.setPath()
@@ -702,6 +702,8 @@ const ConfigGen = class {
 
             // config.shares.removeRules()
             removeRules: (sharename, rules) => {
+                console.log("[WARNING] 'config.shares.removeRules() is deprecated. Use 'config.shares.removeRuleAt()', instead.'");
+
                 if (fnIsString(sharename) !== true){
                     throw new Error("ERROR: SHARE NAME MUST BE A STRING");
                 }
@@ -1342,7 +1344,7 @@ const ConfigGen = class {
                 this.shares.setPath("guest", input);
             }
             else {
-                this.shares.add("guest", input, "rw");
+                this.shares.add("guest", input, [], "rw");
             }
             return this;
         }
