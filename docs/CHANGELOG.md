@@ -2,11 +2,40 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.11.1`
+### Current stable release: `1.12.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.12.0 (2019-07-09 UTC)
+- New features:
+
+  - Now it is possible to specify access rules of a shared folder together with property `guest`. This way, you can manage access to anonymous shared folders. For example, `{ "name": "anon", "path": "/share/anon", "access": ["ro:*", "rw:admin"], "guest": "ro" }` means that shared folder `anon` is read-only for guest users (i.e. users without login) and it's also read-only for all users with login, except for user `admin`, who can also write to that folder.
+
+  - In `ConfigGen.js` library, functions `config.shares.add()` and `config.shares.addArray()` have been updated to support both `access` and `guest` properties set together. For example: `config.shares.add("anon", "/share/anon", ["ro:*", "rw:admin"], "ro");` or `config.shares.addArray([{ "name": "anon", "path": "/share/anon", "access": ["ro:*", "rw:admin"], "guest": "ro" }]);`. Old syntax is still supported for retro-compatibility purposes.
+
+  - If `/share/remote-api.json` is missing a `token` property, a random token of 12 characters will be generated automatically and will be written to `/share/remote-api.json` file. Note that `/share/remote-api.json` still has to be a valid JSON file, so it must be equal to `{}` in case it doesn't have any property (because empty files are not considered valid JSON files).
+
+  - `easy-samba` now gives more priority to `/share/config.gen.js` file over `/share/remote-api.config.json`. This means that if a `/share/config.gen.js` file is present (and `/share/config.json` is missing), `easy-samba` will use it to generate a new `/share/config.json` file, instead of using the existing `/share/remote-api.config.json`.
+
+  - These new functions have been added to `ConfigGen.js` library: `ConfigGen.remote()`, `remote.setConfig()`, `remote.getConfig()` and `remote.getInfo()`.
+
+  - A new API call has been added to `EasySamba Remote API`: `get-info`. This new API returns an object like `{ running: true, version: "1.12.0" }`, which gives information about the status of `easy-samba` and its version.
+
+- Bug fixes:
+
+  - Minor improvements to generation of `/etc/samba/smb.conf`.
+
+  - `EasySamba Remote API` is now much more stable, and has a better handling of errors.
+
+  - In `ConfigGen.js` library, fixed rules behavior has changed and is now much more reliable. This may, in some rare cases, break compatibility with older code.
+
+  - Other minor bugfixes to validation of configuration files.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] 1.11.1 (2019-07-03 UTC)
 - New features:
