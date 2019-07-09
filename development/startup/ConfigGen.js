@@ -192,26 +192,6 @@ const ConfigGen = class {
         // internal variable for config.shares.setFixedRules() function
         this["$fixedrules"] = { "shares": undefined, "rules": [] };
 
-        // event handlers for config.shares.setFixedRules() function
-        this["$fixedrules-current"] = undefined;
-        this["$fixedrules-handler"] = (share) => {
-            if (this["$fixedrules-current"] === share["name"]){
-                return;
-            }
-
-            this["$fixedrules-current"] = share["name"];
-            if (this["$fixedrules"]["shares"] !== undefined && this["$fixedrules"]["shares"].includes(share["name"]) !== true){
-                return;
-            }
-            if (fnArrayEndsWith(this.shares.get(share["name"])["access"], this["$fixedrules"]["rules"]) !== true){
-                this.shares.removeAllRules(share["name"], this["$fixedrules"]["rules"]);
-                this.shares.addRules(share["name"], this["$fixedrules"]["rules"]);
-            }
-
-            this["$fixedrules-current"] = undefined;
-        };
-        this.on(["share-add", "share-change-access"], this["$fixedrules-handler"]);
-
         // "users" namespace
         //   where functions like "config.users.add(...)" are located
         this.users = {
@@ -896,11 +876,6 @@ const ConfigGen = class {
                 this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
                 this["$fixedrules"]["rules"] = fnCopy(rules);
 
-                // trigger fixed rules handler right now for existing shares
-                this.shares.getAll().forEach((share) => {
-                    this["$fixedrules-handler"](share);
-                });
-
                 return this;
             },
 
@@ -1256,7 +1231,24 @@ const ConfigGen = class {
             result["groups"] = this["$groups"];
         }
 
-        result["shares"] = this["$shares"];
+        result["shares"] = fnCopy(this["$shares"]);
+
+        // apply fixed rules
+        result["shares"].forEach((share) => {
+            if (this["$fixedrules"]["shares"] !== undefined && this["$fixedrules"]["shares"].includes(share["name"]) !== true){
+                return;
+            }
+            if (fnArrayEndsWith(share["access"], this["$fixedrules"]["rules"]) !== true){
+                this["$fixedrules"]["rules"].forEach((rule) => {
+                    while (share["access"].includes(rule)){
+                        share["access"].splice(share["access"].indexOf(rule), 1);
+                    }
+                });
+                this["$fixedrules"]["rules"].forEach((rule) => {
+                    share["access"].push(rule);
+                });
+            }
+        });
 
         return fnCopy(result);
     }
