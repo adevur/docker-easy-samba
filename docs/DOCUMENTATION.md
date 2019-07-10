@@ -253,6 +253,8 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`ConfigGen.fromFile()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromfile-static-method)
 
+    - [`ConfigGen.fromRemote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromremote-static-method)
+
     - [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
 
     - [`ConfigGen.remote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenremote-static-method)
@@ -264,6 +266,8 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`remote.getConfig()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfig-method)
 
     - [`remote.getInfo()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetinfo-method)
+
+    - [`remote.hello()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotehello-method)
 
 - `config` namespace methods:
 
@@ -280,6 +284,8 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`config.saveToObject()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoobject-method)
 
     - [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
+
+    - [`config.saveToRemote()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoremote-method)
 
     - `config.users` namespace methods:
 
@@ -418,6 +424,37 @@ config.domain("NEWDOMAIN");
 config.users.add("new-user", "123456");
 
 config.saveToFile("./new-config.json");
+```
+
+### `ConfigGen.fromRemote()` static method
+This is a static method that can be used in order to import an existing configuration, that can be later modified and re-saved.
+
+The configuration is retrieved from a remote `easy-samba` container using `EasySamba Remote API`.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: `remote`
+
+  - PARAMETER `remote`: an instance of `remote` object; this object can be created using function `ConfigGen.remote()`
+
+- OUTPUT: a Promise that resolves to an instance of ConfigGen
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+
+    const config = await ConfigGen.fromRemote(remote);
+
+    config.domain("NEWDOMAIN");
+    config.users.add("new-user", "123456");
+
+    config.saveToFile("./new-config.json");
+}
 ```
 
 ### `ConfigGen.genRandomPassword()` static method
@@ -568,6 +605,39 @@ async function myAsyncFunction(){
 
     console.log("easy-samba status: " + (info.running) ? "running" : "not running");
     console.log("easy-samba version: " + info.version);
+}
+```
+
+### `remote.hello()` method
+This method can be used to test connectivity towards a remote container using `EasySamba Remote API`. This method throws an error in case the remote container is not reachable, or in case the certificate is not valid, or in case the token is not correct.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a Promise that resolves to string `"world"`; otherwise it throws an error
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+const assert = require("assert");
+const fs = require("fs");
+
+TestRemote();
+
+async function TestRemote(){
+    try {
+        const cert = fs.readFileSync("/path/to/remote-api.cert", "ascii");
+        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", cert);
+
+        const hello = await remote.hello();
+        assert( hello === "world" );
+
+        console.log("Connection was successful.");
+    }
+    catch (error){
+        console.log("ERROR: Connection parameters are incorrect; or remote container API is not running.");
+    }
 }
 ```
 
@@ -787,6 +857,35 @@ config.users.add("user1", "123456");
 config.shares.add("user1", "/share/user1", ["rw:user1"]);
 
 config.saveToFile("./config.json");
+```
+
+### `config.saveToRemote()` method
+This method can be used to save an instance of `ConfigGen` to a remote `easy-samba` container.
+
+The configuration is sent to a remote `easy-samba` container using `EasySamba Remote API`.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: `remote`
+
+  - PARAMETER `remote`: an instance of `remote` object; this object can be created using function `ConfigGen.remote()`
+
+- OUTPUT: a Promise that resolves to `true` in case of success
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    const config = new ConfigGen();
+    config.users.add("user1");
+
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+
+    await config.saveToRemote(remote);
+}
 ```
 
 ### `config.users.add()` method
