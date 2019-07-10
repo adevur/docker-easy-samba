@@ -187,6 +187,7 @@ const ConfigGen = class {
         this["$on-share-change-guest"] = [];
 
         // internal trigger function for events
+        this["$trigger-stack"] = [];
         this["$trigger"] = (event, current, previous = undefined) => {
             if (fnHas(this, `$on-${event}`) !== true){
                 return;
@@ -194,12 +195,17 @@ const ConfigGen = class {
 
             const cbs = this[`$on-${event}`];
             cbs.forEach((cb) => {
+                if (this["$trigger-stack"].includes(cb)){
+                    return;
+                }
+                this["$trigger-stack"].push(cb);
                 if (previous !== undefined){
                     cb(current, previous);
                 }
                 else {
                     cb(current);
                 }
+                this["$trigger-stack"].splice(this["$trigger-stack"].indexOf(cb), 1);
             });
         };
 
