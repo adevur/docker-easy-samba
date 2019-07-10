@@ -2,11 +2,32 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.12.0`
+### Current stable release: `1.13.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.13.0 (2019-07-10 UTC)
+- New features:
+
+  - In `ConfigGen.js` library, property `config.easysambaVersion` is now deprecated, and it's been replaced by static property `ConfigGen.version`.
+
+  - In `ConfigGen.js` library, function `config.shares.removeRules()` is now deprecated; use `config.shares.removeRuleAt()`, instead. The purpose of `config.shares.removeRules()` was to remove only the first occurrency of a specified rule; this is achievable also with this snippet: `const removeFirstOccurrencyOfRule = (sharename, ruleToDelete) => { return config.shares.removeRuleAt(sharename, config.shares.get(sharename)["access"].indexOf(ruleToDelete)); };`.
+
+  - In `ConfigGen.js` library, a new function has been added: `config.shares.setBaseRules()`, and two other functions have changed their input arguments: `ConfigGen.fromRemote()` and `config.saveToRemote()`.
+
+  - In `ConfigGen.js` library, event handling has been improved, and now it avoids infinite loops between callbacks (in case two or more event handlers call each other endlessly).
+
+  - A new API call has been added to `EasySamba Remote API`: `hello`. This new API returns `"world"` in case connection was successful and the token was correct. This is useful to test for connectivity towards a remote container, or to test if the token is valid. This new API is used also in `ConfigGen.js` library, by the newly-implemented function `remote.hello()`.
+
+- Bug fixes:
+
+  - Minor bugfixes.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.12.0 (2019-07-09 UTC)
 - New features:

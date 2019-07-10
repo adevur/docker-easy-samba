@@ -56,7 +56,7 @@ this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATIO
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"`, `"1.8"`, `"1.9"`, `"1.10"`, `"1.11"` or `"1.12"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"`, `"1.8"`, `"1.9"`, `"1.10"`, `"1.11"`, `"1.12"` or `"1.13"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `global` section
 This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
@@ -342,6 +342,8 @@ This is a list of all available methods of `ConfigGen.js` library:
         - [`config.shares.setGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetguest-method)
 
         - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
+
+        - [`config.shares.setBaseRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetbaserules-method)
 
 ### `ConfigGen.version` static property
 This is a static property of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
@@ -1510,6 +1512,8 @@ Fixed rules are a global setting; therefore, every time you call `config.shares.
 
 Fixed rules are applied when you generate the final configuration file (using, for example, `config.saveToObject()`, `config.saveToJson()`, `config.saveToFile()`, etc.).
 
+You can use `config.shares.setBaseRules()` and `config.shares.setFixedRules()` together, as they don't conflict with each other.
+
 - ARGUMENTS: `shares` (optional) and `rules`
 
   - PARAMETER `shares`: it's an array which contains the name of the shares that the specified fixed rules apply to; if this parameter is missing, it means "all the shared folders"
@@ -1549,6 +1553,44 @@ config.shares.setFixedRules([]);
 
 // next time we generate a configuration file, fixed rules aren't going to be applied anymore
 console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2"] } ]
+```
+
+### `config.shares.setBaseRules()` method
+This method can be used to set specific access rules to be always added at the beginning of the specified shares. This is useful in case you want some (or all) shares to always start with some specific permissions. Note that these "base rules" are not immutable (like "fixed rules" are); they're just some basic rules that apply to some shares, and they can be overwritten.
+
+Base rules are a global setting; therefore, every time you call `config.shares.setBaseRules()` function, you are overwriting global base rules settings.
+
+Base rules are applied when you generate the final configuration file (using, for example, `config.saveToObject()`, `config.saveToJson()`, `config.saveToFile()`, etc.).
+
+You can use `config.shares.setBaseRules()` and `config.shares.setFixedRules()` together, as they don't conflict with each other.
+
+- ARGUMENTS: `shares` (optional) and `rules`
+
+  - PARAMETER `shares`: it's an array which contains the name of the shares that the specified fixed rules apply to; if this parameter is missing, it means "all the shared folders"
+
+  - PARAMETER `rules`: it's an array which contains the access rules that the specified shares will always have at the beginning
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+// let's create a new share "folder1" and set its rules to ["rw:user1"]
+config.shares.add("folder1", "/share/folder1", ["rw:user1"]);
+console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1"] } ]
+
+// we want that all shares must be readable by everyone in the beginning
+config.shares.setBaseRules(["ro:*"]);
+
+// this is the final configuration:
+console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["ro:*", "rw:user1"] } ]
+
+// if we want to disable fixed rules completely, we use:
+config.shares.setBaseRules([]);
+
+// next time we generate a configuration file, base rules aren't going to be applied anymore
+console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1"] } ]
 ```
 
 ## advanced use
