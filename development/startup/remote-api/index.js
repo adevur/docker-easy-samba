@@ -111,7 +111,7 @@ function fnAPI(str, token){
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
-        assert( input["method"] === "set-config" || input["method"] === "get-config" || input["method"] === "get-info" );
+        assert( input["method"] === "set-config" || input["method"] === "get-config" || input["method"] === "get-info" || input["method"] === "hello" );
         assert( fnIsString(input["id"]) );
 
         const id = input["id"];
@@ -137,6 +137,9 @@ function fnAPI(str, token){
                 const running = fs.existsSync("/startup/easy-samba.running");
                 const version = fs.readFileSync("/startup/version.txt", "utf8").split("\n")[1].split("VERSION: ")[1];
                 return { "jsonrpc": "2.0", "result": { "running": running, "version": version }, "error": null, "id": id };
+            }
+            else if (input["method"] === "hello"){
+                return { "jsonrpc": "2.0", "result": "world", "error": null, "id": id };
             }
             else {
                 return { "jsonrpc": "2.0", "result": null, "error": `UNKNOWN ERROR`, "id": id };

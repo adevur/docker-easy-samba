@@ -60,6 +60,7 @@
     remote.getConfig()
     remote.setConfig()
     remote.getInfo()
+    remote.hello()
 
 */
 
@@ -1151,6 +1152,15 @@ const ConfigGen = class {
                     throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
                 }
                 return { running: res.running, version: res.version };
+            }
+
+            // remote.hello()
+            async hello(){
+                const { res, err } = await this.cmd("hello");
+                if (err !== false || res !== "world"){
+                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                }
+                return "world";
             }
         };
 
