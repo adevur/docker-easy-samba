@@ -5,7 +5,7 @@
     [static] ConfigGen.fromObject()
     [static] ConfigGen.fromJson()
     [static] ConfigGen.fromFile()
-    [deprecated] [static] ConfigGen.fromRemote()
+    [static] ConfigGen.fromRemote()
     [static] ConfigGen.genRandomPassword()
 
     [deprecated] [property] config.easysambaVersion
@@ -13,7 +13,7 @@
     config.saveToJson()
     config.saveToFile()
     config.saveToObject()
-    [deprecated] config.saveToRemote()
+    config.saveToRemote()
 
     config.on()
 
@@ -1014,14 +1014,34 @@ const ConfigGen = class {
     }
 
     // ConfigGen.fromRemote()
-    static async fromRemote(url, token, ca = undefined){
-        console.log("[WARNING] 'ConfigGen.fromRemote()' is deprecated. Use 'remote.getConfig()', instead.");
-
+    static async fromRemote(...args){
         let remote = undefined;
+        let url = undefined;
+        let token = undefined;
+        let ca = undefined;
+
+        if (args.length === 1){
+            remote = args[0];
+        }
+        else if (args.length === 2){
+            url = args[0];
+            token = args[1];
+        }
+        else if (args.length === 3){
+            url = args[0];
+            token = args[1];
+            ca = args[2];
+        }
+        else {
+            throw new Error("ERROR: INVALID INPUT");
+        }
+
         try {
-            assert( fnIsString(url) && fnIsString(token) );
-            const u = new URL(url);
-            remote = this.remote(u.hostname, parseInt(u.port, 10), token, ca);
+            if (remote === undefined){
+                assert( fnIsString(url) && fnIsString(token) );
+                const u = new URL(url);
+                remote = this.remote(u.hostname, parseInt(u.port, 10), token, ca);
+            }
         }
         catch (error){
             throw new Error("ERROR: INVALID INPUT");
@@ -1336,14 +1356,34 @@ const ConfigGen = class {
     }
 
     // config.saveToRemote()
-    async saveToRemote(url, token, ca = undefined){
-        console.log("[WARNING] 'config.saveToRemote()' is deprecated. Use 'remote.setConfig()', instead.");
-
+    async saveToRemote(...args){
         let remote = undefined;
+        let url = undefined;
+        let token = undefined;
+        let ca = undefined;
+
+        if (args.length === 1){
+            remote = args[0];
+        }
+        else if (args.length === 2){
+            url = args[0];
+            token = args[1];
+        }
+        else if (args.length === 3){
+            url = args[0];
+            token = args[1];
+            ca = args[2];
+        }
+        else {
+            throw new Error("ERROR: INVALID INPUT");
+        }
+
         try {
-            assert( fnIsString(url) && fnIsString(token) );
-            const u = new URL(url);
-            remote = this.constructor.remote(u.hostname, parseInt(u.port, 10), token, ca);
+            if (remote === undefined){
+                assert( fnIsString(url) && fnIsString(token) );
+                const u = new URL(url);
+                remote = this.constructor.remote(u.hostname, parseInt(u.port, 10), token, ca);
+            }
         }
         catch (error){
             throw new Error("ERROR: INVALID INPUT");
