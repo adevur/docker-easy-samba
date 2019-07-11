@@ -46,6 +46,7 @@
     config.shares.get()
     config.shares.getAll()
     config.shares.getAccess()
+    config.shares.setAccess()
     config.shares.addRules()
     config.shares.addRuleAt()
     [deprecated] config.shares.removeRules()
@@ -664,7 +665,7 @@ const ConfigGen = class {
                     assert( this.shares.get().includes(sharename) );
                 }
                 catch (error){
-                    throw new Error("INVALID INPUT");
+                    throw new Error("ERROR: INVALID INPUT");
                 }
 
                 const rules = this.shares.get(sharename)["access"];
@@ -729,7 +730,77 @@ const ConfigGen = class {
             },
 
             // config.shares.setAccess()
-            //   +r, +w, rw, ro, -r, -w, -rw
+            //   SUPPORTED PERMISSIONS: +r, +w, +rw, rw, ro, -r, -w, -rw
+            setAccess: (sharename, subject, perm) => {
+                try {
+                    assert( fnIsString(sharename) );
+                    assert( this.shares.get().includes(sharename) );
+                    assert( fnIsString(subject) || (fnIsArray(subject) && subject.every(fnIsString)) );
+                    assert( ["+r", "+w", "+rw", "rw", "ro", "-r", "-w", "-rw"].includes(perm) );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+
+                const subj = (fnIsArray(subject)) ? subject : [subject];
+                let users = [];
+
+                subj.forEach((s) => {
+                    if (s === "*"){
+                        users = users.concat(this.users.get());
+                    }
+                    else if (this.groups.get().includes(s)){
+                        let members = this.groups.get(s)["members"];
+                        const stack = [s];
+                        while ( members.some((e) => { return (this.groups.get().includes(e) && stack.includes(e) !== true); }) ){
+                            const m = members.filter((e) => { return this.groups.get().includes(e); })[0];
+                            const i = members.indexOf(m);
+                            stack.push(m);
+                            members.splice(i, 1);
+                            members = members.concat(this.groups.get(m)["members"]);
+                        }
+                        users = users.concat(members);
+                    }
+                    else if (this.users.get().includes(s)){
+                        users.push(s);
+                    }
+                    else {
+                        return;
+                    }
+                });
+
+                const temp = [];
+                users.forEach((e) => {
+                    if (temp.includes(e) !== true){
+                        temp.push(e);
+                    }
+                });
+                users = temp;
+
+                const shareIndex = this.shares.get().indexOf(sharename);
+                users.forEach((user) => {
+                    const currperm = { r: false, w: false };
+                    const access = this.shares.getAccess(sharename);
+                    if (fnHas(access, user)){
+                        currperm.r = true;
+                        currperm.w = (access[user] === "rw") ? true : false;
+                    }
+
+                    currperm.r = (["+r", "+w", "+rw", "rw", "ro"].includes(perm)) ? true : currperm.r;
+                    currperm.r = (["-r", "-rw"].includes(perm)) ? false : currperm.r;
+                    currperm.w = (["+w", "+rw", "rw"].includes(perm)) ? true : currperm.w;
+                    currperm.w = (["ro", "-r", "-w", "-rw"].includes(perm)) ? false : currperm.w;
+
+                    let ruleToAdd = undefined;
+                    ruleToAdd = (currperm.r === false && currperm.w === false) ? `no:${user}` : ruleToAdd;
+                    ruleToAdd = (currperm.r === true && currperm.w === false) ? `ro:${user}` : ruleToAdd;
+                    ruleToAdd = (currperm.r === true && currperm.w === true) ? `rw:${user}` : ruleToAdd;
+
+                    this["$shares"][shareIndex]["access"].push(ruleToAdd);
+                });
+
+                return this;
+            },
 
             // config.shares.addRules()
             addRules: (sharename, rules) => {
