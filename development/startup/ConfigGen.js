@@ -45,6 +45,7 @@
     config.shares.remove()
     config.shares.get()
     config.shares.getAll()
+    config.shares.getAccess()
     config.shares.addRules()
     config.shares.addRuleAt()
     [deprecated] config.shares.removeRules()
@@ -655,6 +656,80 @@ const ConfigGen = class {
             getAll: () => {
                 return fnCopy(this["$shares"]);
             },
+
+            // config.shares.getAccess()
+            getAccess: (sharename) => {
+                try {
+                    assert( fnIsString(sharename) );
+                    assert( this.shares.get().includes(sharename) );
+                }
+                catch (error){
+                    throw new Error("INVALID INPUT");
+                }
+
+                const rules = this.shares.get(sharename)["access"];
+                const result = {};
+
+                rules.forEach((rule) => {
+                    if ((rule.startsWith("ro:") || rule.startsWith("rw:") || rule.startsWith("no:")) && rule.length < 4){
+                        return;
+                    }
+                    else if (rule.length < 1){
+                        return;
+                    }
+
+                    let perm = "rw";
+                    perm = (rule.startsWith("ro:")) ? "ro" : perm;
+                    perm = (rule.startsWith("rw:")) ? "rw" : perm;
+                    perm = (rule.startsWith("no:")) ? "no" : perm;
+                    const user = (rule.startsWith("ro:") || rule.startsWith("rw:") || rule.startsWith("no:")) ? rule.substring(3) : rule;
+
+                    let users = [];
+                    if (user === "*"){
+                        users = this.users.get();
+                    }
+                    else if (this.groups.get().includes(user)){
+                        let members = this.groups.get(user)["members"];
+                        const stack = [user];
+                        while ( members.some((e) => { return (this.groups.get().includes(e) && stack.includes(e) !== true); }) ){
+                            const m = members.filter((e) => { return this.groups.get().includes(e); })[0];
+                            const i = members.indexOf(m);
+                            stack.push(m);
+                            members.splice(i, 1);
+                            members = members.concat(this.groups.get(m)["members"]);
+                        }
+                        users = members;
+                    }
+                    else if (this.users.get().includes(user)){
+                        users = [user];
+                    }
+                    else {
+                        return;
+                    }
+
+                    const temp = [];
+                    users.forEach((e) => {
+                        if (temp.includes(e) !== true){
+                            temp.push(e);
+                        }
+                    });
+                    users = temp;
+
+                    users.forEach((e) => {
+                        if (perm === "no" && fnHas(result, e)){
+                            delete result[e];
+                        }
+                        else if (perm === "rw" || perm === "ro"){
+                            result[e] = (perm === "rw") ? "rw" : "r";
+                        }
+                    });
+                });
+
+                return fnCopy(result);
+            },
+
+            // config.shares.setAccess()
+            //   +r, +w, rw, ro, -r, -w, -rw
 
             // config.shares.addRules()
             addRules: (sharename, rules) => {
