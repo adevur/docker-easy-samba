@@ -689,7 +689,8 @@ const ConfigGen = class {
 
                     let users = [];
                     if (user === "*"){
-                        users = this.users.get();
+                        //users = this.users.get();
+                        return;
                     }
                     else if (this.groups.get().includes(user)){
                         users = [user];
@@ -751,7 +752,8 @@ const ConfigGen = class {
 
                 subj.forEach((s) => {
                     if (s === "*"){
-                        users = users.concat(this.users.get());
+                        //users = users.concat(this.users.get());
+                        return;
                     }
                     else if (this.groups.get().includes(s)){
                         users = [s];
