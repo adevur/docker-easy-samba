@@ -690,16 +690,22 @@ const ConfigGen = class {
                         users = this.users.get();
                     }
                     else if (this.groups.get().includes(user)){
-                        let members = this.groups.get(user)["members"];
-                        const stack = [user];
-                        while ( members.some((e) => { return (this.groups.get().includes(e) && stack.includes(e) !== true); }) ){
-                            const m = members.filter((e) => { return this.groups.get().includes(e); })[0];
-                            const i = members.indexOf(m);
-                            stack.push(m);
-                            members.splice(i, 1);
-                            members = members.concat(this.groups.get(m)["members"]);
+                        users = [user];
+                        const stack = [];
+                        let members = [];
+                        while ( fnEqualArrays(users, members) !== true ){
+                            members = users;
+                            users = [];
+                            members.forEach((e) => {
+                                if (this.groups.get().includes(e) && stack.includes(e) !== true){
+                                    stack.push(e);
+                                    users = users.concat(this.groups.get(e)["members"]);
+                                }
+                                else if (this.users.get().includes(e)){
+                                    users.push(e);
+                                }
+                            });
                         }
-                        users = members;
                     }
                     else if (this.users.get().includes(user)){
                         users = [user];
@@ -708,13 +714,9 @@ const ConfigGen = class {
                         return;
                     }
 
-                    const temp = [];
-                    users.forEach((e) => {
-                        if (temp.includes(e) !== true){
-                            temp.push(e);
-                        }
+                    users = users.filter((e, i) => {
+                        return (users.indexOf(e) === i);
                     });
-                    users = temp;
 
                     users.forEach((e) => {
                         if (perm === "no" && fnHas(result, e)){
@@ -750,16 +752,22 @@ const ConfigGen = class {
                         users = users.concat(this.users.get());
                     }
                     else if (this.groups.get().includes(s)){
-                        let members = this.groups.get(s)["members"];
-                        const stack = [s];
-                        while ( members.some((e) => { return (this.groups.get().includes(e) && stack.includes(e) !== true); }) ){
-                            const m = members.filter((e) => { return this.groups.get().includes(e); })[0];
-                            const i = members.indexOf(m);
-                            stack.push(m);
-                            members.splice(i, 1);
-                            members = members.concat(this.groups.get(m)["members"]);
+                        users = [s];
+                        const stack = [];
+                        let members = [];
+                        while ( fnEqualArrays(users, members) !== true ){
+                            members = users;
+                            users = [];
+                            members.forEach((e) => {
+                                if (this.groups.get().includes(e) && stack.includes(e) !== true){
+                                    stack.push(e);
+                                    users = users.concat(this.groups.get(e)["members"]);
+                                }
+                                else if (this.users.get().includes(e)){
+                                    users.push(e);
+                                }
+                            });
                         }
-                        users = users.concat(members);
                     }
                     else if (this.users.get().includes(s)){
                         users.push(s);
@@ -769,14 +777,11 @@ const ConfigGen = class {
                     }
                 });
 
-                const temp = [];
-                users.forEach((e) => {
-                    if (temp.includes(e) !== true){
-                        temp.push(e);
-                    }
+                users = users.filter((e, i) => {
+                    return (users.indexOf(e) === i);
                 });
-                users = temp;
 
+                const previous = this.shares.get(sharename);
                 const shareIndex = this.shares.get().indexOf(sharename);
                 users.forEach((user) => {
                     const currperm = { r: false, w: false };
@@ -798,6 +803,13 @@ const ConfigGen = class {
 
                     this["$shares"][shareIndex]["access"].push(ruleToAdd);
                 });
+
+                // trigger event "share-change" and "share-change-access"
+                const current = this.shares.get(sharename);
+                if (fnEqualArrays(current["access"], previous["access"]) !== true){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-access", current, previous);
+                }
 
                 return this;
             },
@@ -883,11 +895,15 @@ const ConfigGen = class {
                     throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
-                const indices = rules.map((e) => {
+                let indices = rules.map((e) => {
                     const i = this.shares.get(sharename)["access"].indexOf(e);
                     return (i < 0) ? undefined : i;
-                }).filter((e, i, arr) => {
-                    return (arr.indexOf(e) === arr.lastIndexOf(e) && e !== undefined);
+                }).filter((e) => {
+                    return (e !== undefined);
+                });
+
+                indices = indices.filter((e, i) => {
+                    return (indices.indexOf(e) === i);
                 });
 
                 this.shares.removeRuleAt(sharename, indices);
