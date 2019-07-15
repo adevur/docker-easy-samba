@@ -371,7 +371,9 @@ const ConfigGen = class {
                     throw new Error("ERROR: GROUP ALREADY EXISTS");
                 }
 
-                const members_unique = members.filter((e) => { return (members.indexOf(e) === members.lastIndexOf(e)); });
+                const members_unique = members.filter((e, i) => {
+                    return (members.indexOf(e) === i);
+                });
 
                 this["$groups"].push({ "name": groupname, "members": members_unique });
 
