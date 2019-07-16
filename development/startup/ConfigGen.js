@@ -661,16 +661,17 @@ const ConfigGen = class {
             },
 
             // config.shares.getAccess()
-            getAccess: (sharename) => {
+            getAccess: (share) => {
+                let rules = undefined;
+
                 try {
-                    assert( fnIsString(sharename) );
-                    assert( this.shares.get().includes(sharename) );
+                    assert( (fnIsString(share) && this.shares.get().includes(share)) || (fnHas(share, "access") && fnIsArray(share["access"]) && share["access"].every(fnIsString)) );
+                    rules = (fnIsString(share)) ? this.shares.get(share)["access"] : share["access"];
                 }
                 catch (error){
                     throw new Error("ERROR: INVALID INPUT");
                 }
 
-                const rules = this.shares.get(sharename)["access"];
                 const result = {};
 
                 rules.forEach((rule) => {
@@ -689,8 +690,7 @@ const ConfigGen = class {
 
                     let users = [];
                     if (user === "*"){
-                        //users = this.users.get();
-                        return;
+                        users = this.users.get();
                     }
                     else if (this.groups.get().includes(user)){
                         users = [user];
@@ -752,7 +752,7 @@ const ConfigGen = class {
 
                 subj.forEach((s) => {
                     if (s === "*"){
-                        //users = users.concat(this.users.get());
+                        //users = users.concat(this.users.get()); TODO
                         return;
                     }
                     else if (this.groups.get().includes(s)){
@@ -786,10 +786,10 @@ const ConfigGen = class {
                 });
 
                 const previous = this.shares.get(sharename);
-                const shareIndex = this.shares.get().indexOf(sharename);
+
+                const access = this.shares.getAccess(sharename);
                 users.forEach((user) => {
                     const currperm = { r: false, w: false };
-                    const access = this.shares.getAccess(sharename);
                     if (fnHas(access, user)){
                         currperm.r = true;
                         currperm.w = (access[user] === "rw") ? true : false;
@@ -801,12 +801,29 @@ const ConfigGen = class {
                     currperm.w = (["ro", "-r", "-w", "-rw"].includes(perm)) ? false : currperm.w;
 
                     let ruleToAdd = undefined;
-                    ruleToAdd = (currperm.r === false && currperm.w === false) ? `no:${user}` : ruleToAdd;
-                    ruleToAdd = (currperm.r === true && currperm.w === false) ? `ro:${user}` : ruleToAdd;
-                    ruleToAdd = (currperm.r === true && currperm.w === true) ? `rw:${user}` : ruleToAdd;
+                    ruleToAdd = (currperm.r === true && currperm.w === false) ? "r" : ruleToAdd;
+                    ruleToAdd = (currperm.r === true && currperm.w === true) ? "rw" : ruleToAdd;
 
-                    this["$shares"][shareIndex]["access"].push(ruleToAdd);
+                    if (ruleToAdd !== undefined){
+                        access[user] = ruleToAdd;
+                    }
+                    else if (ruleToAdd === undefined && fnHas(access, user)){
+                        delete access[user];
+                    }
                 });
+
+                const rules = [];
+                this.users.get().forEach((e) => {
+                    if (fnHas(access, e)){
+                        const perm = (access[e] === "rw") ? "rw" : "ro";
+                        rules.push(`${perm}:${e}`);
+                    }
+                });
+                const shareIndex = this.shares.get().indexOf(sharename);
+                while (this["$shares"][shareIndex]["access"].length > 0){
+                    this["$shares"][shareIndex]["access"].splice(0, 1);
+                }
+                this["$shares"][shareIndex]["access"] = fnCopy(rules);
 
                 // trigger event "share-change" and "share-change-access"
                 const current = this.shares.get(sharename);
