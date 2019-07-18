@@ -258,8 +258,8 @@ const ConfigGen = class {
                     throw new Error("ERROR: USERNAME AND PASSWORD MUST BE STRINGS");
                 }
 
-                if (this.users.get().includes(username)){
-                    throw new Error("ERROR: USER ALREADY EXISTS");
+                if (this.users.get().includes(username) || this.groups.get().includes(username)){
+                    throw new Error("ERROR: USERNAME ALREADY USED");
                 }
 
                 this["$users"].push({ "name": username, "password": password });
@@ -379,8 +379,8 @@ const ConfigGen = class {
                     throw new Error("ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS");
                 }
 
-                if (this.groups.get().includes(groupname)){
-                    throw new Error("ERROR: GROUP ALREADY EXISTS");
+                if (this.groups.get().includes(groupname) || this.users.get().includes(groupname)){
+                    throw new Error("ERROR: GROUP NAME ALREADY USED");
                 }
 
                 const members_unique = fnRemoveDuplicates(members);
