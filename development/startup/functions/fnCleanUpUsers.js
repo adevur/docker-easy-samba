@@ -9,6 +9,7 @@ module.exports = fnCleanUpUsers;
 // dependencies
 const { spawnSync } = require("child_process");
 const fnListUsers = require("/startup/functions/fnListUsers.js");
+const fnListSambaUsers = require("/startup/functions/fnListSambaUsers.js");
 const fs = require("fs");
 
 
@@ -39,10 +40,9 @@ function fnCleanUpUsers(){
         });
 
         // check if there are still non-native users
-        // TODO: currently, it only checks OS users, and not SAMBA users
-        //   HINT: command 'pdbedit -L' returns a list of SAMBA users
         const newCurrentUsers = fnListUsers();
-        if (newCurrentUsers.every((user) => { return nativeUsers.includes(user); }) !== true){
+        const newCurrentSambaUsers = fnListSambaUsers();
+        if (newCurrentSambaUsers.length > 0 || newCurrentUsers.every((user) => { return nativeUsers.includes(user); }) !== true){
             throw "ERROR";
         }
     }
