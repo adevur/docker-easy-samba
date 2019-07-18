@@ -37,6 +37,7 @@
     config.groups.remove()
     config.groups.get()
     config.groups.getAll()
+    config.groups.getMembers()
     config.groups.addMembers()
     config.groups.removeMembers()
 
@@ -151,6 +152,17 @@ const fnArrayStartsWith = (obj, elems) => {
     }
     const start = obj.slice(0, elems.length);
     return fnEqualArrays(start, elems);
+};
+
+// fnRemoveDuplicates()
+//   returns input array without duplicates
+// EXAMPLE: fnRemoveDuplicates([1, 2, 1, 3]) === [1, 2, 3]
+const fnRemoveDuplicates = (input) => {
+    let result = fnCopy(input);
+    result = result.filter((e, i) => {
+        return (result.indexOf(e) === i);
+    });
+    return result;
 };
 
 
@@ -371,9 +383,7 @@ const ConfigGen = class {
                     throw new Error("ERROR: GROUP ALREADY EXISTS");
                 }
 
-                const members_unique = members.filter((e, i) => {
-                    return (members.indexOf(e) === i);
-                });
+                const members_unique = fnRemoveDuplicates(members);
 
                 this["$groups"].push({ "name": groupname, "members": members_unique });
 
@@ -452,6 +462,38 @@ const ConfigGen = class {
             // config.groups.getAll()
             getAll: () => {
                 return fnCopy(this["$groups"]);
+            },
+
+            // config.groups.getMembers()
+            getMembers: (groupname) => {
+                try {
+                    assert( fnIsString(groupname) );
+                    assert( this.groups.get().includes(groupname) );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+
+                let result = [groupname];
+                const stack = [];
+                let members = [];
+                while ( fnEqualArrays(result, members) !== true ){
+                    members = result;
+                    result = [];
+                    members.forEach((e) => {
+                        if (this.groups.get().includes(e) && stack.includes(e) !== true){
+                            stack.push(e);
+                            result = result.concat(this.groups.get(e)["members"]);
+                        }
+                        else if (this.users.get().includes(e)){
+                            result.push(e);
+                        }
+                    });
+                }
+
+                result = fnRemoveDuplicates(result);
+
+                return fnCopy(result);
             },
 
             // config.groups.addMembers()
@@ -693,22 +735,7 @@ const ConfigGen = class {
                         users = this.users.get();
                     }
                     else if (this.groups.get().includes(user)){
-                        users = [user];
-                        const stack = [];
-                        let members = [];
-                        while ( fnEqualArrays(users, members) !== true ){
-                            members = users;
-                            users = [];
-                            members.forEach((e) => {
-                                if (this.groups.get().includes(e) && stack.includes(e) !== true){
-                                    stack.push(e);
-                                    users = users.concat(this.groups.get(e)["members"]);
-                                }
-                                else if (this.users.get().includes(e)){
-                                    users.push(e);
-                                }
-                            });
-                        }
+                        users = this.groups.getMembers(user);
                     }
                     else if (this.users.get().includes(user)){
                         users = [user];
@@ -717,9 +744,7 @@ const ConfigGen = class {
                         return;
                     }
 
-                    users = users.filter((e, i) => {
-                        return (users.indexOf(e) === i);
-                    });
+                    users = fnRemoveDuplicates(users);
 
                     users.forEach((e) => {
                         if (perm === "no" && fnHas(result, e)){
@@ -729,6 +754,26 @@ const ConfigGen = class {
                             result[e] = (perm === "rw") ? "rw" : "r";
                         }
                     });
+                });
+
+                this.groups.get().forEach((g) => {
+                    const members = this.groups.getMembers(g);
+                    let ro = 0;
+                    let rw = 0;
+                    members.forEach((e) => {
+                        if (fnHas(result, e)){
+                            ro += 1;
+                            if (result[e] === "rw"){
+                                rw += 1;
+                            }
+                        }
+                    });
+                    if (ro > 0 && ro === members.length){
+                        result[g] = "r";
+                    }
+                    if (rw > 0 && rw === members.length){
+                        result[g] = "rw";
+                    }
                 });
 
                 return fnCopy(result);
@@ -756,22 +801,7 @@ const ConfigGen = class {
                         return;
                     }
                     else if (this.groups.get().includes(s)){
-                        users = [s];
-                        const stack = [];
-                        let members = [];
-                        while ( fnEqualArrays(users, members) !== true ){
-                            members = users;
-                            users = [];
-                            members.forEach((e) => {
-                                if (this.groups.get().includes(e) && stack.includes(e) !== true){
-                                    stack.push(e);
-                                    users = users.concat(this.groups.get(e)["members"]);
-                                }
-                                else if (this.users.get().includes(e)){
-                                    users.push(e);
-                                }
-                            });
-                        }
+                        users = users.concat(this.groups.getMembers(s));
                     }
                     else if (this.users.get().includes(s)){
                         users.push(s);
@@ -781,9 +811,7 @@ const ConfigGen = class {
                     }
                 });
 
-                users = users.filter((e, i) => {
-                    return (users.indexOf(e) === i);
-                });
+                users = fnRemoveDuplicates(users);
 
                 const previous = this.shares.get(sharename);
 
@@ -923,9 +951,7 @@ const ConfigGen = class {
                     return (e !== undefined);
                 });
 
-                indices = indices.filter((e, i) => {
-                    return (indices.indexOf(e) === i);
-                });
+                indices = fnRemoveDuplicates(indices);
 
                 this.shares.removeRuleAt(sharename, indices);
 
