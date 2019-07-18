@@ -37,7 +37,7 @@ function fnValidateConfig(config){
     if (fnHas(config, "guest") && fnIsString(config["guest"])){
         console.log(`[WARNING] 'guest' section of 'config.json' is not supported anymore. Use 'guest' property of shares, in order to create anonymous shared folders.`);
         if (fnHas(config, "shares") && fnIsArray(config["shares"])){
-            config["shares"].push({ "name": "guest", "path": config["guest"], "guest": "rw" });
+            config["shares"].push({ "name": "guest", "path": config["guest"], "access": [], "guest": "rw" });
         }
     }
 
