@@ -14,7 +14,7 @@ const fs = require("fs");
 // FUNCTION: fnLoadConfig()
 // OUTPUT: the content of the config file, already parsed; it returns false in case of errors
 // PURPOSE: load the configuration file
-function fnLoadConfig(path){
+function fnLoadConfig(){
     // if there's a "/share/config.json" file, try to read from it
     if (fs.existsSync("/share/config.json")){
         try {
@@ -26,8 +26,9 @@ function fnLoadConfig(path){
             return { config: false, rawConfig: false };
         }
     }
-    // otherwise, try to read from "/share/remote-api.config.json"
-    else {
+    // otherwise, try to read from "/share/remote-api.config.json",
+    //   in case "/share/config.gen.js" is missing
+    else if (fs.existsSync("/share/config.gen.js") !== true) {
         try {
             const raw = fs.readFileSync("/share/remote-api.config.json", "utf8");
             const parsed = JSON.parse(raw);
