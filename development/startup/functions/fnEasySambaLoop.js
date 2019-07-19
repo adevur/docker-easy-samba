@@ -14,6 +14,7 @@ const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnLoadConfig = require("/startup/functions/fnLoadConfig.js");
 const fnUpdateConfig = require("/startup/functions/fnUpdateConfig.js");
 const fnSpawn = require("/startup/functions/fnSpawn.js");
+const fnStartRemoteAPI = require("/startup/functions/fnStartRemoteAPI.js");
 
 
 
@@ -34,60 +35,53 @@ async function fnEasySambaLoop(){
             }
         }
 
+        // start EasySamba Remote API
+        await fnStartRemoteAPI();
+
         // load configuration
         const { config, rawConfig } = fnLoadConfig();
 
         // check for changes
         let somethingChanged = false;
         let sambaCrashed = false;
-        if (previousConfig === undefined){
+        if (rawConfig !== false && rawConfig !== previousConfig){
             somethingChanged = true;
         }
-        else if (rawConfig !== false && rawConfig !== previousConfig){
-            somethingChanged = true;
-        }
-        else if (fnIsRunning("/usr/sbin/nmbd --foreground --no-process-group") !== true || fnIsRunning("/usr/sbin/smbd --foreground --no-process-group") !== true){
-            somethingChanged = true;
+        if (previousConfig !== undefined && (fnIsRunning("/usr/sbin/nmbd --foreground --no-process-group") !== true || fnIsRunning("/usr/sbin/smbd --foreground --no-process-group") !== true)){
             sambaCrashed = true;
         }
 
-        // if something changed, update running configuration
-        //  TODO: could be cleaned up to reduce code lines
-        if (somethingChanged && config === false && previousConfig === undefined){
+        // update running configuration,
+        //  in case it's first startup, something changed, or SAMBA crashed
+        if (previousConfig === undefined || somethingChanged || sambaCrashed){
             console.log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
-            console.log(`[ERROR] easy-samba configuration file could not be loaded or it is not in JSON format.`);
-
-            fnDeleteFile("/startup/easy-samba.running");
-            console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
-
-            console.log(`------ EASY-SAMBA CONFIGURATION PROCESS FINISHED ------\n`);
-            counter += 1;
-        }
-        else if (somethingChanged && config !== false){
-            console.log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
-            console.log(`[LOG] SAMBA server configuration process has started.`);
-            const res = await fnUpdateConfig(config);
-
-            // in case configuration updated successfully
-            if (res === true){
+            let res = false;
+            
+            // if SAMBA crashed, show a warning
+            if (sambaCrashed){
+                console.log(`[WARNING] 'smbd' or 'nmbd' crashed unexpectedly.`);
+            }
+            
+            if (previousConfig !== undefined || config !== false){
+                console.log(`[LOG] SAMBA server configuration process has started.`);
+            }
+            
+            if (previousConfig === undefined && config === false){
+                console.log(`[ERROR] easy-samba configuration file could not be loaded or it is not in JSON format.`);
+                res = false;
+            }
+            else if (previousConfig === undefined && config !== false){
+                res = await fnUpdateConfig(config);
                 previousConfig = rawConfig;
-                try { fs.writeFileSync("/startup/easy-samba.running", ""); } catch (error){}
             }
-            // in case it's not been possible to update configuration
-            else {
-                fnDeleteFile("/startup/easy-samba.running");
-                console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
+            else if (previousConfig !== undefined && config === false){
+                res = await fnUpdateConfig(JSON.parse(previousConfig));
             }
-
-            console.log(`------ EASY-SAMBA CONFIGURATION PROCESS FINISHED ------\n`);
-            counter += 1;
-        }
-        else if (somethingChanged && sambaCrashed && config === false && previousConfig !== undefined){
-            console.log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
-            console.log(`[WARNING] 'smbd' or 'nmbd' crashed unexpectedly.`);
-            console.log(`[LOG] SAMBA server configuration process has started.`);
-            const res = await fnUpdateConfig(JSON.parse(previousConfig));
-
+            else if (previousConfig !== undefined && config !== false){
+                res = await fnUpdateConfig(config);
+                previousConfig = rawConfig;
+            }
+            
             // in case configuration updated successfully
             if (res === true){
                 try { fs.writeFileSync("/startup/easy-samba.running", ""); } catch (error){}
@@ -96,6 +90,7 @@ async function fnEasySambaLoop(){
             else {
                 fnDeleteFile("/startup/easy-samba.running");
                 console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
+                previousConfig = undefined;
             }
 
             console.log(`------ EASY-SAMBA CONFIGURATION PROCESS FINISHED ------\n`);

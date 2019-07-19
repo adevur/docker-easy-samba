@@ -39,10 +39,10 @@ async function fnUpdateConfig(config){
     // check if configuration file's syntax is correct
     const validateConfig = fnValidateConfig(config);
     if (validateConfig !== true){
-        console.log(`[ERROR] '/share/config.json' syntax is not correct: ${validateConfig}.`);
+        console.log(`[ERROR] easy-samba configuration syntax is not correct: ${validateConfig}.`);
         return false;
     }
-    console.log(`[LOG] '/share/config.json' syntax is correct.`);
+    console.log(`[LOG] easy-samba configuration syntax is correct.`);
 
     // reset permissions of "/share"
     // HOW: setfacl -R -bn /share && chmod -R a+rX /share
@@ -106,7 +106,7 @@ async function fnUpdateConfig(config){
     fnStartDaemons();
 
     // wait 3 seconds...
-    await fnSleep(3000);
+    await fnSleep(2000);
 
     // script has been executed, now the SAMBA server is ready
     console.log(`[LOG] SAMBA server is now ready.`);
