@@ -13,6 +13,7 @@ RUN (curl -sL https://rpm.nodesource.com/setup_10.x | bash -) \
     samba-common \
     nodejs \
     openssl \
+    psmisc \
   && yum autoremove -y \
   && yum clean all -y \
   && npm install npm --global
