@@ -37,6 +37,7 @@
     config.groups.remove()
     config.groups.get()
     config.groups.getAll()
+    config.groups.getMembers()
     config.groups.addMembers()
     config.groups.removeMembers()
 
@@ -45,6 +46,8 @@
     config.shares.remove()
     config.shares.get()
     config.shares.getAll()
+    config.shares.getAccess()
+    config.shares.setAccess()
     config.shares.addRules()
     config.shares.addRuleAt()
     [deprecated] config.shares.removeRules()
@@ -73,7 +76,7 @@ const assert = require("assert");
 const https = require("https");
 
 // global variables
-const globalVersion = "1.13";
+const globalVersion = "1.14";
 
 
 
@@ -149,6 +152,17 @@ const fnArrayStartsWith = (obj, elems) => {
     }
     const start = obj.slice(0, elems.length);
     return fnEqualArrays(start, elems);
+};
+
+// fnRemoveDuplicates()
+//   returns input array without duplicates
+// EXAMPLE: fnRemoveDuplicates([1, 2, 1, 3]) === [1, 2, 3]
+const fnRemoveDuplicates = (input) => {
+    let result = fnCopy(input);
+    result = result.filter((e, i) => {
+        return (result.indexOf(e) === i);
+    });
+    return result;
 };
 
 
@@ -240,12 +254,12 @@ const ConfigGen = class {
                     password = this.constructor.genRandomPassword(len);
                 }
 
-                if (fnIsString(username) !== true || fnIsString(password) !== true){
-                    throw new Error("ERROR: USERNAME AND PASSWORD MUST BE STRINGS");
+                if (fnIsString(username) !== true || username.length < 1 || fnIsString(password) !== true){
+                    throw new Error("ERROR: USERNAME AND PASSWORD MUST BE NON-EMPTY STRINGS");
                 }
 
-                if (this.users.get().includes(username)){
-                    throw new Error("ERROR: USER ALREADY EXISTS");
+                if (this.users.get().includes(username) || this.groups.get().includes(username)){
+                    throw new Error("ERROR: USERNAME ALREADY USED");
                 }
 
                 this["$users"].push({ "name": username, "password": password });
@@ -357,19 +371,19 @@ const ConfigGen = class {
         this.groups = {
             // config.groups.add()
             add: (groupname, members) => {
-                if (fnIsString(groupname) !== true){
-                    throw new Error("ERROR: GROUP NAME MUST BE A STRING");
+                if (fnIsString(groupname) !== true || groupname.length < 1){
+                    throw new Error("ERROR: GROUP NAME MUST BE A NON-EMPTY STRING");
                 }
 
                 if (fnIsArray(members) !== true || members.every(fnIsString) !== true){
                     throw new Error("ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS");
                 }
 
-                if (this.groups.get().includes(groupname)){
-                    throw new Error("ERROR: GROUP ALREADY EXISTS");
+                if (this.groups.get().includes(groupname) || this.users.get().includes(groupname)){
+                    throw new Error("ERROR: GROUP NAME ALREADY USED");
                 }
 
-                const members_unique = members.filter((e) => { return (members.indexOf(e) === members.lastIndexOf(e)); });
+                const members_unique = fnRemoveDuplicates(members);
 
                 this["$groups"].push({ "name": groupname, "members": members_unique });
 
@@ -448,6 +462,38 @@ const ConfigGen = class {
             // config.groups.getAll()
             getAll: () => {
                 return fnCopy(this["$groups"]);
+            },
+
+            // config.groups.getMembers()
+            getMembers: (groupname) => {
+                try {
+                    assert( fnIsString(groupname) );
+                    assert( this.groups.get().includes(groupname) );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+
+                let result = [groupname];
+                const stack = [];
+                let members = [];
+                while ( fnEqualArrays(result, members) !== true ){
+                    members = result;
+                    result = [];
+                    members.forEach((e) => {
+                        if (this.groups.get().includes(e) && stack.includes(e) !== true){
+                            stack.push(e);
+                            result = result.concat(this.groups.get(e)["members"]);
+                        }
+                        else if (this.users.get().includes(e)){
+                            result.push(e);
+                        }
+                    });
+                }
+
+                result = fnRemoveDuplicates(result);
+
+                return fnCopy(result);
             },
 
             // config.groups.addMembers()
@@ -656,6 +702,166 @@ const ConfigGen = class {
                 return fnCopy(this["$shares"]);
             },
 
+            // config.shares.getAccess()
+            getAccess: (share) => {
+                let rules = undefined;
+
+                try {
+                    assert( (fnIsString(share) && this.shares.get().includes(share)) || (fnHas(share, "access") && fnIsArray(share["access"]) && share["access"].every(fnIsString)) );
+                    rules = (fnIsString(share)) ? this.shares.get(share)["access"] : share["access"];
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+
+                const result = {};
+
+                rules.forEach((rule) => {
+                    if ((rule.startsWith("ro:") || rule.startsWith("rw:") || rule.startsWith("no:")) && rule.length < 4){
+                        return;
+                    }
+                    else if (rule.length < 1){
+                        return;
+                    }
+
+                    let perm = "rw";
+                    perm = (rule.startsWith("ro:")) ? "ro" : perm;
+                    perm = (rule.startsWith("rw:")) ? "rw" : perm;
+                    perm = (rule.startsWith("no:")) ? "no" : perm;
+                    const user = (rule.startsWith("ro:") || rule.startsWith("rw:") || rule.startsWith("no:")) ? rule.substring(3) : rule;
+
+                    let users = [];
+                    if (user === "*"){
+                        users = this.users.get();
+                    }
+                    else if (this.groups.get().includes(user)){
+                        users = this.groups.getMembers(user);
+                    }
+                    else if (this.users.get().includes(user)){
+                        users = [user];
+                    }
+                    else {
+                        return;
+                    }
+
+                    users = fnRemoveDuplicates(users);
+
+                    users.forEach((e) => {
+                        if (perm === "no" && fnHas(result, e)){
+                            delete result[e];
+                        }
+                        else if (perm === "rw" || perm === "ro"){
+                            result[e] = (perm === "rw") ? "rw" : "r";
+                        }
+                    });
+                });
+
+                this.groups.get().forEach((g) => {
+                    const members = this.groups.getMembers(g);
+                    let ro = 0;
+                    let rw = 0;
+                    members.forEach((e) => {
+                        if (fnHas(result, e)){
+                            ro += 1;
+                            if (result[e] === "rw"){
+                                rw += 1;
+                            }
+                        }
+                    });
+                    if (ro > 0 && ro === members.length){
+                        result[g] = "r";
+                    }
+                    if (rw > 0 && rw === members.length){
+                        result[g] = "rw";
+                    }
+                });
+
+                return fnCopy(result);
+            },
+
+            // config.shares.setAccess()
+            //   SUPPORTED PERMISSIONS: +r, +w, +rw, rw, ro, -r, -w, -rw
+            setAccess: (sharename, subject, perm) => {
+                try {
+                    assert( fnIsString(sharename) );
+                    assert( this.shares.get().includes(sharename) );
+                    assert( fnIsString(subject) || (fnIsArray(subject) && subject.every(fnIsString)) );
+                    assert( ["+r", "+w", "+rw", "rw", "ro", "-r", "-w", "-rw"].includes(perm) );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+
+                const subj = (fnIsArray(subject)) ? subject : [subject];
+                let users = [];
+
+                subj.forEach((s) => {
+                    if (s === "*"){
+                        users = users.concat(this.users.get());
+                    }
+                    else if (this.groups.get().includes(s)){
+                        users = users.concat(this.groups.getMembers(s));
+                    }
+                    else if (this.users.get().includes(s)){
+                        users.push(s);
+                    }
+                    else {
+                        return;
+                    }
+                });
+
+                users = fnRemoveDuplicates(users);
+
+                const previous = this.shares.get(sharename);
+
+                const access = this.shares.getAccess(sharename);
+                users.forEach((user) => {
+                    const currperm = { r: false, w: false };
+                    if (fnHas(access, user)){
+                        currperm.r = true;
+                        currperm.w = (access[user] === "rw") ? true : false;
+                    }
+
+                    currperm.r = (["+r", "+w", "+rw", "rw", "ro"].includes(perm)) ? true : currperm.r;
+                    currperm.r = (["-r", "-rw"].includes(perm)) ? false : currperm.r;
+                    currperm.w = (["+w", "+rw", "rw"].includes(perm)) ? true : currperm.w;
+                    currperm.w = (["ro", "-r", "-w", "-rw"].includes(perm)) ? false : currperm.w;
+
+                    let ruleToAdd = undefined;
+                    ruleToAdd = (currperm.r === true && currperm.w === false) ? "r" : ruleToAdd;
+                    ruleToAdd = (currperm.r === true && currperm.w === true) ? "rw" : ruleToAdd;
+
+                    if (ruleToAdd !== undefined){
+                        access[user] = ruleToAdd;
+                    }
+                    else if (ruleToAdd === undefined && fnHas(access, user)){
+                        delete access[user];
+                    }
+                });
+
+                const rules = [];
+                this.users.get().forEach((e) => {
+                    if (fnHas(access, e)){
+                        const perm = (access[e] === "rw") ? "rw" : "ro";
+                        rules.push(`${perm}:${e}`);
+                    }
+                });
+                const shareIndex = this.shares.get().indexOf(sharename);
+                while (this["$shares"][shareIndex]["access"].length > 0){
+                    this["$shares"][shareIndex]["access"].splice(0, 1);
+                }
+                this["$shares"][shareIndex]["access"] = fnCopy(rules);
+
+                // trigger event "share-change" and "share-change-access"
+                const current = this.shares.get(sharename);
+                if (fnEqualArrays(current["access"], previous["access"]) !== true){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-access", current, previous);
+                }
+
+                return this;
+            },
+
             // config.shares.addRules()
             addRules: (sharename, rules) => {
                 if (fnIsString(sharename) !== true){
@@ -737,12 +943,14 @@ const ConfigGen = class {
                     throw new Error("ERROR: SHARE NOT FOUND");
                 }
 
-                const indices = rules.map((e) => {
+                let indices = rules.map((e) => {
                     const i = this.shares.get(sharename)["access"].indexOf(e);
                     return (i < 0) ? undefined : i;
-                }).filter((e, i, arr) => {
-                    return (arr.indexOf(e) === arr.lastIndexOf(e) && e !== undefined);
+                }).filter((e) => {
+                    return (e !== undefined);
                 });
+
+                indices = fnRemoveDuplicates(indices);
 
                 this.shares.removeRuleAt(sharename, indices);
 

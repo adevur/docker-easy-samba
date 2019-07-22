@@ -2,11 +2,32 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.13.0`
+### Current stable release: `1.14.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.14.0 (2019-07-22 UTC)
+- New features:
+
+  - In `ConfigGen.js` library, these new functions have been added: `config.shares.getAccess()`, `config.shares.setAccess()` and `config.groups.getMembers()`.
+  
+  - There's been a major code rewrite of `/startup/index.js` script (that is the main and first-executed script of an `easy-samba` container). This code rewrite has improved stability and clearness a lot. `easy-samba`'s logs have been improved as well. `EasySamba Remote API` startup procedure is now more consistent and reliable.
+  
+  - In `ConfigGen.js` library, functions `config.users.add()` and `config.groups.add()` now have a more strict policy about parameters `username` and `groupname`, respectively: they must be non-empty strings, and there cannot be a user with the same name of a group, and there cannot be a group with the same name of a user.
+
+- Bug fixes:
+
+  - Minor bugfixes in `ConfigGen.js` library (in functions `config.groups.add()` and `config.shares.removeRules()`).
+  
+  - Minor bugfixes to `EasySamba Remote API`.
+  
+  - Minor bugfixes in `easy-samba` itself.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.13.0 (2019-07-10 UTC)
 - New features:
