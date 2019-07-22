@@ -17,14 +17,6 @@ const fs = require("fs");
 // TODO: brief description
 function fnCleanUpUsers(){
     try {
-        // in case of first startup, save a list of container's OS native users
-        // NOTE: no clean up needed on first startup
-        if (fs.existsSync("/startup/first_startup") === true){
-            fs.writeFileSync("/startup/native_users.json", JSON.stringify(fnListUsers()));
-            fs.unlinkSync("/startup/first_startup");
-            return true;
-        }
-
         // retrieve the list of CentOS native users from file "/startup/native_users.json", created on first startup
         const nativeUsers = JSON.parse(fs.readFileSync("/startup/native_users.json", "utf8"));
 

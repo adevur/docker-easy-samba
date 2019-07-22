@@ -9,12 +9,17 @@ const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsInteger = require("/startup/functions/fnIsInteger.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
+const fnGetVersion = require("/startup/functions/fnGetVersion.js");
+const fnWriteFile = require("/startup/functions/fnWriteFile.js");
+const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 
 
 
-fnMain().catch((error) => {
-    process.exit();
+fnMain().then(() => {
+    process.exit(1);
+}).catch((error) => {
+    process.exit(1);
 });
 
 
@@ -40,10 +45,15 @@ async function fnStartServer(){
     let config = false;
     try {
         assert( fs.existsSync("/share/remote-api.json") );
-        config = JSON.parse(fs.readFileSync("/share/remote-api.json", "utf8"));
+        try {
+            config = JSON.parse(fs.readFileSync("/share/remote-api.json", "utf8"));
+        }
+        catch (error){
+            config = {};
+        }
         if (fnHas(config, "token") !== true){
             config["token"] = ConfigGen.genRandomPassword(12);
-            fs.writeFileSync("/share/remote-api.json", JSON.stringify(config));
+            fnWriteFile("/share/remote-api.json", JSON.stringify(config));
         }
         assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
     }
@@ -69,11 +79,11 @@ async function fnStartServer(){
     catch (error){
         try {
             if (fs.existsSync("/share/remote-api.key")){
-                fs.unlinkSync("/share/remote-api.key");
+                fnDeleteFile("/share/remote-api.key");
                 assert( fs.existsSync("/share/remote-api.key") !== true );
             }
             if (fs.existsSync("/share/remote-api.cert")){
-                fs.unlinkSync("/share/remote-api.cert");
+                fnDeleteFile("/share/remote-api.cert");
                 assert( fs.existsSync("/share/remote-api.cert") !== true );
             }
 
@@ -91,7 +101,7 @@ async function fnStartServer(){
 
     // load the port to use
     let port = 9595;
-    if (fnHas(config, "port") && fnIsInteger(config["port"])){
+    if (fnHas(config, "port") && fnIsInteger(config["port"]) && config["port"] >= 1024 && config["port"] <= 49151){
         port = config["port"];
     }
 
@@ -126,7 +136,7 @@ function fnAPI(str, token){
 
         try {
             if (input["method"] === "set-config"){
-                fs.writeFileSync("/share/remote-api.config.json", params["config.json"]);
+                fnWriteFile("/share/remote-api.config.json", params["config.json"]);
                 return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
             }
             else if (input["method"] === "get-config"){
@@ -135,7 +145,7 @@ function fnAPI(str, token){
             }
             else if (input["method"] === "get-info"){
                 const running = fs.existsSync("/startup/easy-samba.running");
-                const version = fs.readFileSync("/startup/version.txt", "utf8").split("\n")[1].split("VERSION: ")[1];
+                const version = fnGetVersion().version;
                 return { "jsonrpc": "2.0", "result": { "running": running, "version": version }, "error": null, "id": id };
             }
             else if (input["method"] === "hello"){
@@ -178,7 +188,7 @@ function fnCreateServer(httpsKey, httpsCert, port, token){
                     reject(new Error("ERROR"));
                 }
                 else {
-                    try { fs.writeFileSync("/startup/remote-api.started", ""); } catch(error) { }
+                    fnWriteFile("/startup/remote-api.started");
                 }
             });
         }

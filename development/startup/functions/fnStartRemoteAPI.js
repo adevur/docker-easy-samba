@@ -20,12 +20,12 @@ const fnKill = require("/startup/functions/fnKill.js");
 // INPUT: N/A
 // OUTPUT: N/A
 async function fnStartRemoteAPI(){
-    if (fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/config.gen.js") !== true){
+    if (fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/config.gen.js") !== true && fs.existsSync("/share/remote-api.json")){
         try {
             if (fs.existsSync("/startup/remote-api.started") !== true || fnIsRunning("node /startup/remote-api/index.js") !== true){
                 console.log(`[LOG] EasySamba Remote API is enabled and is starting...`);
-                fnDeleteFile("/startup/remote-api.started");
                 fnKill("node /startup/remote-api/index.js");
+                fnDeleteFile("/startup/remote-api.started");
                 fnSpawn("node", ["/startup/remote-api/index.js"]);
                 await fnSleep(2000);
                 if (fs.existsSync("/startup/remote-api.started")){
@@ -46,8 +46,8 @@ async function fnStartRemoteAPI(){
     else {
         if (fs.existsSync("/startup/remote-api.started") || fnIsRunning("node /startup/remote-api/index.js")){
             console.log(`[LOG] EasySamba Remote API is not enabled and won't be started.\n`);
-            fnDeleteFile("/startup/remote-api.started");
             fnKill("node /startup/remote-api/index.js");
+            fnDeleteFile("/startup/remote-api.started");
         }
     }
 }
