@@ -16,6 +16,8 @@ const fnGetVersion = require("/startup/functions/fnGetVersion.js");
 // INPUT: N/A
 // OUTPUT: N/A
 async function fnEasySambaStartup(){
+    console.log("------ EASY-SAMBA STARTUP ------");
+
     // display version information
     const version = fnGetVersion();
     console.log(`[LOG] you're using easy-samba version '${version.version}' from '${version.branch}' branch.`);
@@ -25,6 +27,8 @@ async function fnEasySambaStartup(){
 
     // delete "/startup/easy-samba.running"
     fnDeleteFile("/startup/easy-samba.running");
+    
+    console.log("------ EASY-SAMBA STARTUP COMPLETE ------\n");
 }
 
 

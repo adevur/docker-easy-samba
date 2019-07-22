@@ -105,7 +105,7 @@ async function fnUpdateConfig(config){
     console.log(`[LOG] starting 'nmbd' and 'smbd' daemons...`);
     fnStartDaemons();
 
-    // wait 3 seconds...
+    // wait 2 seconds...
     await fnSleep(2000);
 
     // script has been executed, now the SAMBA server is ready
@@ -118,8 +118,8 @@ async function fnUpdateConfig(config){
 
 function fnStartDaemons(){
     if (fnIsRunning("/usr/sbin/nmbd --foreground --no-process-group") || fnIsRunning("/usr/sbin/smbd --foreground --no-process-group")){
-        fnKill("/usr/sbin/nmbd --foreground --no-process-group");
         fnKill("/usr/sbin/smbd --foreground --no-process-group");
+        fnKill("/usr/sbin/nmbd --foreground --no-process-group");
     }
 
     // start "nmbd" daemon

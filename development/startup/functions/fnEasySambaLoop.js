@@ -15,6 +15,7 @@ const fnLoadConfig = require("/startup/functions/fnLoadConfig.js");
 const fnUpdateConfig = require("/startup/functions/fnUpdateConfig.js");
 const fnSpawn = require("/startup/functions/fnSpawn.js");
 const fnStartRemoteAPI = require("/startup/functions/fnStartRemoteAPI.js");
+const fnKill = require("/startup/functions/fnKill.js");
 
 
 
@@ -30,6 +31,7 @@ async function fnEasySambaLoop(){
         // execute "/share/config.gen.js" in case "/share/config.json" is missing
         if (fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/config.gen.js") === true){
             if (fnIsRunning("node /share/config.gen.js") !== true){
+                console.log(`[LOG] executing '/share/config.gen.js'...\n`);
                 fnSpawn("node", ["/share/config.gen.js"]);
                 await fnSleep(2000);
             }
@@ -52,7 +54,7 @@ async function fnEasySambaLoop(){
         }
 
         // update running configuration,
-        //  in case it's first startup, something changed, or SAMBA crashed
+        //   in case it's first startup, something changed, or SAMBA crashed
         if (previousConfig === undefined || somethingChanged || sambaCrashed){
             console.log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
             let res = false;
@@ -89,6 +91,8 @@ async function fnEasySambaLoop(){
             // in case it's not been possible to update configuration
             else {
                 fnDeleteFile("/startup/easy-samba.running");
+                fnKill("/usr/sbin/smbd --foreground --no-process-group");
+                fnKill("/usr/sbin/nmbd --foreground --no-process-group");
                 console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
                 previousConfig = undefined;
             }
