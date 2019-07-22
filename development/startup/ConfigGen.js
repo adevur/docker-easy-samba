@@ -254,8 +254,8 @@ const ConfigGen = class {
                     password = this.constructor.genRandomPassword(len);
                 }
 
-                if (fnIsString(username) !== true || fnIsString(password) !== true){
-                    throw new Error("ERROR: USERNAME AND PASSWORD MUST BE STRINGS");
+                if (fnIsString(username) !== true || username.length < 1 || fnIsString(password) !== true){
+                    throw new Error("ERROR: USERNAME AND PASSWORD MUST BE NON-EMPTY STRINGS");
                 }
 
                 if (this.users.get().includes(username) || this.groups.get().includes(username)){
@@ -371,8 +371,8 @@ const ConfigGen = class {
         this.groups = {
             // config.groups.add()
             add: (groupname, members) => {
-                if (fnIsString(groupname) !== true){
-                    throw new Error("ERROR: GROUP NAME MUST BE A STRING");
+                if (fnIsString(groupname) !== true || groupname.length < 1){
+                    throw new Error("ERROR: GROUP NAME MUST BE A NON-EMPTY STRING");
                 }
 
                 if (fnIsArray(members) !== true || members.every(fnIsString) !== true){
@@ -797,8 +797,7 @@ const ConfigGen = class {
 
                 subj.forEach((s) => {
                     if (s === "*"){
-                        //users = users.concat(this.users.get()); TODO
-                        return;
+                        users = users.concat(this.users.get());
                     }
                     else if (this.groups.get().includes(s)){
                         users = users.concat(this.groups.getMembers(s));
