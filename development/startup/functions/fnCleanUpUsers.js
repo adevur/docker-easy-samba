@@ -37,10 +37,10 @@ function fnCleanUpUsers(){
         if (newCurrentSambaUsers.length > 0 || newCurrentUsers.every((user) => { return nativeUsers.includes(user); }) !== true){
             throw "ERROR";
         }
+        
+        return true;
     }
     catch (error){
         return false;
     }
-
-    return true;
 }

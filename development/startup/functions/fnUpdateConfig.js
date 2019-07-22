@@ -9,6 +9,7 @@ module.exports = fnUpdateConfig;
 // dependencies
 const fs = require("fs");
 const { spawnSync } = require("child_process");
+const assert = require("assert");
 const fnCleanUpUsers = require("/startup/functions/fnCleanUpUsers.js");
 const fnValidateConfig = require("/startup/functions/fnValidateConfig.js");
 const fnCreateUsers = require("/startup/functions/fnCreateUsers.js");
@@ -18,6 +19,7 @@ const fnSleep = require("/startup/functions/fnSleep.js");
 const fnIsRunning = require("/startup/functions/fnIsRunning.js");
 const fnKill = require("/startup/functions/fnKill.js");
 const fnSpawn = require("/startup/functions/fnSpawn.js");
+const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 
 
 
@@ -93,7 +95,7 @@ async function fnUpdateConfig(config){
     // generate the SAMBA server configuration and write it to "/etc/samba/smb.conf"
     try {
         const smbconf = fnGenSmbConf(config);
-        fs.writeFileSync("/etc/samba/smb.conf", smbconf);
+        assert( fnWriteFile("/etc/samba/smb.conf", smbconf) );
     }
     catch (error){
         console.log(`[ERROR] '/etc/samba/smb.conf' could not be generated or written.`);
@@ -117,10 +119,8 @@ async function fnUpdateConfig(config){
 
 
 function fnStartDaemons(){
-    if (fnIsRunning("/usr/sbin/nmbd --foreground --no-process-group") || fnIsRunning("/usr/sbin/smbd --foreground --no-process-group")){
-        fnKill("/usr/sbin/smbd --foreground --no-process-group");
-        fnKill("/usr/sbin/nmbd --foreground --no-process-group");
-    }
+    fnKill("/usr/sbin/smbd --foreground --no-process-group");
+    fnKill("/usr/sbin/nmbd --foreground --no-process-group");
 
     // start "nmbd" daemon
     fnSpawn("/usr/sbin/nmbd", ["--foreground", "--no-process-group"]);

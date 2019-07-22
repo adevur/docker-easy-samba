@@ -11,6 +11,7 @@ const fs = require("fs");
 const fnIsRunning = require("/startup/functions/fnIsRunning.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
+const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnLoadConfig = require("/startup/functions/fnLoadConfig.js");
 const fnUpdateConfig = require("/startup/functions/fnUpdateConfig.js");
 const fnSpawn = require("/startup/functions/fnSpawn.js");
@@ -86,7 +87,7 @@ async function fnEasySambaLoop(){
             
             // in case configuration updated successfully
             if (res === true){
-                try { fs.writeFileSync("/startup/easy-samba.running", ""); } catch (error){}
+                fnWriteFile("/startup/easy-samba.running");
             }
             // in case it's not been possible to update configuration
             else {
