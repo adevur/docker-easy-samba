@@ -19,6 +19,12 @@ const assert = require("assert");
 function fnDeleteFile(path){
     try {
         fs.unlinkSync(path);
+    }
+    catch (error){
+        // do nothing
+    }
+    
+    try {
         assert( fs.existsSync(path) !== true );
         return true;
     }
