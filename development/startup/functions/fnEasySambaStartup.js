@@ -12,6 +12,7 @@ const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
 const fnListUsers = require("/startup/functions/fnListUsers.js");
+const fnGetConfigDir = require("/startup/functions/fnGetConfigDir.js");
 
 
 
@@ -24,6 +25,12 @@ async function fnEasySambaStartup(){
     // display version information
     const version = fnGetVersion();
     console.log(`[LOG] you're using easy-samba version '${version.version}' from '${version.branch}' branch.`);
+
+    // get config dir
+    fnDeleteFile("/startup/configdir.json");
+    const configdir = fnGetConfigDir();
+    fnWriteFile("/startup/configdir.json", JSON.stringify(configdir));
+    console.log(`[LOG] easy-samba configuration files are located at "${configdir}".`);
 
     // delete "/startup/remote-api.started"
     fnDeleteFile("/startup/remote-api.started");
