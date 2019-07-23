@@ -17,6 +17,7 @@ const fnUpdateConfig = require("/startup/functions/fnUpdateConfig.js");
 const fnSpawn = require("/startup/functions/fnSpawn.js");
 const fnStartRemoteAPI = require("/startup/functions/fnStartRemoteAPI.js");
 const fnKill = require("/startup/functions/fnKill.js");
+const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
 
@@ -29,11 +30,11 @@ async function fnEasySambaLoop(){
 
     // loop every 10 seconds
     while (true){
-        // execute "/share/config.gen.js" in case "/share/config.json" is missing
-        if (fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/config.gen.js") === true){
-            if (fnIsRunning("node /share/config.gen.js") !== true){
-                console.log(`[LOG] executing '/share/config.gen.js'...\n`);
-                fnSpawn("node", ["/share/config.gen.js"]);
+        // execute "config.gen.js" in case "config.json" is missing
+        if (fs.existsSync(`${CFG}/config.json`) !== true && fs.existsSync(`${CFG}/config.gen.js`) === true){
+            if (fnIsRunning(`node ${CFG}/config.gen.js`) !== true){
+                console.log(`[LOG] executing '${CFG}/config.gen.js'...\n`);
+                fnSpawn("node", [`${CFG}/config.gen.js`]);
                 await fnSleep(2000);
             }
         }
