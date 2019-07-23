@@ -61,6 +61,9 @@ async function fnEasySambaLoop(){
             console.log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
             let res = false;
             
+            // delete "/startup/soft-quota.json"
+            fnDeleteFile("/startup/soft-quota.json");
+            
             // if SAMBA crashed, show a warning
             if (sambaCrashed){
                 console.log(`[WARNING] 'smbd' or 'nmbd' crashed unexpectedly.`);

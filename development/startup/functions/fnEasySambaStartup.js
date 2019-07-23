@@ -20,18 +20,12 @@ const fnKill = require("/startup/functions/fnKill.js");
 // FUNCTION: fnEasySambaStartup()
 // INPUT: N/A
 // OUTPUT: N/A
-async function fnEasySambaStartup(){
+function fnEasySambaStartup(){
     console.log("------ EASY-SAMBA STARTUP ------");
 
     // display version information
     const version = fnGetVersion();
     console.log(`[LOG] you're using easy-samba version '${version.version}' from '${version.branch}' branch.`);
-
-    // get config dir
-    fnDeleteFile("/startup/configdir.json");
-    const configdir = fnGetConfigDir();
-    fnWriteFile("/startup/configdir.json", JSON.stringify(configdir));
-    console.log(`[LOG] easy-samba configuration files are located at "${configdir}".`);
 
     // kill existing processes
     fnKill("node /share/config.gen.js");
@@ -49,10 +43,18 @@ async function fnEasySambaStartup(){
     // delete "/startup/soft-quota.json"
     fnDeleteFile("/startup/soft-quota.json");
     
+    // delete "/startup/configdir.json"
+    fnDeleteFile("/startup/configdir.json");
+    
     // in case of first startup, save a list of container's OS native users
     if (fs.existsSync("/startup/native_users.json") !== true){
         fnWriteFile("/startup/native_users.json", JSON.stringify(fnListUsers()));
     }
+
+    // get config dir
+    const configdir = fnGetConfigDir();
+    fnWriteFile("/startup/configdir.json", JSON.stringify(configdir));
+    console.log(`[LOG] easy-samba configuration files are located at "${configdir}".`);
     
     console.log("------ EASY-SAMBA STARTUP COMPLETE ------\n");
 }

@@ -27,7 +27,7 @@ async function fnMain(){
     });
 
     // easy-samba startup phase
-    await fnEasySambaStartup();
+    fnEasySambaStartup();
 
     // easy-samba loop
     await fnEasySambaLoop();
