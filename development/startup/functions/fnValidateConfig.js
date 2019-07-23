@@ -16,6 +16,8 @@ const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
+const fnWriteFile = require("/startup/functions/fnWriteFile.js");
+const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 
 
 
@@ -26,7 +28,7 @@ const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
 //   check if config file content is correct
 function fnValidateConfig(config){
     // TODO: document "sharedb"
-    const sharedb = { "users": [], "names": ["global", "homes", "printers"], "paths": [], "groups": {} };
+    const sharedb = { "users": [], "names": ["global", "homes", "printers"], "paths": [], "groups": {}, "quota": [] };
 
     // "config" must contain "domain", "users" and "shares" properties
     if (fnHas(config, ["domain", "users", "shares"]) !== true){
@@ -75,6 +77,14 @@ function fnValidateConfig(config){
     const validateConfigShares = fnValidateConfigShares(config["shares"], sharedb);
     if (validateConfigShares !== true){
         return validateConfigShares;
+    }
+    
+    // write soft-quota to "/startup/soft-quota.json"
+    if (sharedb.quota.length > 0){
+        fnWriteFile("/startup/soft-quota.json", JSON.stringify(sharedb.quota));
+    }
+    else {
+        fnDeleteFile("/startup/soft-quota.json");
     }
 
     return true;

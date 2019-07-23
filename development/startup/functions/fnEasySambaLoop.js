@@ -93,6 +93,7 @@ async function fnEasySambaLoop(){
             // in case it's not been possible to update configuration
             else {
                 fnDeleteFile("/startup/easy-samba.running");
+                fnDeleteFile("/startup/soft-quota.json");
                 fnKill("/usr/sbin/smbd --foreground --no-process-group");
                 fnKill("/usr/sbin/nmbd --foreground --no-process-group");
                 console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);

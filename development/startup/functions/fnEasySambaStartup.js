@@ -46,6 +46,9 @@ async function fnEasySambaStartup(){
     // delete "/startup/easy-samba.running"
     fnDeleteFile("/startup/easy-samba.running");
     
+    // delete "/startup/soft-quota.json"
+    fnDeleteFile("/startup/soft-quota.json");
+    
     // in case of first startup, save a list of container's OS native users
     if (fs.existsSync("/startup/native_users.json") !== true){
         fnWriteFile("/startup/native_users.json", JSON.stringify(fnListUsers()));

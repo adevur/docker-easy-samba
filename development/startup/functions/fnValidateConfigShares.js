@@ -15,6 +15,7 @@ const fnValidateString = require("/startup/functions/fnValidateString.js");
 const fs = require("fs");
 const fnValidateConfigSharesAccess = require("/startup/functions/fnValidateConfigSharesAccess.js");
 const fnEvaluateAccessRules = require("/startup/functions/fnEvaluateAccessRules.js");
+const fnValidateConfigSharesQuota = require("/startup/functions/fnValidateConfigSharesQuota.js");
 
 
 
@@ -98,6 +99,13 @@ function fnValidateConfigShares(shares, sharedb){
                 error = validateConfigSharesAccess;
                 return false;
             }
+        }
+        
+        // check "soft-quota" property
+        const validateConfigSharesQuota = fnValidateConfigSharesQuota(share, sharedb);
+        if (validateConfigSharesQuota !== true){
+            error = validateConfigSharesQuota;
+            return false;
         }
 
         // push shares' names
