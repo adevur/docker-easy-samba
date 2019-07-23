@@ -9,6 +9,7 @@ module.exports = fnCreateShares;
 // dependencies
 const fs = require("fs");
 const { spawnSync } = require("child_process");
+const assert = require("assert");
 const fnHas = require("/startup/functions/fnHas.js");
 
 
@@ -27,7 +28,7 @@ function fnCreateShares(shares){
             if (fs.existsSync(share["path"]) !== true){
                 fs.mkdirSync(share["path"]);
             }
-            if (fs.existsSync(share["path"]) !== true){ throw "ERROR"; }
+            assert( fs.existsSync(share["path"]) );
         }
         catch (error){
             errorMsg = `SHARE '${share["path"]}' COULD NOT BE CREATED`;

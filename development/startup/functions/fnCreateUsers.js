@@ -8,7 +8,9 @@ module.exports = fnCreateUsers;
 
 // dependencies
 const { spawnSync } = require("child_process");
+const assert = require("assert");
 const fnUserExists = require("/startup/functions/fnUserExists.js");
+const fnListSambaUsers = require("/startup/functions/fnListSambaUsers.js");
 
 
 
@@ -27,7 +29,7 @@ function fnCreateUsers(users){
         try {
             spawnSync("useradd", ["-M", "-s", "/sbin/nologin", user["name"]], { stdio: "ignore" });
             spawnSync("passwd", [user["name"], "--stdin"], { input: `${user["password"]}\n`, stdio: [undefined, "ignore", "ignore"] });
-            if (fnUserExists(user["name"]) !== true){ throw "ERROR"; }
+            assert( fnUserExists(user["name"]) );
         }
         catch (error){
             errorMsg = `USER '${user["name"]}' COULD NOT BE ADDED TO OS`;
@@ -39,6 +41,7 @@ function fnCreateUsers(users){
         //   (echo '123456'; echo '123456') | smbpasswd -a user1 -s
         try {
             spawnSync("smbpasswd", ["-a", user["name"], "-s"], { input: `${user["password"]}\n${user["password"]}\n`, stdio: [undefined, "ignore", "ignore"] });
+            assert( fnListSambaUsers().includes(user["name"]) );
         }
         catch (error){
             errorMsg = `USER '${user["name"]}' COULD NOT BE ADDED TO SAMBA`;
