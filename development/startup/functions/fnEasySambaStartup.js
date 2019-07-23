@@ -38,6 +38,7 @@ async function fnEasySambaStartup(){
     fnKill("node /share/config/config.gen.js");
     fnKill("/usr/sbin/smbd --foreground --no-process-group");
     fnKill("/usr/sbin/nmbd --foreground --no-process-group");
+    fnKill("node /startup/remote-api/index.js");
 
     // delete "/startup/remote-api.started"
     fnDeleteFile("/startup/remote-api.started");

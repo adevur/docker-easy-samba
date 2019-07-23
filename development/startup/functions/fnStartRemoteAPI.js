@@ -13,6 +13,7 @@ const fnSleep = require("/startup/functions/fnSleep.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnSpawn = require("/startup/functions/fnSpawn.js");
 const fnKill = require("/startup/functions/fnKill.js");
+const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
 
@@ -20,7 +21,7 @@ const fnKill = require("/startup/functions/fnKill.js");
 // INPUT: N/A
 // OUTPUT: N/A
 async function fnStartRemoteAPI(){
-    if (fs.existsSync("/share/config.json") !== true && fs.existsSync("/share/config.gen.js") !== true && fs.existsSync("/share/remote-api.json")){
+    if (fs.existsSync(`${CFG}/config.json`) !== true && fs.existsSync(`${CFG}/config.gen.js`) !== true && fs.existsSync(`${CFG}/remote-api.json`)){
         try {
             if (fs.existsSync("/startup/remote-api.started") !== true || fnIsRunning("node /startup/remote-api/index.js") !== true){
                 console.log(`[LOG] EasySamba Remote API is enabled and is starting...`);

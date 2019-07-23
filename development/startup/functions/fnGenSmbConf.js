@@ -12,7 +12,7 @@ const fnHas = require("/startup/functions/fnHas.js");
 
 
 // FUNCTION: fnGenSmbConf()
-// INPUT: "config", as parsed from "/share/config.json"
+// INPUT: "config", as parsed from "config.json"
 // OUTPUT: "/etc/samba/smb.conf" generated content
 // PURPOSE: generate "/etc/samba/smb.conf"
 function fnGenSmbConf(config){

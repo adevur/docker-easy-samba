@@ -20,7 +20,7 @@ const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
 
 
 // FUNCTION: fnValidateConfig()
-// INPUT: configuration, as parsed from "/share/config.json"
+// INPUT: configuration, as parsed from "config.json"
 // OUTPUT: true in case of no errors, otherwise a string that describes the error
 // PURPOSE: check if config file syntax is correct
 //   check if config file content is correct

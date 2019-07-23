@@ -12,6 +12,7 @@ const fnSleep = require("/startup/functions/fnSleep.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
+const CFG = require("/startup/functions/fnGetConfigDir.js")();
 const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 
 
@@ -41,19 +42,19 @@ async function fnMain(){
 
 
 async function fnStartServer(){
-    // load "/share/remote-api.json"
+    // load "remote-api.json"
     let config = false;
     try {
-        assert( fs.existsSync("/share/remote-api.json") );
+        assert( fs.existsSync(`${CFG}/remote-api.json`) );
         try {
-            config = JSON.parse(fs.readFileSync("/share/remote-api.json", "utf8"));
+            config = JSON.parse(fs.readFileSync(`${CFG}/remote-api.json`, "utf8"));
         }
         catch (error){
             config = {};
         }
         if (fnHas(config, "token") !== true){
             config["token"] = ConfigGen.genRandomPassword(12);
-            fnWriteFile("/share/remote-api.json", JSON.stringify(config));
+            fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config));
         }
         assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
     }
@@ -61,7 +62,7 @@ async function fnStartServer(){
         config = false;
     }
 
-    // if "/share/remote-api.json" could not be loaded, or it is not valid, abort
+    // if "remote-api.json" could not be loaded, or it is not valid, abort
     assert(config !== false);
 
     const token = config["token"];
@@ -71,28 +72,22 @@ async function fnStartServer(){
     let httpsKey = undefined;
     let httpsCert = undefined;
     try {
-        assert( fs.existsSync("/share/remote-api.key") );
-        assert( fs.existsSync("/share/remote-api.cert") );
-        httpsKey = fs.readFileSync("/share/remote-api.key", "ascii");
-        httpsCert = fs.readFileSync("/share/remote-api.cert", "ascii");
+        assert( fs.existsSync(`${CFG}/remote-api.key`) );
+        assert( fs.existsSync(`${CFG}/remote-api.cert`) );
+        httpsKey = fs.readFileSync(`${CFG}/remote-api.key`, "ascii");
+        httpsCert = fs.readFileSync(`${CFG}/remote-api.cert`, "ascii");
     }
     catch (error){
         try {
-            if (fs.existsSync("/share/remote-api.key")){
-                fnDeleteFile("/share/remote-api.key");
-                assert( fs.existsSync("/share/remote-api.key") !== true );
-            }
-            if (fs.existsSync("/share/remote-api.cert")){
-                fnDeleteFile("/share/remote-api.cert");
-                assert( fs.existsSync("/share/remote-api.cert") !== true );
-            }
+            assert( fnDeleteFile(`${CFG}/remote-api.key`) );
+            assert( fnDeleteFile(`${CFG}/remote-api.cert`) );
 
-            spawnSync("openssl", ["req", "-nodes", "-days", "7300", "-new", "-x509", "-keyout", "/share/remote-api.key", "-out", "/share/remote-api.cert", "-subj", "/C=US/ST=Some-State/O=localhost/CN=localhost"], { stdio: "ignore" });
+            spawnSync("openssl", ["req", "-nodes", "-days", "7300", "-new", "-x509", "-keyout", `${CFG}/remote-api.key`, "-out", `${CFG}/remote-api.cert`, "-subj", "/C=US/ST=Some-State/O=localhost/CN=localhost"], { stdio: "ignore" });
 
-            assert( fs.existsSync("/share/remote-api.key") );
-            assert( fs.existsSync("/share/remote-api.cert") );
-            httpsKey = fs.readFileSync("/share/remote-api.key", "ascii");
-            httpsCert = fs.readFileSync("/share/remote-api.cert", "ascii");
+            assert( fs.existsSync(`${CFG}/remote-api.key`) );
+            assert( fs.existsSync(`${CFG}/remote-api.cert`) );
+            httpsKey = fs.readFileSync(`${CFG}/remote-api.key`, "ascii");
+            httpsCert = fs.readFileSync(`${CFG}/remote-api.cert`, "ascii");
         }
         catch (error){
             assert(false);
@@ -136,11 +131,11 @@ function fnAPI(str, token){
 
         try {
             if (input["method"] === "set-config"){
-                fnWriteFile("/share/remote-api.config.json", params["config.json"]);
+                fnWriteFile(`${CFG}/remote-api.config.json`, params["config.json"]);
                 return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
             }
             else if (input["method"] === "get-config"){
-                const configjson = (fs.existsSync("/share/remote-api.config.json")) ? fs.readFileSync("/share/remote-api.config.json", "utf8") : "{}";
+                const configjson = (fs.existsSync(`${CFG}/remote-api.config.json`)) ? fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8") : "{}";
                 return { "jsonrpc": "2.0", "result": configjson, "error": null, "id": id };
             }
             else if (input["method"] === "get-info"){

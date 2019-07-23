@@ -13,7 +13,7 @@ const fnUserExists = require("/startup/functions/fnUserExists.js");
 
 
 // FUNCTION: fnCreateUsers()
-// INPUT: "users" object, as described in "/share/config.json"
+// INPUT: "users" object, as described in "config.json"
 // OUTPUT: true in case of no errors, otherwise a string that describes the error
 // PURPOSE: add the users in the container's OS and in SAMBA
 function fnCreateUsers(users){

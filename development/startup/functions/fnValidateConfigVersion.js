@@ -13,7 +13,7 @@ const fnIsString = require("/startup/functions/fnIsString.js");
 
 
 // FUNCTION: fnValidateConfigVersion()
-// INPUT: configuration, as parsed from "/share/config.json"
+// INPUT: configuration, as parsed from "config.json"
 // OUTPUT: true in case of no errors, otherwise a string that describes the error
 // PURPOSE: check if config file "version" property is correct
 function fnValidateConfigVersion(config){

@@ -64,9 +64,9 @@ function fnValidateConfigShares(shares, sharedb){
             return false;
         }
 
-        // "path" cannot be "/share/config.json"
-        if (share["path"] === "/share/config.json"){
-            error = `SHARED FOLDERS' PATH CANNOT BE '/share/config.json'`;
+        // "path" cannot be "/share/config.json", "/share/config", "/share/config.gen.js" or "/share/remote-api.json"
+        if (["/share/config", "/share/config.json", "/share/config.gen.js", "/share/remote-api.json"].includes(share["path"])){
+            error = `SHARED FOLDERS' PATH CANNOT BE EQUAL TO '/share/config', '/share/config.json', '/share/config.gen.js' OR '/share/remote-api.json'`;
             return false;
         }
 

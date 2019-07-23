@@ -14,7 +14,7 @@ const fnHas = require("/startup/functions/fnHas.js");
 
 
 // FUNCTION: fnCreateShares()
-// INPUT: "shares" object, as described in "/share/config.json"
+// INPUT: "shares" object, as described in "config.json"
 // OUTPUT: true in case of no errors, otherwise a string that describes the error
 // PURPOSE: create the shares (if they don't exist) and set the correct ACLs for them
 function fnCreateShares(shares){

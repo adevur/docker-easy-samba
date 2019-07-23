@@ -8,6 +8,7 @@ module.exports = fnLoadConfig;
 
 // dependencies
 const fs = require("fs");
+const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
 
@@ -15,10 +16,10 @@ const fs = require("fs");
 // OUTPUT: the content of the config file, already parsed; it returns false in case of errors
 // PURPOSE: load the configuration file
 function fnLoadConfig(){
-    // if there's a "/share/config.json" file, try to read from it
-    if (fs.existsSync("/share/config.json")){
+    // if there's a "config.json" file, try to read from it
+    if (fs.existsSync(`${CFG}/config.json`)){
         try {
-            const raw = fs.readFileSync("/share/config.json", "utf8");
+            const raw = fs.readFileSync(`${CFG}/config.json`, "utf8");
             const parsed = JSON.parse(raw);
             return { config: parsed, rawConfig: raw };
         }
@@ -26,11 +27,11 @@ function fnLoadConfig(){
             return { config: false, rawConfig: false };
         }
     }
-    // otherwise, try to read from "/share/remote-api.config.json",
-    //   in case "/share/config.gen.js" is missing and Remote API is running
-    else if (fs.existsSync("/share/config.gen.js") !== true && fs.existsSync("/startup/remote-api.started")) {
+    // otherwise, try to read from "remote-api.config.json",
+    //   in case "config.gen.js" is missing and Remote API is running
+    else if (fs.existsSync(`${CFG}/config.gen.js`) !== true && fs.existsSync("/startup/remote-api.started")) {
         try {
-            const raw = fs.readFileSync("/share/remote-api.config.json", "utf8");
+            const raw = fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8");
             const parsed = JSON.parse(raw);
             return { config: parsed, rawConfig: raw };
         }
