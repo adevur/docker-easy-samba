@@ -312,6 +312,8 @@ This is a list of all available methods of `ConfigGen.js` library:
         - [`config.groups.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsget-method)
 
         - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetall-method)
+        
+        - [`config.groups.getMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetMembers-method)
 
         - [`config.groups.addMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmembers-method)
 
@@ -328,6 +330,10 @@ This is a list of all available methods of `ConfigGen.js` library:
         - [`config.shares.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesget-method)
 
         - [`config.shares.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetall-method)
+        
+        - [`config.shares.getAccess()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetAccess-method)
+        
+        - [`config.shares.setAccess()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetAccess-method)
 
         - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrules-method)
 
@@ -893,9 +899,11 @@ async function myAsyncFunction(){
 ### `config.users.add()` method
 This is a method that can be used in order to add a user to the `users` section of an instance of `ConfigGen`.
 
+> NOTE: you cannot add a user if there's a group with the same name.
+
 - ARGUMENTS: `username` and `password` (optional)
 
-  - PARAMETER `username`: it is a string that contains the username of the new user
+  - PARAMETER `username`: it is a non-empty string that contains the username of the new user
 
   - PARAMETER `password`: it is a string that contains the password of the new user; if this parameter is missing, the newly-created user will have a random password of 12 characters (generated using `ConfigGen.genRandomPassword()`); if `password` is an integer, it will be interpreted as the length of the newly-generated random password
 
@@ -1043,9 +1051,11 @@ console.log( config.users.get("user1")["password"] ); // aaabbb
 ### `config.groups.add()` method
 This is a method that can be used in order to add a group to the `groups` section of an instance of `ConfigGen`.
 
+> NOTE: you cannot add a group if there's a user with the same name.
+
 - ARGUMENTS: `groupname` and `members`
 
-  - PARAMETER `groupname`: it is a string that contains the name of the new group
+  - PARAMETER `groupname`: it is a non-empty string that contains the name of the new group
 
   - PARAMETER `members`: it is an array of strings that contains the list of members of the group
 
@@ -1157,6 +1167,34 @@ config.groups.addArray([
 ]);
 
 console.log( config.groups.getAll() ); // [{ "name": "group1", "members": ["user1", "user2"] },{ "name": "group2", "members": ["group1", "user3"] }]
+```
+
+### `config.groups.getMembers()` method
+This is a method that can be used to retrieve the list of all members of a group.
+
+> NOTE: this function works only if the members of the group are existing users and groups.
+
+- ARGUMENTS: `groupname`
+
+  - PARAMETER `groupname`: it is a string that contains the name of the group to retrieve the list of members of
+
+- OUTPUT: it returns an array with the list of members (e.g. `["user1", "user2", "user3"]`)
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.add("u1");
+config.users.add("u2");
+config.users.add("u3");
+
+config.groups.add("g1", ["u1", "u2"]);
+config.groups.add("g2", ["g1", "u3"]);
+
+console.log( config.groups.getMembers("g1") ); // ["u1", "u2"]
+console.log( config.groups.getMembers("g2") ); // ["u1", "u2", "u3"]
 ```
 
 ### `config.groups.addMembers()` method
@@ -1343,6 +1381,108 @@ config.shares.addArray([
 ]);
 
 console.log( config.shares.getAll() ); // [{ "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },{ "name": "user3", "path": "/share/user3", "access": ["rw:user3"] }]
+```
+
+### `config.shares.getAccess()` method
+This is a method that can be used to retrieve the permissions of users and groups on a specified shared folder. This function parses all the access rules of the share, in order to get the final permissions.
+
+> NOTE: this function ignores eventual "base rules" and "fixed rules" set with `config.shares.setBaseRules()` and `config.shares.setFixedRules()`, because these rules are applied when configuration is saved (for example, with `config.saveToFile()` function).
+
+> NOTE: this function does NOT return `access` property of the shared folder (and thus its access rules), but it uses the access rules of the share to evaluate the final permissions of users and groups.
+
+- ARGUMENTS: `share`
+
+  - PARAMETER `share`: it is a string that contains the name of the existing shared folder to retrieve permissions of; or it can be a raw share object (i.e.: `{ "name": "folder1", "path": "/share/folder1", "access": ["u1", "ro:u2"] }`), this way this function can be used also with deleted or non-existent shared folders
+
+- OUTPUT: it returns an object like this: `{ "u1": "rw", "u2": "r", "g1": "rw" }`, where every key represents a user or a group, and its value (that can be `"r"` or `"rw"`) is the actual permission
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.add("u1");
+config.users.add("u2");
+config.users.add("u3");
+
+config.groups.add("g1", ["u1", "u2"]);
+config.groups.add("g2", ["g1", "u3"]);
+
+config.shares.add("s1", "/share/s1", ["ro:g2", "rw:g1"]);
+
+console.log( config.shares.getAccess("s1") );
+// OUTPUT: { "u1": "rw", "u2": "rw", "u3": "r", "g1": "rw", "g2": "r" }
+// EXPLAIN:
+//   "u1" and "u2" have read and write permissions,
+//   "u3" has read-only permissions
+//   all members of "g1" have read and write permissions,
+//   all members of "g2" have read permissions, but not all members have write permissions
+
+
+// alternatively, you can pass as input also a raw share object:
+
+config.on("share-remove", (previous) => {
+    const access = config.shares.getAccess(previous);
+    if (access["user1"] === "r" || access["user1"] === "rw"){
+        console.log(`You deleted shared folder "${previous["name"]}". User "user1" used to have access to that folder.`);
+    }
+});
+```
+
+### `config.shares.setAccess()` method
+This is a method that can be used to set the real permissions of users and groups on a specified shared folder. This function adds access rules to the share according to the final permission that users and groups must have on it.
+
+> NOTE: this function ignores eventual "base rules" and "fixed rules" set with `config.shares.setBaseRules()` and `config.shares.setFixedRules()`, because these rules are applied when configuration is saved (for example, with `config.saveToFile()` function).
+
+- ARGUMENTS: `sharename`, `subject` and `perm`
+
+  - PARAMETER `sharename`: it is a string that contains the name of the existing shared folder to set permissions on
+  
+  - PARAMETER `subject`: it is a string that contains the name of the user or the group to set permissions of; if it is equal to `"*"`, it means "all users"; it can also be an array that contains multiple users and groups
+  
+  - PARAMETER `perm`: it is a string that specifies how permissions should be changed; it can be equal to:
+  
+    - `"+r"` (= add read permission, only in case it doesn't have it yet),
+    
+    - `"+w"` or `"+rw"` or `"rw"` (= add read and write permission),
+    
+    - `"ro"` (= add read-only permission),
+    
+    - `"-r"` or `"-rw"` (= remove read and write permission),
+    
+    - `"-w"` (= remove write permission, only in case it is present)
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.users.add("u1");
+config.users.add("u2");
+config.users.add("u3");
+
+config.groups.add("g1", ["u1", "u2"]);
+config.groups.add("g2", ["g1", "u3"]);
+
+config.shares.add("s1", "/share/s1", ["ro:g2", "rw:g1"]);
+
+// we can see that all members of group "g1" have read and write permissions
+console.log( config.shares.getAccess("s1")["g1"] ); // rw
+
+// if we add read permission to "g1", nothing changes, because all members already have read permission
+config.shares.setAccess("s1", "g1", "+r");
+console.log( config.shares.getAccess("s1")["g1"] ); // rw
+
+// if we want to make sure that all members of "g1" have ONLY read permission, we do:
+config.shares.setAccess("s1", "g1", "ro");
+console.log( config.shares.getAccess("s1")["g1"] ); // r
+
+// then we can give user "u1" also write permission
+config.shares.setAccess("s1", "u1", "+w");
+console.log( config.shares.getAccess("s1")["u1"] ); // rw
+console.log( config.shares.getAccess("s1")["g1"] ); // r
 ```
 
 ### `config.shares.addRules()` method

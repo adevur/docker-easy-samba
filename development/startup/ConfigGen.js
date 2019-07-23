@@ -465,6 +465,7 @@ const ConfigGen = class {
             },
 
             // config.groups.getMembers()
+            // TODO: make it possible to retrieve members of a deleted group
             getMembers: (groupname) => {
                 try {
                     assert( fnIsString(groupname) );
