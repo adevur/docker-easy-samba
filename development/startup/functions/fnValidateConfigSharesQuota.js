@@ -26,8 +26,8 @@ function fnValidateConfigSharesQuota(share, sharedb){
 
         const quota = share["soft-quota"];
 
-        // must have "limit" property
-        assert( fnHas(quota, "limit") );
+        // must have "limit" and "whitelist" properties
+        assert( fnHas(quota, ["limit", "whitelist"]) );
         
         // check "limit" property
         assert( fnIsString(quota["limit"]) && quota["limit"].length > 2 && quota["limit"].length < 12 );
@@ -39,19 +39,14 @@ function fnValidateConfigSharesQuota(share, sharedb){
         const m = (u === "kB") ? (n * 1024) : ((u === "MB") ? (n * 1024 * 1024) : ((u === "GB") ? (n * 1024 * 1024 * 1024) : 0));
         
         // check "whitelist" property
-        if (fnHas(quota, "whitelist")){
-            assert( fnIsArray(quota["whitelist"]) );
-            assert(quota["whitelist"].every((e) => {
-                return sharedb.users.includes(e);
-            }));
-            // remove duplicates from "whitelist"
-            quota["whitelist"] = quota["whitelist"].filter((e, i) => {
-                return (quota["whitelist"].indexOf(e) === i);
-            });
-        }
-        else {
-            quota["whitelist"] = [];
-        }
+        assert( fnIsArray(quota["whitelist"]) );
+        assert(quota["whitelist"].every((e) => {
+            return sharedb.users.includes(e);
+        }));
+        // remove duplicates from "whitelist"
+        quota["whitelist"] = quota["whitelist"].filter((e, i) => {
+            return (quota["whitelist"].indexOf(e) === i);
+        });
         
         // add "$soft-quota" to "share"
         share["$soft-quota"] = { "limit": m, "whitelist": quota["whitelist"] };

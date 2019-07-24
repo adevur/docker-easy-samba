@@ -629,12 +629,10 @@ const ConfigGen = class {
                 
                 if (softquota !== undefined){
                     try {
-                        assert( fnHas(softquota, "limit") );
+                        assert( fnHas(softquota, ["limit", "whitelist"]) );
                         assert( fnIsString(softquota["limit"]) );
-                        if (fnHas(softquota, "whitelist")){
-                            assert( fnIsArray(softquota["whitelist"]) );
-                            assert( softquota["whitelist"].every(fnIsString) );
-                        }
+                        assert( fnIsArray(softquota["whitelist"]) );
+                        assert( softquota["whitelist"].every(fnIsString) );
                     }
                     catch (error){
                         throw new Error("ERROR: SHARE SOFT-QUOTA IS INVALID");
@@ -1178,12 +1176,10 @@ const ConfigGen = class {
 
                 if (softquota !== undefined){
                     try {
-                        assert( fnHas(softquota, "limit") );
+                        assert( fnHas(softquota, ["limit", "whitelist"]) );
                         assert( fnIsString(softquota["limit"]) );
-                        if (fnHas(softquota, "whitelist")){
-                            assert( fnIsArray(softquota["whitelist"]) );
-                            assert( softquota["whitelist"].every(fnIsString) );
-                        }
+                        assert( fnIsArray(softquota["whitelist"]) );
+                        assert( softquota["whitelist"].every(fnIsString) );
                     }
                     catch (error){
                         throw new Error("ERROR: SHARE SOFT-QUOTA IS INVALID");
@@ -1210,10 +1206,7 @@ const ConfigGen = class {
                     assert( fnHas(current, "soft-quota") === fnHas(previous, "soft-quota") );
                     if (fnHas(current, "soft-quota")){
                         assert( current["soft-quota"]["limit"] === previous["soft-quota"]["limit"] );
-                        assert( fnHas(current["soft-quota"], "whitelist") === fnHas(previous["soft-quota"], "whitelist") );
-                        if (fnHas(current["soft-quota"], "whitelist")){
-                            assert( fnEqualArrays(current["soft-quota"]["whitelist"], previous["soft-quota"]["whitelist"]) );
-                        }
+                        assert( fnEqualArrays(current["soft-quota"]["whitelist"], previous["soft-quota"]["whitelist"]) );
                     }
                 }
                 catch (error){

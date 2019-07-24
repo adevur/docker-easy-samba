@@ -36,13 +36,13 @@ function fnCreateShares(shares){
             return false;
         }
         
-        // get disk usage of share
-        const du = fnDiskUsage(share["path"]);
-        
         // get quota of share
         let quota = undefined;
+        let du = undefined;
         if (fnHas(share, "$soft-quota")){
             quota = share["$soft-quota"];
+            // get disk usage of share
+            du = fnDiskUsage(share["path"]);
         }
 
         // for each "user" of the share, generate the ACLs

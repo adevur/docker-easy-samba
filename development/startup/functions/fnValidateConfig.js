@@ -28,7 +28,7 @@ const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 //   check if config file content is correct
 function fnValidateConfig(config){
     // TODO: document "sharedb"
-    const sharedb = { "users": [], "names": ["global", "homes", "printers"], "paths": [], "groups": {}, "quota": [] };
+    const sharedb = { "users": [], "names": ["global", "homes", "printers"], "paths": [], "groups": {} };
 
     // "config" must contain "domain", "users" and "shares" properties
     if (fnHas(config, ["domain", "users", "shares"]) !== true){
