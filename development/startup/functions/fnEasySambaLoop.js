@@ -19,6 +19,7 @@ const fnSpawn = require("/startup/functions/fnSpawn.js");
 const fnStartRemoteAPI = require("/startup/functions/fnStartRemoteAPI.js");
 const fnKill = require("/startup/functions/fnKill.js");
 const fnCreateShares = require("/startup/functions/fnCreateShares.js");
+const fnValidateSoftQuotaJson = require("/startup/functions/fnValidateSoftQuotaJson.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -113,6 +114,7 @@ async function fnEasySambaLoop(){
         if (fs.existsSync("/startup/soft-quota.json") && fs.existsSync("/startup/easy-samba.running")){
             try {
                 const shares = JSON.parse( fs.readFileSync("/startup/soft-quota.json", "utf8") );
+                assert( fnValidateSoftQuotaJson(shares) );
                 assert( fnCreateShares(shares) === true );
             }
             catch (error){
