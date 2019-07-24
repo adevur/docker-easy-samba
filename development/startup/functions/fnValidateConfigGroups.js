@@ -7,6 +7,7 @@ module.exports = fnValidateConfigGroups;
 
 
 // dependencies
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
@@ -38,7 +39,7 @@ function fnValidateConfigGroups(config, sharedb){
             }
         });
         if (deprecated){
-            console.log(`[WARNING] 'users' property of groups is deprecated. Rename it to 'members'.`);
+            log(`[WARNING] 'users' property of groups is deprecated. Rename it to 'members'.`);
         }
     }
 

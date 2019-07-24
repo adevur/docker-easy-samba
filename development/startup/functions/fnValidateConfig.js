@@ -7,6 +7,7 @@ module.exports = fnValidateConfig;
 
 
 // dependencies
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnValidateConfigVersion = require("/startup/functions/fnValidateConfigVersion.js");
 const fnValidateConfigUsers = require("/startup/functions/fnValidateConfigUsers.js");
 const fnValidateConfigGroups = require("/startup/functions/fnValidateConfigGroups.js");
@@ -37,7 +38,7 @@ function fnValidateConfig(config){
 
     // check "guest" property
     if (fnHas(config, "guest") && fnIsString(config["guest"])){
-        console.log(`[WARNING] 'guest' section of 'config.json' is not supported anymore. Use 'guest' property of shares, in order to create anonymous shared folders.`);
+        log(`[WARNING] 'guest' section of 'config.json' is not supported anymore. Use 'guest' property of shares, in order to create anonymous shared folders.`);
         if (fnHas(config, "shares") && fnIsArray(config["shares"])){
             config["shares"].push({ "name": "guest", "path": config["guest"], "access": [], "guest": "rw" });
         }

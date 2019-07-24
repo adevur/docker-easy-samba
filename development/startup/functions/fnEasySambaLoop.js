@@ -9,6 +9,7 @@ module.exports = fnEasySambaLoop;
 // dependencies
 const fs = require("fs");
 const assert = require("assert");
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnIsRunning = require("/startup/functions/fnIsRunning.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
@@ -37,7 +38,7 @@ async function fnEasySambaLoop(){
         // execute "config.gen.js" in case "config.json" is missing
         if (fs.existsSync(`${CFG}/config.json`) !== true && fs.existsSync(`${CFG}/config.gen.js`) === true){
             if (fnIsRunning(`node ${CFG}/config.gen.js`) !== true){
-                console.log(`[LOG] executing '${CFG}/config.gen.js'...\n`);
+                log(`[LOG] executing '${CFG}/config.gen.js'...\n`);
                 fnSpawn("node", [`${CFG}/config.gen.js`]);
                 await fnSleep(2000);
             }
@@ -62,22 +63,22 @@ async function fnEasySambaLoop(){
         // update running configuration,
         //   in case it's first startup, something changed, or SAMBA crashed
         if (previousConfig === undefined || somethingChanged || sambaCrashed){
-            console.log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
+            log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
             let res = false;
             
             shares = undefined;
             
             // if SAMBA crashed, show a warning
             if (sambaCrashed){
-                console.log(`[WARNING] 'smbd' or 'nmbd' crashed unexpectedly.`);
+                log(`[WARNING] 'smbd' or 'nmbd' crashed unexpectedly.`);
             }
             
             if (previousConfig !== undefined || config !== false){
-                console.log(`[LOG] SAMBA server configuration process has started.`);
+                log(`[LOG] SAMBA server configuration process has started.`);
             }
             
             if (previousConfig === undefined && config === false){
-                console.log(`[ERROR] easy-samba configuration file could not be loaded or it is not in JSON format.`);
+                log(`[ERROR] easy-samba configuration file could not be loaded or it is not in JSON format.`);
                 res = false;
             }
             else if (previousConfig === undefined && config !== false){
@@ -102,12 +103,12 @@ async function fnEasySambaLoop(){
                 fnDeleteFile("/startup/easy-samba.running");
                 fnKill("/usr/sbin/smbd --foreground --no-process-group");
                 fnKill("/usr/sbin/nmbd --foreground --no-process-group");
-                console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
+                log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
                 previousConfig = undefined;
                 shares = undefined;
             }
 
-            console.log(`------ EASY-SAMBA CONFIGURATION PROCESS FINISHED ------\n`);
+            log(`------ EASY-SAMBA CONFIGURATION PROCESS FINISHED ------\n`);
             counter += 1;
         }
         
@@ -119,11 +120,11 @@ async function fnEasySambaLoop(){
                     assert( fnCreateShares(shares) === true );
                 }
                 catch (error){
-                    console.log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
+                    log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
                 }
             }
         }
-
+        
         await fnSleep(10000);
     }
 

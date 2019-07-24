@@ -2,6 +2,7 @@
 
 
 // dependencies
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnEasySambaStartup = require("/startup/functions/fnEasySambaStartup.js");
 const fnEasySambaLoop = require("/startup/functions/fnEasySambaLoop.js");
 
@@ -10,11 +11,11 @@ const fnEasySambaLoop = require("/startup/functions/fnEasySambaLoop.js");
 // call the main function of this script
 //  fnMain() should never terminate (in case it does, we log an error message)
 fnMain().then(() => {
-    console.log(`[ERROR] easy-samba terminated for unknown reasons.`);
+    log(`[ERROR] easy-samba terminated for unknown reasons.`);
     process.exit(1);
 }).catch((error) => {
-    console.log(`[ERROR] script has failed for unknown reasons.`);
-    console.log(`[DEBUG] DETAILS ABOUT THE ERROR:`, error);
+    log(`[ERROR] script has failed for unknown reasons.`);
+    log(`[DEBUG] DETAILS ABOUT THE ERROR:`, error);
     process.exit(1);
 });
 

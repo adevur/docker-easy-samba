@@ -8,6 +8,7 @@ module.exports = fnEasySambaStartup;
 
 // dependencies
 const fs = require("fs");
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
@@ -21,11 +22,12 @@ const fnKill = require("/startup/functions/fnKill.js");
 // INPUT: N/A
 // OUTPUT: N/A
 function fnEasySambaStartup(){
-    console.log("------ EASY-SAMBA STARTUP ------");
+    log("\n");
+    log("------ EASY-SAMBA STARTUP ------");
 
     // display version information
     const version = fnGetVersion();
-    console.log(`[LOG] you're using easy-samba version '${version.version}' from '${version.branch}' branch.`);
+    log(`[LOG] you're using easy-samba version '${version.version}' from '${version.branch}' branch.`);
 
     // kill existing processes
     fnKill("node /share/config.gen.js");
@@ -51,9 +53,9 @@ function fnEasySambaStartup(){
     // get config dir
     const configdir = fnGetConfigDir();
     fnWriteFile("/startup/configdir.json", JSON.stringify(configdir));
-    console.log(`[LOG] easy-samba configuration files are located at "${configdir}".`);
+    log(`[LOG] easy-samba configuration files are located at "${configdir}".`);
     
-    console.log("------ EASY-SAMBA STARTUP COMPLETE ------\n");
+    log("------ EASY-SAMBA STARTUP COMPLETE ------\n");
 }
 
 

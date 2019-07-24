@@ -10,6 +10,7 @@ module.exports = fnUpdateConfig;
 const fs = require("fs");
 const { spawnSync } = require("child_process");
 const assert = require("assert");
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnCleanUpUsers = require("/startup/functions/fnCleanUpUsers.js");
 const fnValidateConfig = require("/startup/functions/fnValidateConfig.js");
 const fnCreateUsers = require("/startup/functions/fnCreateUsers.js");
@@ -38,7 +39,7 @@ async function fnUpdateConfig(config){
         assert( fnCleanUpUsers() );
     }
     catch (error){
-        console.log(`[ERROR] it's not been possible to clean up existing users.`);
+        log(`[ERROR] it's not been possible to clean up existing users.`);
         return false;
     }
     
@@ -47,10 +48,10 @@ async function fnUpdateConfig(config){
     try {
         errorMsg = fnValidateConfig(config);
         assert( errorMsg === true );
-        console.log(`[LOG] easy-samba configuration syntax is correct.`);
+        log(`[LOG] easy-samba configuration syntax is correct.`);
     }
     catch (error){
-        console.log(`[ERROR] easy-samba configuration syntax is not correct: ${errorMsg}.`);
+        log(`[ERROR] easy-samba configuration syntax is not correct: ${errorMsg}.`);
         return false;
     }
 
@@ -59,10 +60,10 @@ async function fnUpdateConfig(config){
     try {
         spawnSync("setfacl", ["-R", "-bn", "/share"], { stdio: "ignore" });
         spawnSync("chmod", ["-R", "a+rX", "/share"], { stdio: "ignore" });
-        console.log(`[LOG] permissions of '/share' have been correctly reset.`);
+        log(`[LOG] permissions of '/share' have been correctly reset.`);
     }
     catch (error){
-        console.log(`[ERROR] permissions of '/share' could not be reset.`);
+        log(`[ERROR] permissions of '/share' could not be reset.`);
         return false;
     }
     
@@ -77,10 +78,10 @@ async function fnUpdateConfig(config){
         spawnSync("chown", ["-R", "root:root", "/share"], { stdio: "ignore" });
         spawnSync("setfacl", ["-R", "-m", "u::rwx,g::rwx,o::x", "/share"], { stdio: "ignore" });
         spawnSync("setfacl", ["-R", "-dm", "u::rwx,g::rwx,o::x", "/share"], { stdio: "ignore" });
-        console.log(`[LOG] permissions of '/share' have been correctly set.`);
+        log(`[LOG] permissions of '/share' have been correctly set.`);
     }
     catch (error){
-        console.log(`[ERROR] permissions of '/share' could not be set.`);
+        log(`[ERROR] permissions of '/share' could not be set.`);
         return false;
     }
 
@@ -89,10 +90,10 @@ async function fnUpdateConfig(config){
     try {
         errorMsg = fnCreateUsers(config["users"]);
         assert( errorMsg === true );
-        console.log(`[LOG] users have been correctly created.`);
+        log(`[LOG] users have been correctly created.`);
     }
     catch (error){
-        console.log(`[ERROR] users could not be created: ${errorMsg}.`);
+        log(`[ERROR] users could not be created: ${errorMsg}.`);
         return false;
     }
 
@@ -101,10 +102,10 @@ async function fnUpdateConfig(config){
     try {
         errorMsg = fnCreateShares(config["shares"]);
         assert( errorMsg === true );
-        console.log(`[LOG] shares have been correctly created.`);
+        log(`[LOG] shares have been correctly created.`);
     }
     catch (error){
-        console.log(`[ERROR] shares could not be created: ${errorMsg}.`);
+        log(`[ERROR] shares could not be created: ${errorMsg}.`);
         return false;
     }
 
@@ -112,22 +113,22 @@ async function fnUpdateConfig(config){
     try {
         const smbconf = fnGenSmbConf(config);
         assert( fnWriteFile("/etc/samba/smb.conf", smbconf) );
-        console.log(`[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`);
+        log(`[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`);
     }
     catch (error){
-        console.log(`[ERROR] '/etc/samba/smb.conf' could not be generated or written.`);
+        log(`[ERROR] '/etc/samba/smb.conf' could not be generated or written.`);
         return false;
     }
 
     // run nmbd and smbd daemons
-    console.log(`[LOG] starting 'nmbd' and 'smbd' daemons...`);
+    log(`[LOG] starting 'nmbd' and 'smbd' daemons...`);
     fnStartDaemons();
 
     // wait 2 seconds...
     await fnSleep(2000);
 
     // script has been executed, now the SAMBA server is ready
-    console.log(`[LOG] SAMBA server is now ready.`);
+    log(`[LOG] SAMBA server is now ready.`);
 
     return { shares: config["shares"] };
 }
