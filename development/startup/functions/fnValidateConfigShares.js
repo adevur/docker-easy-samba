@@ -40,6 +40,11 @@ function fnValidateConfigShares(shares, sharedb){
         if (fnHas(share, "users")){
             delete share["users"];
         }
+        
+        // delete "$soft-quota" property if present (it is reserved for internal use)
+        if (fnHas(share, "$soft-quota")){
+            delete share["$soft-quota"];
+        }
 
         // "name" must be a unique alphanumeric name of minimum 1 char length
         // "name" cannot be "global", "homes" or "printers"
