@@ -646,7 +646,7 @@ const ConfigGen = class {
                     share["guest"] = guest;
                 }
                 if (softquota !== undefined){
-                    share["soft-quota"] = softquota;
+                    share["soft-quota"] = fnCopy(softquota);
                 }
                 this["$shares"].push(share);
 
