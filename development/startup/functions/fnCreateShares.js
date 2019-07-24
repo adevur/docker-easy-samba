@@ -11,6 +11,7 @@ const fs = require("fs");
 const { spawnSync } = require("child_process");
 const assert = require("assert");
 const fnHas = require("/startup/functions/fnHas.js");
+const fnDiskUsage = require("/startup/functions/fnDiskUsage.js");
 
 
 
@@ -34,6 +35,15 @@ function fnCreateShares(shares){
             errorMsg = `SHARE '${share["path"]}' COULD NOT BE CREATED`;
             return false;
         }
+        
+        // get disk usage of share
+        const du = fnDiskUsage(share["path"]);
+        
+        // get quota of share
+        let quota = undefined;
+        if (fnHas(share, "$soft-quota")){
+            quota = share["$soft-quota"];
+        }
 
         // for each "user" of the share, generate the ACLs
         // EXAMPLE: share["users"] == ["rw:user1", "ro:user2"] --->
@@ -41,12 +51,20 @@ function fnCreateShares(shares){
         let entries = ["u::rwx", "g::rwx", "o::x"];
         share["users"].forEach((user) => {
             const name = user.substring(3);
-            const perm = (user.startsWith("ro:")) ? "rx" : "rwx";
+            let perm = (user.startsWith("ro:")) ? "rx" : "rwx";
+            // apply soft-quota
+            if (quota !== undefined && quota["whitelist"].includes(name) !== true && quota["limit"] <= du){
+                perm = "rx";
+            }
             entries.push(`u:${name}:${perm},g:${name}:${perm}`);
         });
         // if share has guest access...
         if (fnHas(share, "guest")){
-            const perm = (share["guest"] === "rw") ? "rwx" : "rx";
+            let perm = (share["guest"] === "rw") ? "rwx" : "rx";
+            // apply soft-quota
+            if (quota !== undefined && quota["limit"] <= du){
+                perm = "rx";
+            }
             entries.push(`u:nobody:${perm},g:nobody:${perm}`);
         }
         entries = entries.join(",");

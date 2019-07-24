@@ -8,6 +8,7 @@ module.exports = fnEasySambaLoop;
 
 // dependencies
 const fs = require("fs");
+const assert = require("assert");
 const fnIsRunning = require("/startup/functions/fnIsRunning.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
@@ -17,6 +18,7 @@ const fnUpdateConfig = require("/startup/functions/fnUpdateConfig.js");
 const fnSpawn = require("/startup/functions/fnSpawn.js");
 const fnStartRemoteAPI = require("/startup/functions/fnStartRemoteAPI.js");
 const fnKill = require("/startup/functions/fnKill.js");
+const fnCreateShares = require("/startup/functions/fnCreateShares.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -105,6 +107,17 @@ async function fnEasySambaLoop(){
 
             console.log(`------ EASY-SAMBA CONFIGURATION PROCESS FINISHED ------\n`);
             counter += 1;
+        }
+        
+        // apply soft-quota
+        if (fs.existsSync("/startup/soft-quota.json") && fs.existsSync("/startup/easy-samba.running")){
+            try {
+                const shares = JSON.parse( fs.readFileSync("/startup/soft-quota.json", "utf8") );
+                assert( fnCreateShares(shares) === true );
+            }
+            catch (error){
+                console.log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
+            }
         }
 
         await fnSleep(10000);

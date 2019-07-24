@@ -53,8 +53,8 @@ function fnValidateConfigSharesQuota(share, sharedb){
             quota["whitelist"] = [];
         }
         
-        // add soft-quota to sharedb
-        sharedb.quota.push({ "path": share["path"], "soft-quota": { "limit": m, "whitelist": quota["whitelist"] } });
+        // add "$soft-quota" to "share"
+        share["$soft-quota"] = { "limit": m, "whitelist": quota["whitelist"] };
         
         return true;
     }

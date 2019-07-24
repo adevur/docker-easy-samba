@@ -80,12 +80,7 @@ function fnValidateConfig(config){
     }
     
     // write soft-quota to "/startup/soft-quota.json"
-    if (sharedb.quota.length > 0){
-        fnWriteFile("/startup/soft-quota.json", JSON.stringify(sharedb.quota));
-    }
-    else {
-        fnDeleteFile("/startup/soft-quota.json");
-    }
+    fnWriteFile("/startup/soft-quota.json", JSON.stringify(config["shares"]));
 
     return true;
 }
