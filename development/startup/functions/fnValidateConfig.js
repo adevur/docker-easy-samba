@@ -80,7 +80,10 @@ function fnValidateConfig(config){
     }
     
     // write soft-quota to "/startup/soft-quota.json"
-    fnWriteFile("/startup/soft-quota.json", JSON.stringify(config["shares"]));
+    //   if there's at least one shared folder with soft-quota
+    if (config["shares"].some((e) => { return fnHas(e, "$soft-quota"); })){
+        fnWriteFile("/startup/soft-quota.json", JSON.stringify(config["shares"]));
+    }
 
     return true;
 }
