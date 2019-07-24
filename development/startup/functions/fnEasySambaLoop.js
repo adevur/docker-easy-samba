@@ -19,7 +19,7 @@ const fnSpawn = require("/startup/functions/fnSpawn.js");
 const fnStartRemoteAPI = require("/startup/functions/fnStartRemoteAPI.js");
 const fnKill = require("/startup/functions/fnKill.js");
 const fnCreateShares = require("/startup/functions/fnCreateShares.js");
-const fnValidateSoftQuotaJson = require("/startup/functions/fnValidateSoftQuotaJson.js");
+const fnHas = require("/startup/functions/fnHas.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -30,6 +30,7 @@ const CFG = require("/startup/functions/fnGetConfigDir.js")();
 async function fnEasySambaLoop(){
     let counter = 0;
     let previousConfig = undefined;
+    let shares = undefined;
 
     // loop every 10 seconds
     while (true){
@@ -64,8 +65,7 @@ async function fnEasySambaLoop(){
             console.log(`------ EASY-SAMBA CONFIGURATION PROCESS #${counter.toString()} ------`);
             let res = false;
             
-            // delete "/startup/soft-quota.json"
-            fnDeleteFile("/startup/soft-quota.json");
+            shares = undefined;
             
             // if SAMBA crashed, show a warning
             if (sambaCrashed){
@@ -93,17 +93,18 @@ async function fnEasySambaLoop(){
             }
             
             // in case configuration updated successfully
-            if (res === true){
+            if (fnHas(res, "shares")){
                 fnWriteFile("/startup/easy-samba.running");
+                shares = res.shares;
             }
             // in case it's not been possible to update configuration
             else {
                 fnDeleteFile("/startup/easy-samba.running");
-                fnDeleteFile("/startup/soft-quota.json");
                 fnKill("/usr/sbin/smbd --foreground --no-process-group");
                 fnKill("/usr/sbin/nmbd --foreground --no-process-group");
                 console.log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
                 previousConfig = undefined;
+                shares = undefined;
             }
 
             console.log(`------ EASY-SAMBA CONFIGURATION PROCESS FINISHED ------\n`);
@@ -111,14 +112,15 @@ async function fnEasySambaLoop(){
         }
         
         // apply soft-quota
-        if (fs.existsSync("/startup/soft-quota.json") && fs.existsSync("/startup/easy-samba.running")){
-            try {
-                const shares = JSON.parse( fs.readFileSync("/startup/soft-quota.json", "utf8") );
-                assert( fnValidateSoftQuotaJson(shares) );
-                assert( fnCreateShares(shares) === true );
-            }
-            catch (error){
-                console.log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
+        if (shares !== undefined && fs.existsSync("/startup/easy-samba.running")){
+            // if there's at least one shared folder with soft-quota
+            if (shares.some((e) => { return fnHas(e, "$soft-quota"); })){
+                try {
+                    assert( fnCreateShares(shares) === true );
+                }
+                catch (error){
+                    console.log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
+                }
             }
         }
 

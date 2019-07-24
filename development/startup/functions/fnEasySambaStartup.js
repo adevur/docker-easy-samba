@@ -40,9 +40,6 @@ function fnEasySambaStartup(){
     // delete "/startup/easy-samba.running"
     fnDeleteFile("/startup/easy-samba.running");
     
-    // delete "/startup/soft-quota.json"
-    fnDeleteFile("/startup/soft-quota.json");
-    
     // delete "/startup/configdir.json"
     fnDeleteFile("/startup/configdir.json");
     

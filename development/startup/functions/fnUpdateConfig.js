@@ -129,7 +129,7 @@ async function fnUpdateConfig(config){
     // script has been executed, now the SAMBA server is ready
     console.log(`[LOG] SAMBA server is now ready.`);
 
-    return true;
+    return { shares: config["shares"] };
 }
 
 
