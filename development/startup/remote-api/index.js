@@ -2,14 +2,16 @@
 
 
 // dependencies
-const fnSleep = require("/startup/functions/fnSleep.js");
+const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnStartServer = require("/startup/remote-api/fnStartServer.js");
 
 
 
 fnMain().then(() => {
+    fnDeleteFile("/startup/remote-api.started");
     process.exit(1);
 }).catch((error) => {
+    fnDeleteFile("/startup/remote-api.started");
     process.exit(1);
 });
 
@@ -17,16 +19,7 @@ fnMain().then(() => {
 
 async function fnMain(){
     // start the API server
-    while (true){
-        try {
-            await fnStartServer();
-        }
-        catch (error){
-            // do nothing
-        }
-        // in case of errors, re-try in 10 seconds
-        await fnSleep(10000);
-    }
+    await fnStartServer();
 }
 
 
