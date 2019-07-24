@@ -22,7 +22,7 @@ function fnAPI(str, token){
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
-        assert( input["method"] === "set-config" || input["method"] === "get-config" || input["method"] === "get-info" || input["method"] === "hello" );
+        assert( ["set-config", "get-config", "get-info", "hello"].includes(input["method"]) );
         assert( fnIsString(input["id"]) );
 
         const id = input["id"];

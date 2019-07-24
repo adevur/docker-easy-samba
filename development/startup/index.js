@@ -25,6 +25,16 @@ async function fnMain(){
     process.on("SIGTERM", () => {
         process.exit(0);
     });
+    
+    // handle uncaught exceptions
+    process.on("uncaughtException", () => {
+        process.exit(1);
+    });
+    
+    // handle unhandled rejections
+    process.on("unhandledRejection", () => {
+        process.exit(1);
+    });
 
     // easy-samba startup phase
     fnEasySambaStartup();

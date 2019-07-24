@@ -19,7 +19,7 @@ const { spawnSync } = require("child_process");
 // TODO: could be improved
 function fnIsRunning(name){
     try {
-        const stdout = spawnSync("ps", ["-ef"], { encoding: "utf8" }).stdout;
+        const stdout = spawnSync("ps", ["-ef"], { encoding: "utf8", stdio: ["ignore", undefined, "ignore"] }).stdout;
         const processes = stdout.split("\n");
         return processes.some((line) => { return (line.includes(name)); });
     }

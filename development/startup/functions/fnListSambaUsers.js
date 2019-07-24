@@ -18,7 +18,7 @@ function fnListSambaUsers(){
     let passwd = undefined;
 
     try {
-        passwd = spawnSync("pdbedit", ["-L"], { encoding: "utf8" }).stdout;
+        passwd = spawnSync("pdbedit", ["-L"], { encoding: "utf8", stdio: ["ignore", undefined, "ignore"] }).stdout;
     }
     catch (error){
         return [];
