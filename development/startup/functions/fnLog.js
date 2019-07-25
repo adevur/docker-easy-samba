@@ -23,6 +23,7 @@ function fnLog(path){
                 console.log(msg);
                 
                 assert( CFG === "/share/config" );
+                assert( fs.existsSync(path) );
                 
                 const date = new Date();
                 const Y = String(date.getUTCFullYear());

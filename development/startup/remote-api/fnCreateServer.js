@@ -8,6 +8,7 @@ module.exports = fnCreateServer;
 
 // dependencies
 const https = require("https");
+const log = require("/startup/functions/fnLog.js")("/share/config/remote-api.logs");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnAPI = require("/startup/remote-api/fnAPI.js");
 
@@ -16,6 +17,7 @@ const fnAPI = require("/startup/remote-api/fnAPI.js");
 function fnCreateServer(httpsKey, httpsCert, port, token){
     return new Promise((resolve, reject) => {
         try {
+            log(`[LOG] starting HTTPS server...`);
             const server = https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
                 if (req.url === "/api" && req.method === "POST"){
                     const body = [];
@@ -36,6 +38,7 @@ function fnCreateServer(httpsKey, httpsCert, port, token){
                 }
                 else {
                     fnWriteFile("/startup/remote-api.started");
+                    log(`[LOG] HTTPS server successfully started and listening on port ${server.address().port}.`);
                 }
             });
         }
