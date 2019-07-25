@@ -44,7 +44,7 @@ This chapter is divided into these sections:
 
 ### general structure of the file
 `config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `global` (optional), `domain`, `users`, `groups` (optional),
-and `shares`. `config.json` must be placed in the directory that will be mounted as `/share` in the container.
+and `shares`. `config.json` must be placed in the container's directory `/share/config`.
 
 ### `version` section
 This section is optional and has purely informative purposes. It is a string that tells which is the mininum version of `easy-samba` required in order to
@@ -52,7 +52,7 @@ use the current `config.json` file.
 
 For example, if you use features that have only been introduced in `easy-samba` version `1.1.x`, you could add
 `"version": "1.1"` into your `config.json`, so that if this config file is used in `easy-samba` version `1.0.x`, `easy-samba` will inform the user with
-this log: `[ERROR] '/share/config.json' syntax is not correct: THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '1.1' OR NEWER`.
+this log: `[ERROR] easy-samba configuration syntax is not correct: THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '1.1' OR NEWER`.
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
@@ -113,6 +113,8 @@ This is an array that contains all the shared folders to be created by the SAMBA
 This section can also be an empty array. An element of `shares` array looks like this:
 `{ "name": "public", "path": "/share/public", "access": ["user1", "ro:group2", "rw:user3"] }` (in case of a regular shared folder that requires user login), or `{ "name": "anon", "path": "/share/anon", "guest": "rw" }` (in case of an anonymous shared folder, that doesn't require user login).
 
+This is the list of supported properties for a `shares`'s element: `name`, `path`, `access`, `guest` (optional) and `soft-quota` (optional).
+
 - `name` is a unique name to identify the shared folder. It must be alphanumeric.
 
 - `path` is the location on disk of the shared folder. It must follow these rules:
@@ -123,7 +125,7 @@ This section can also be an empty array. An element of `shares` array looks like
 
   - It cannot contain control characters (i.e. chars with a code between 0 and 31 or with a code of 127).
 
-  - It cannot be equal to `"/share/config.json"`, to `"/share/."` or to `"/share/.."`.
+  - It cannot be equal to `"/share/config"`, to `"/share/."` or to `"/share/.."`.
 
   - It cannot be long more than 255 characters.
 
@@ -132,6 +134,12 @@ This section can also be an empty array. An element of `shares` array looks like
 - `guest` is an optional property. If it's present, it is a string (equal to `"rw"` or to `"ro"`) that specifies if the shared folder can be accessed without login (i.e. if the share is an anonymous shared folder). In case it's equal to `"rw"`, it means that guest users (i.e. users without login) can read and write inside the shared folder; in case it's equal to `"ro"`, it means that guest users can only read contents inside the shared folder. If `guest` property is missing, it means that this shared folder cannot be accessed by users without login.
 
 - `access` is an array of strings that contains all the "access rules" for the shared folder. This property is optional if `guest` property is present. If `guest` property is absent, `access` property is mandatory and defines the rules that `easy-samba` must apply to the shared folder. An access rule is a string that tells `easy-samba` who can access the shared folder, and with what permissions. See below for more info.
+
+- `soft-quota` is an optional property that can be used to limit the size of the shared folder. This property is an object with two mandatory properties: `limit` and `whitelist`.
+
+  - `limit`: it is a string that specifies the limit of directory's size. This string must contain an integer (greater or equal to `0`) followed by `GB`, `MB` or `kB`. For example: `"limit": "150MB"`. If the shared folder's size is greater than this limit, every user will lose write-access to the share (i.e. they keep reading files, but cannot modify or delete any). When shared folder's size decreases under the imposed limit, users will automatically gain write-access to the shared folder again.
+  
+  - `whitelist`: it is an array that contains the list of users to which the soft-quota limit is not applied (and that will keep write-access to the share). For example: `"whitelist": ["admin"]`. This way, an eventual administrator can delete files in order to free space, after the size limit is crossed.
 
 ACCESS RULE SYNTAX: these are the types of access rules supported:
 
@@ -173,9 +181,9 @@ will be evaluated as `["ro:user1", "ro:user2"]`.
 ## config.gen.js
 An alternative way of writing a configuration file in `easy-samba` is writing a `config.gen.js` script instead of a `config.json` file.
 
-A `config.gen.js` file is a Javascript script that you put inside the directory that will be mounted as `/share` inside the container (so, you put a `config.gen.js` file inside the same directory where you would put a `config.json` file).
+A `config.gen.js` file is a Javascript script that you put into the directory `/share/config` inside the container (so, you put a `config.gen.js` file inside the same directory where you would put a `config.json` file).
 
-`easy-samba`'s default behavior is to use the `/share/config.json` file, if it finds it. But, in case `config.json` file is missing, it will look for a `config.gen.js` file, and it will run it using command `node /share/config.gen.js`.
+`easy-samba`'s default behavior is to use the `/share/config/config.json` file, if it finds it. But, in case `config.json` file is missing, it will look for a `config.gen.js` file, and it will run it using command `node /share/config/config.gen.js`.
 
 Therefore, the purpose of the `config.gen.js` script is to write a `config.json` file, in case the latter is missing. That's it.
 
@@ -187,7 +195,7 @@ const config = {
     "users": [ { "name": "user1", "password": "123456" } ],
     "shares": [ { "name": "folder1", "path": "/share/folder1", "access": ["user1"] } ]
 };
-fs.writeFileSync("/share/config.json", JSON.stringify(config));
+fs.writeFileSync("/share/config/config.json", JSON.stringify(config));
 ```
 
 It does its job: i.e. generating a `config.json` file in a dynamic and scripted way. But it's not practical to write configuration files this way. Fortunately, `easy-samba` containers also include a Javascript library, located at `/startup/ConfigGen.js`, that helps generating `config.json` files using Javascript. Here's an example:
@@ -200,14 +208,14 @@ config.domain("WORKGROUP");
 config.users.add("user1", "123456");
 config.shares.add("folder1", "/share/folder1", ["user1"]);
 
-config.saveToFile("/share/config.json");
+config.saveToFile("/share/config/config.json");
 ```
 
 `ConfigGen.js` is a stand-alone one-file library, which has several methods and features that helps generating `config.json` files. Although it can be found already inside an `easy-samba` container, it can be downloaded and used outside of `easy-samba` (e.g. for testing purposes).
 
 Full documentation of `ConfigGen.js` can be found in [`ConfigGen.js library` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
 
-> NOTE: `config.gen.js` files should be kept as minimal as possible, avoiding using too many external dependencies. Moreover, remember that the only purpose of a `config.gen.js` script is writing a `/share/config.json` file.
+> NOTE: `config.gen.js` files should be kept as minimal as possible, avoiding using too many external dependencies. Moreover, remember that the only purpose of a `config.gen.js` script is writing a `/share/config/config.json` file.
 
 ## `ConfigGen.js` library
 This is a library written in Javascript, that one can use to generate `config.json` files using a Javascript script. It is usually used in `config.gen.js` files, so it is recommended to first read [`config.gen.js` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
@@ -239,7 +247,7 @@ When you finished your configuration object, you can save it, for example, to fi
 config.saveToFile("./config.json");
 ```
 
-> NOTE: when you write `config.gen.js` files that have to be placed inside an `easy-samba` container, remember to use `require("/startup/ConfigGen.js")` in order to include this library, and remember to use `config.saveToFile("/share/config.json")` when you later generate the `config.json` file. Using other paths is recommended only for testing purposes outside of an `easy-samba` container.
+> NOTE: when you write `config.gen.js` files that have to be placed inside an `easy-samba` container, remember to use `require("/startup/ConfigGen.js")` in order to include this library, and remember to use `config.saveToFile("/share/config/config.json")` when you later generate the `config.json` file. Using other paths is recommended only for testing purposes outside of an `easy-samba` container.
 
 This is a list of all available methods of `ConfigGen.js` library:
 
@@ -350,6 +358,8 @@ This is a list of all available methods of `ConfigGen.js` library:
         - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
 
         - [`config.shares.setBaseRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetbaserules-method)
+        
+        - [`config.shares.setSoftQuota()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetsoftquota-method)
 
 ### `ConfigGen.version` static property
 This is a static property of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
@@ -519,7 +529,7 @@ remote.getInfo().then((result) => {
 
 // about "ca" parameter:
     // if the remote container has a self-signed certificate, you should pass it to this function
-    //  NOTE: the self-signed certificate is located into the remote container at path "/share/remote-api.cert" (so you can copy it to all the clients)
+    //  NOTE: the self-signed certificate is located into the remote container at path "/share/config/remote-api.cert" (so you can copy it to all the clients)
     const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", require("fs").readFileSync("/path/to/remote-api.cert", "ascii"));
 
     // if the remote container has a certificate that's been signed by a global-recognized Certification Authority, you don't have to pass a certificate
@@ -755,6 +765,8 @@ List of supported events:
 - `share-change-path`: triggered when a share's path is modified. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
 
 - `share-change-guest`: triggered when a share's `guest` property is modified. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
+
+- `share-change-softquota`: triggered when a share's `soft-quota` property is modified. This event gets triggered together with `share-change` event. Its parameters are `current` (that is a copy of the share after the change) and `previous` (that is a copy of the share before the change).
 
 EXAMPLE:
 ```js
@@ -1248,7 +1260,7 @@ console.log( config.groups.get("group1")["members"] ); // []
 ### `config.shares.add()` method
 This is a method that can be used in order to add a share to the `shares` section of an instance of `ConfigGen`.
 
-- ARGUMENTS: `sharename`, `path`, `access` and `guest` (optional)
+- ARGUMENTS: `sharename`, `path`, `access`, `guest` (optional) and `softquota` (optional)
 
   - PARAMETER `sharename`: it is a string that contains the name of the new share
 
@@ -1257,6 +1269,8 @@ This is a method that can be used in order to add a share to the `shares` sectio
   - PARAMETER `access`: it is an array of strings that contains the list of access rules of the share
 
   - PARAMETER `guest`: it is a string equal to `"rw"`, `"ro"` or `"no"`. It represents the `guest` property of the share. In case it's equal to `"no"`, it means that the share doesn't have a `guest` property. If this parameter is missing, it is set to `"no"`.
+  
+  - PARAMETER `softquota`: it is an object that looks like this: `{ "limit": "150MB", "whitelist": ["admin"] }`. It represents the `soft-quota` property of the share. In case it's equal to `undefined`, it means that the share doesn't have a `soft-quota` property. If this parameter is missing, it is set to `undefined`. This parameter is optional, but in order to use it, you have to specify parameter `guest` as well.
 
 EXAMPLE:
 ```js
@@ -1279,6 +1293,8 @@ console.log( config.shares.get("anon2")["guest"] ); // ro
 config.shares.add("folder", "/share/folder", ["admin"], "no");
 console.log( config.shares.get("folder") ); // { "name": "folder", "path": "/share/folder", "access": ["admin"] }
 console.log( config.shares.get("folder")["guest"] ); // undefined
+
+config.shares.add("folder2", "/share/folder2", ["rw:*"], "no", { limit: "12kB", whitelist: [] });
 ```
 
 ### `config.shares.addArray()` method
@@ -1297,12 +1313,14 @@ const config = new ConfigGen();
 config.shares.addArray([
     { "name": "public", "path": "/share/public", "access": ["rw:user1", "ro:user2"] },
     { "name": "anon", "path": "/share/anon", "guest": "ro" },
-    { "name": "anon2", "path": "/share/anon2", "access": ["ro:*", "rw:admin"], "guest": "ro" }
+    { "name": "anon2", "path": "/share/anon2", "access": ["ro:*", "rw:admin"], "guest": "ro" },
+    { "name": "folder2", "path": "/share/folder2", "access": ["rw:*"], "soft-quota": { limit: "12kB", whitelist: [] } },
 ]);
 // this is equivalent to writing:
 config.shares.add("public", "/share/public", ["rw:user1", "ro:user2"], "no");
 config.shares.add("anon", "/share/anon", [], "ro");
 config.shares.add("anon2", "/share/anon2", ["ro:*", "rw:admin"], "ro");
+config.shares.add("folder2", "/share/folder2", ["rw:*"], "no", { limit: "12kB", whitelist: [] });
 ```
 
 ### `config.shares.remove()` method
@@ -1733,6 +1751,32 @@ config.shares.setBaseRules([]);
 console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1"] } ]
 ```
 
+### `config.shares.setSoftQuota()` method
+This method can be used in order to change/remove the `soft-quota` property of an existing share of the `shares` section of an instance of `ConfigGen`.
+
+- ARGUMENTS: `sharename` and `softquota`
+
+  - PARAMETER `sharename`: it is a string that contains the name of the share
+
+  - PARAMETER `softquota`: it is an object that looks like `{ limit: "150MB", whitelist: ["admin"] }`; in case it's equal to `undefined`, `soft-quota` property of the specified shared folder is removed
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+const config = new ConfigGen();
+
+config.shares.add("folder1", "/share/folder1", [], "no", { "limit": "12kB", "whitelist": [] });
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [], "soft-quota": { "limit": "12kB", "whitelist": [] } }
+
+config.shares.setSoftQuota("folder1", { "limit": "12kB", "whitelist": ["admin"] });
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [], "soft-quota": { "limit": "12kB", "whitelist": ["admin"] } }
+
+config.shares.setSoftQuota("folder1", undefined);
+console.log( config.shares.get("folder1") ); // { "name": "folder1", "path": "/share/folder1", "access": [] }
+console.log( config.shares.get("folder1")["soft-quota"] ); // undefined
+```
+
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
 
@@ -1853,6 +1897,8 @@ Every time you want to update `easy-samba`, you just need to execute `/easy-samb
 `adevur/easy-samba` is that, building locally, we'll always have container's packages updated to latest version.
 
 ## understanding logs
+> NOTE: at the moment, this section of Documentation is not up to date with latest changes to `easy-samba`.
+
 `easy-samba` uses logs in order to inform the user about the status of the SAMBA server. In case of errors, logs will
 give you detailed informations about what's going on.
 
@@ -1960,6 +2006,8 @@ If you get this error, you should probably open an issue in the GitHub repositor
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 ## how easy-samba works
+> NOTE: at the moment, this section of Documentation is not up to date with latest changes to `easy-samba`.
+
 This chapter describes in detail what `easy-samba` does inside its container in order to setup the SAMBA server. This chapter is divided into these sections:
 
 - [general structure of `easy-samba`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-easy-samba)
