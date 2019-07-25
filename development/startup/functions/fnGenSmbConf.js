@@ -37,7 +37,7 @@ function fnGenSmbConf(config){
 
     // add custom global entries from "global" property of "config.json"
     if (fnHas(config, "global")){
-        result += config["global"].map((line) => { return (line + "\n"); }).join("");
+        result += config["global"].join("\n");
     }
     result += "\n";
 
