@@ -14,6 +14,7 @@ const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsValidUsername = require("/startup/functions/fnIsValidUsername.js");
 const fnUserExists = require("/startup/functions/fnUserExists.js");
 const fnGroupExists = require("/startup/functions/fnGroupExists.js");
+const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
 
 
 
@@ -107,6 +108,7 @@ function fnValidateConfigGroups(config, sharedb){
                 members = members.concat(sharedb.groups[member]);
             }
         });
+        members = fnRemoveDuplicates(members);
 
         // put group into sharedb
         sharedb.groups[group["name"]] = members; // TODO: EXPLAIN
