@@ -2,11 +2,47 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.14.0`
+### Current stable release: `1.15.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.15.0 (2019-07-25 UTC)
+- New features:
+
+  - Now, all configuration files have been moved from `/share` to `/share/config` directory. Old location `/share` is still supported for retro-compatibility reasons, but it's advisable to start moving all configuration files to sub-directory `/share/config`. In particular, these are the files to move: `config.json`, `config.gen.js`, `remote-api.json`, `remote-api.key`, `remote-api.cert` and `remote-api.config.json`.
+  
+    > NOTE: all future features that require a configuration file will only work if this file is placed inside `/share/config` directory. Therefore, support for `/share` directory is used only for retro-compatibility with older configuration files like `config.json`.
+
+  - Implemented new feature in `easy-samba` configuration file: `soft-quota`. This is a property that may be placed inside a `share`, to specify a limit to its size. For example:
+  
+    ```json
+    {
+      "name": "folder1",
+      "path": "/share/folder1",
+      "access": ["rw:*"],
+      "soft-quota": { "limit": "150MB", "whitelist": ["admin"] }
+    }
+    ```
+    
+    In this example, if directory `/share/folder1` reaches 150MB of size, every user will lose its write-access to `folder1`. This way, `easy-samba` avoids that some user writes new data and increases `folder1`'s size over its allowed limit. The only exception is user `admin`, who will keep its write-access to `folder1`, because it is specified in the `whitelist` property of `soft-quota`. This way, if `folder1` reaches 150MB of size, user `admin` will be able to delete some files in order to free space. When `folder1`'s size will decrease to under 150MB, users will get automatically write-access again.
+
+  - In `ConfigGen.js` library, in order to support new feature `soft-quota`, new function `config.shares.setSoftQuota()` has been added, functions `config.shares.add()` and `config.shares.addArray()` have changed, and new event `share-change-softquota` has been added.
+  
+  - Now, `easy-samba` and `EasySamba Remote API` can optionally save their logs to disk. If you create an empty file `/share/config/easy-samba.logs`, `easy-samba` will fill it with its logs. Similarly, `Remote API` will save its logs to `/share/config/remote-api.logs`, if this file exists.
+
+- Bug fixes:
+
+  - Improved validation of shared folders' path in `easy-samba` configuration files.
+  
+  - Minor bugfixes.
+  
+  - Several code optimizations.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.14.0 (2019-07-22 UTC)
 - New features:

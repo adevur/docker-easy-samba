@@ -58,6 +58,7 @@
     config.shares.setFixedRules()
     [deprecated] config.shares.unsetFixedRules()
     config.shares.setBaseRules()
+    config.shares.setSoftQuota()
 
     [static] ConfigGen.remote()
     remote.getConfig()
@@ -76,7 +77,7 @@ const assert = require("assert");
 const https = require("https");
 
 // global variables
-const globalVersion = "1.14";
+const globalVersion = "1.15";
 
 
 
@@ -200,6 +201,7 @@ const ConfigGen = class {
         this["$on-share-change-access"] = [];
         this["$on-share-change-path"] = [];
         this["$on-share-change-guest"] = [];
+        this["$on-share-change-softquota"] = [];
 
         // internal trigger function for events
         this["$trigger-stack"] = [];
@@ -465,6 +467,7 @@ const ConfigGen = class {
             },
 
             // config.groups.getMembers()
+            // TODO: make it possible to retrieve members of a deleted group
             getMembers: (groupname) => {
                 try {
                     assert( fnIsString(groupname) );
@@ -579,6 +582,7 @@ const ConfigGen = class {
                 let path = undefined;
                 let access = undefined;
                 let guest = "no";
+                let softquota = undefined;
 
                 if (args.length === 3){
                     sharename = args[0];
@@ -591,6 +595,13 @@ const ConfigGen = class {
                     path = args[1];
                     access = args[2];
                     guest = args[3];
+                }
+                else if (args.length === 5){
+                    sharename = args[0];
+                    path = args[1];
+                    access = args[2];
+                    guest = args[3];
+                    softquota = args[4];
                 }
                 else {
                     throw new Error("ERROR: INPUT IS NOT VALID");
@@ -615,10 +626,25 @@ const ConfigGen = class {
                 if (guest !== "rw" && guest !== "ro" && guest !== "no") {
                     throw new Error("ERROR: SHARE GUEST PROPERTY MUST BE EQUAL TO 'rw', 'ro' OR 'no'");
                 }
+                
+                if (softquota !== undefined){
+                    try {
+                        assert( fnHas(softquota, ["limit", "whitelist"]) );
+                        assert( fnIsString(softquota["limit"]) );
+                        assert( fnIsArray(softquota["whitelist"]) );
+                        assert( softquota["whitelist"].every(fnIsString) );
+                    }
+                    catch (error){
+                        throw new Error("ERROR: SHARE SOFT-QUOTA IS INVALID");
+                    }
+                }
 
                 const share = { "name": sharename, "path": path, "access": fnCopy(access) };
                 if (guest !== "no"){
                     share["guest"] = guest;
+                }
+                if (softquota !== undefined){
+                    share["soft-quota"] = fnCopy(softquota);
                 }
                 this["$shares"].push(share);
 
@@ -641,7 +667,7 @@ const ConfigGen = class {
                     if (fnHas(elem, "access") !== true && fnHas(elem, "guest") !== true){
                         throw new Error("ERROR: INPUT IS NOT VALID");
                     }
-                    this.shares.add(elem["name"], elem["path"], (fnHas(elem, "access")) ? elem["access"] : [], (fnHas(elem, "guest")) ? elem["guest"] : "no");
+                    this.shares.add(elem["name"], elem["path"], (fnHas(elem, "access")) ? elem["access"] : [], (fnHas(elem, "guest")) ? elem["guest"] : "no", (fnHas(elem, "soft-quota")) ? elem["soft-quota"] : undefined);
                 });
 
                 return this;
@@ -1138,6 +1164,55 @@ const ConfigGen = class {
 
                 this["$baserules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
                 this["$baserules"]["rules"] = fnCopy(rules);
+
+                return this;
+            },
+            
+            // config.shares.setSoftQuota()
+            setSoftQuota: (sharename, softquota) => {
+                if (fnIsString(sharename) !== true){
+                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                }
+
+                if (softquota !== undefined){
+                    try {
+                        assert( fnHas(softquota, ["limit", "whitelist"]) );
+                        assert( fnIsString(softquota["limit"]) );
+                        assert( fnIsArray(softquota["whitelist"]) );
+                        assert( softquota["whitelist"].every(fnIsString) );
+                    }
+                    catch (error){
+                        throw new Error("ERROR: SHARE SOFT-QUOTA IS INVALID");
+                    }
+                }
+
+                const index = this.shares.get().indexOf(sharename);
+
+                if (index < 0){
+                    throw new Error("ERROR: SHARE NOT FOUND");
+                }
+
+                const previous = this.shares.get(sharename);
+                if (softquota === undefined && fnHas(this["$shares"][index], "soft-quota")){
+                    delete this["$shares"][index]["soft-quota"];
+                }
+                else {
+                    this["$shares"][index]["soft-quota"] = fnCopy(softquota);
+                }
+
+                // trigger event "share-change" and "share-change-softquota"
+                const current = this.shares.get(sharename);
+                try {
+                    assert( fnHas(current, "soft-quota") === fnHas(previous, "soft-quota") );
+                    if (fnHas(current, "soft-quota")){
+                        assert( current["soft-quota"]["limit"] === previous["soft-quota"]["limit"] );
+                        assert( fnEqualArrays(current["soft-quota"]["whitelist"], previous["soft-quota"]["whitelist"]) );
+                    }
+                }
+                catch (error){
+                    this["$trigger"]("share-change", current, previous);
+                    this["$trigger"]("share-change-softquota", current, previous);
+                }
 
                 return this;
             }
