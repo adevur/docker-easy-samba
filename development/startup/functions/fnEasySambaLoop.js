@@ -45,7 +45,7 @@ async function fnEasySambaLoop(){
         }
         // kill "config.gen.js" in case it doesn't exist
         else if (fs.existsSync(`${CFG}/config.gen.js`) !== true){
-            fnKill(`node ${CFG}/config.gen.js`)
+            fnKill(`node ${CFG}/config.gen.js`);
         }
 
         // start EasySamba Remote API
