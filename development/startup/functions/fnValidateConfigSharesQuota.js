@@ -12,6 +12,7 @@ const fnHas = require("/startup/functions/fnHas.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnValidateString = require("/startup/functions/fnValidateString.js");
+const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
 
 
 
@@ -44,9 +45,7 @@ function fnValidateConfigSharesQuota(share, sharedb){
             return sharedb.users.includes(e);
         }));
         // remove duplicates from "whitelist"
-        quota["whitelist"] = quota["whitelist"].filter((e, i) => {
-            return (quota["whitelist"].indexOf(e) === i);
-        });
+        quota["whitelist"] = fnRemoveDuplicates(quota["whitelist"]);
         
         // add "$soft-quota" to "share"
         share["$soft-quota"] = { "limit": m, "whitelist": quota["whitelist"] };

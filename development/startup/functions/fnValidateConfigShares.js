@@ -7,12 +7,13 @@ module.exports = fnValidateConfigShares;
 
 
 // dependencies
+const fs = require("fs");
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsValidPath = require("/startup/functions/fnIsValidPath.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnValidateString = require("/startup/functions/fnValidateString.js");
-const fs = require("fs");
 const fnValidateConfigSharesAccess = require("/startup/functions/fnValidateConfigSharesAccess.js");
 const fnEvaluateAccessRules = require("/startup/functions/fnEvaluateAccessRules.js");
 const fnValidateConfigSharesQuota = require("/startup/functions/fnValidateConfigSharesQuota.js");
@@ -26,13 +27,25 @@ function fnValidateConfigShares(shares, sharedb){
     if (fnIsArray(shares) !== true){
         return `'shares' MUST BE AN ARRAY`;
     }
+    
+    // retro-compatibility fix for shares that don't have "access" property
+    let deprecated = false;
+    shares.forEach((e) => {
+        if (fnHas(e, "access") !== true){
+            e["access"] = [];
+            deprecated = true;
+        }
+    });
+    if (deprecated){
+        log(`[WARNING] optional 'access' property for shares is deprecated. Add '"access": []' to shares that don't have access rules.`);
+    }
 
     // for each "share" in "shares" ...
     let error = "";
     const result = shares.every((share) => {
         // "share" must have "name" and "path" properties and must have "access" or "guest" properties
-        if (fnHas(share, ["name", "path"]) !== true || (fnHas(share, "access") !== true && fnHas(share, "guest") !== true)){
-            error = `EVERY SHARED FOLDER IN 'shares' MUST HAVE 'name' AND 'path' PROPERTIES, AND 'access' OR 'guest' PROPERTIES`;
+        if (fnHas(share, ["name", "path", "access"]) !== true){
+            error = `EVERY SHARED FOLDER IN 'shares' MUST HAVE 'name', 'path' AND 'access' PROPERTIES`;
             return false;
         }
 
@@ -98,12 +111,10 @@ function fnValidateConfigShares(shares, sharedb){
         }
 
         // validate "access" property
-        if (fnHas(share, "access")){
-            const validateConfigSharesAccess = fnValidateConfigSharesAccess(share, sharedb);
-            if (validateConfigSharesAccess !== true){
-                error = validateConfigSharesAccess;
-                return false;
-            }
+        const validateConfigSharesAccess = fnValidateConfigSharesAccess(share, sharedb);
+        if (validateConfigSharesAccess !== true){
+            error = validateConfigSharesAccess;
+            return false;
         }
         
         // check "soft-quota" property
@@ -121,18 +132,13 @@ function fnValidateConfigShares(shares, sharedb){
 
         // evaluate access rules
         // TODO: EXPLAIN
-        if (fnHas(share, "access")){
-            fnEvaluateAccessRules(share, sharedb);
-
-            // after access rules evaluation,
-            //   if no user has access to the shared folder, throw error
-            if (share["users"].length < 1 && fnHas(share, "guest") !== true){
-                error = `AT LEAST ONE USER SHOULD BE ABLE TO ACCESS SHARED FOLDER '${share["path"]}'`;
-                return false;
-            }
-        }
-        else {
-            share["users"] = [];
+        fnEvaluateAccessRules(share, sharedb);
+        
+        // after access rules evaluation,
+        //   if no user has access to the shared folder, throw error
+        if (share["users"].length < 1 && fnHas(share, "guest") !== true){
+            error = `AT LEAST ONE USER SHOULD BE ABLE TO ACCESS SHARED FOLDER '${share["path"]}'`;
+            return false;
         }
 
         return true;

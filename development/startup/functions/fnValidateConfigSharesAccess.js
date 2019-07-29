@@ -17,7 +17,7 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 function fnValidateConfigSharesAccess(share, sharedb){
     const access = share["access"];
 
-    // must be an array and it cannot be empty
+    // must be an array
     if (fnIsArray(access) !== true){
         return `PROPERTY 'access' OF SHARE '${share["name"]}' MUST BE AN ARRAY`;
     }
