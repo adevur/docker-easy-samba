@@ -1,6 +1,19 @@
 # easy-samba
 This docker image provides an easy-to-setup SAMBA server, based on CentOS 7.
 
+### quick links
+- [Official GitHub repository `adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba)
+
+- [Official DockerHub repository `adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba)
+
+- [Tutorial](https://github.com/adevur/docker-easy-samba/blob/master/docs/TUTORIAL.md)
+
+- [Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md)
+
+- [Changelog](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md)
+
+- [News](https://github.com/adevur/docker-easy-samba/blob/master/NEWS.md)
+
 ### short description
 This SAMBA server takes a JSON configuration file as input and, based on that file, it sets up the container's environment. For example, here's what you can do:
 
@@ -21,19 +34,6 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 4) Now you can connect to your container using Windows or any other SAMBA client.
 
 > See also the [`Tutorial`](https://github.com/adevur/docker-easy-samba/blob/master/docs/TUTORIAL.md) in order to get started.
-
-### quick links
-- [Official GitHub repository `adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba)
-
-- [Official DockerHub repository `adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba)
-
-- [Tutorial](https://github.com/adevur/docker-easy-samba/blob/master/docs/TUTORIAL.md)
-
-- [Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md)
-
-- [Changelog](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md)
-
-- [News](https://github.com/adevur/docker-easy-samba/blob/master/NEWS.md)
 
 ### tags
 Available tags:
@@ -68,24 +68,24 @@ There are three branches: `stable`, `long-term` and `development`. Where:
 - `development` is the development branch based on current `stable` major release (or a future major release). It gets updated very often, and it can have several bugs since it has not been deeply tested yet. When a new feature has matured enough, it gets merged in `stable` branch. If a bug gets fixed, it gets merged both in `stable` and `long-term` branches.
 
 ### building
-- To build a stable release, run:
+- To build latest stable release, run:
   ```sh
-  docker build --tag=easy-samba:latest ./stable/latest
+  docker build --tag local/easy-samba:latest ./stable/latest
   ```
 
-- To build a long-term release, run:
+- To build latest long-term release, run:
   ```sh
-  docker build --tag=easy-samba:lts ./long-term/latest
+  docker build --tag local/easy-samba:lts ./long-term/latest
   ```
 
-- To build a development release, run:
+- To build latest development release, run:
   ```sh
-  docker build --tag=easy-samba:devel ./development
+  docker build --tag local/easy-samba:devel ./development
   ```
 
 - To build a specific release, run (for example):
   ```sh
-  docker build --tag=easy-samba:1.0.0 ./stable/1.0.0
+  docker build --tag local/easy-samba:1.0.0 ./stable/1.0.0
   ```
 
 ### usage

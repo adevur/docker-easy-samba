@@ -1778,7 +1778,7 @@ console.log( config.shares.get("folder1")["soft-quota"] ); // undefined
 ```
 
 ## advanced use
-This chapter will give you a couple of advices to better manage and use `easy-samba`. In this chapter, a local build of `easy-samba` (called `local/easy-samba`) will be used instead of DockerHub image [`adevur/easy-samba`](https://hub.docker.com/r/adevur/easy-samba). This chapter is divided into these sections:
+This chapter will give you a couple of advices to better manage and use `easy-samba`. This chapter is divided into these sections:
 
 - [`writing a systemd unit`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#writing-a-systemd-unit)
 
@@ -1798,12 +1798,10 @@ the status of the SAMBA server, and you will be able to start `easy-samba` autom
     #!/bin/bash
     docker stop samba
     docker container rm samba
-    docker run --network host -v /nas/share:/share --name samba local/easy-samba:latest
+    docker run --network host -v /easy-samba/share:/share --name samba adevur/easy-samba:latest
     ```
 
-    > NOTE: the reason why we used `local/easy-samba:latest` instead of `adevur/easy-samba:latest` is because we're going to automatize updates of `easy-samba`, building it locally. This procedure is described in [section `automatizing easy-samba updates` of `advanced use` chapter](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#automatizing-easy-samba-updates).
-
-    > NOTE 2: all parameters of `docker run` can be customized. Just take care of two things: parameters `-d` and `--restart always` must not be included in `docker run` command, since they would break our `systemd` service functionality.
+    > NOTE: all parameters of `docker run` can be customized. Just take care of two things: parameters `-d` and `--restart always` must not be included in `docker run` command, since they would break our `systemd` service functionality.
 
 3) With `nano /easy-samba/stop.sh` let's instead create the script for stopping `easy-samba`:
     ```sh
@@ -1822,10 +1820,13 @@ the status of the SAMBA server, and you will be able to start `easy-samba` autom
     Type=simple
     ExecStart=/easy-samba/start.sh
     ExecStop=/easy-samba/stop.sh
+    Restart=always
 
     [Install]
     WantedBy=multi-user.target
     ```
+    
+    > NOTE: you can remove line `Restart=always` if you don't want `systemd` to automatically restart `easy-samba` in case of crash.
 
 5) Now, run:
     ```sh
@@ -1846,18 +1847,13 @@ the status of the SAMBA server, and you will be able to start `easy-samba` autom
 ### automatizing easy-samba updates
 In order to automatize `easy-samba`'s updates, you can write a simple script that does this:
 
-1) Stop `easy-samba` and remove every docker image.
+1) Stop `easy-samba` and remove its docker image.
 
-2) Download up-to-date source code of `easy-samba` from GitHub.
+2) Download up-to-date image of `easy-samba` from DockerHub.
 
-3) Build a new image based on the downloaded latest source code.
+3) Start `easy-samba`.
 
-4) Start `easy-samba`.
-
-The directory where we're going to keep the source code of `easy-samba` will be located at
-`/easy-samba/src`, so make sure to create this directory with command `mkdir /easy-samba/src`.
-
-Now, you can create the script with `nano /easy-samba/update.sh`:
+You can create the script with `nano /easy-samba/update.sh`:
 
 ```sh
 #!/bin/bash
@@ -1865,36 +1861,17 @@ Now, you can create the script with `nano /easy-samba/update.sh`:
 # stop easy-samba service
 systemctl stop easy-samba.service
 
-# stop and remove every docker container and image
-docker stop $(docker container ls --all -q)
-docker container rm $(docker container ls --all -q)
-docker image rm $(docker image ls -q)
+# remove easy-samba docker image
+docker image rm adevur/easy-samba:latest
 
-# clean up "/easy-samba/src" directory
-rm -rf /easy-samba/src/docker-easy-samba-master
-rm -f /easy-samba/src/easy-samba.zip
-
-# download up-to-date source code from GitHub
-# and unzip it to "/easy-samba/src"
-curl -sL https://github.com/adevur/docker-easy-samba/archive/master.zip > /easy-samba/src/easy-samba.zip
-unzip -qq /easy-samba/src/easy-samba.zip -d /easy-samba/src
-
-# build the up-to-date image with docker
-# in this case, we're going to build from "stable" branch
-docker build --tag=local/easy-samba:latest /easy-samba/src/docker-easy-samba-master/stable/latest
-
-# clean up "/easy-samba/src" directory
-rm -rf /easy-samba/src/docker-easy-samba-master
-rm -f /easy-samba/src/easy-samba.zip
+# download new up-to-date image from DockerHub
+docker pull adevur/easy-samba:latest
 
 # start easy-samba
 systemctl start easy-samba.service
 ```
 
 Every time you want to update `easy-samba`, you just need to execute `/easy-samba/update.sh` script.
-
-> NOTE: the reason why we build `easy-samba` locally and we don't just retrieve it from docker repository
-`adevur/easy-samba` is that, building locally, we'll always have container's packages updated to latest version.
 
 ## understanding logs
 > NOTE: at the moment, this section of Documentation is not up to date with latest changes to `easy-samba`.

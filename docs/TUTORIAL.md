@@ -5,22 +5,22 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
 ### let's begin
 - Choose a folder in your computer where you will work. For example:
     ```sh
-    mkdir /nas
+    mkdir /easy-samba
     ```
 
 - Now you must create a directory where all your shared folders will be located (this folder will be mounted as `/share` inside the container). For example:
     ```sh
-    mkdir /nas/share
+    mkdir /easy-samba/share
     ```
     
-- Let's create the directory where all your configuration files will be located (this folder must be named `config` and must be placed inside the directory that will be mounted as `/share` inside the container, that in our case is `/nas/share`):
+- Let's create the directory where all your configuration files will be located (this folder must be named `config` and must be placed inside the directory that will be mounted as `/share` inside the container, that in our case is `/easy-samba/share`):
     ```sh
-    mkdir /nas/share/config
+    mkdir /easy-samba/share/config
     ```
 
 - Let's create our configuration file: it must be named `config.json` and it must be in JSON format. Use your favorite text editor:
     ```sh
-    nano /nas/share/config/config.json
+    nano /easy-samba/share/config/config.json
     ```
 
 - Put this sample configuration in the file:
@@ -48,8 +48,8 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
     - `shares` property is an array containing all the shared folders of our SAMBA server. Every element of `shares` is an object with `name` (a name to identify the shared folder),
     `path` (the path on disk of the shared folder) and `access` (an array that contains all the "access rules" for the shared folder) properties.
 
-    > NOTE ON PATH: the path of a shared folder must be a sub-directory of `/share`. `/share` is the location (inside the container) where our `/nas/share` folder (that we created earlier) will be mounted.
-    So, `/share/folder1` is `/nas/share/folder1` on our disk; and `/nas/share/config/config.json` will be seen as `/share/config/config.json` by the container.
+    > NOTE ON PATH: the path of a shared folder must be a sub-directory of `/share`. `/share` is the location (inside the container) where our `/easy-samba/share` folder (that we created earlier) will be mounted.
+    So, `/share/folder1` is `/easy-samba/share/folder1` on our disk; and `/easy-samba/share/config/config.json` will be seen as `/share/config/config.json` by the container.
 
     > NOTE ON ACCESS RULES: access rule `["user1"]` just means that `user1` has both read and write permissions on `folder1` shared folder.
     For example, if we had written `["user1", "ro:user2"]`, instead, it would have meant that `user1` has read-write permissions, but `user2` has only read permissions.
@@ -58,7 +58,7 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
 
 - Now that we have our configuration file ready, we can start the SAMBA server itself:
     ```sh
-    docker run -d --network host -v /nas/share:/share --name samba adevur/easy-samba:latest
+    docker run -d --network host -v /easy-samba/share:/share --name samba adevur/easy-samba:latest
     ```
 
 - Let's analyze what this command means:
@@ -72,7 +72,7 @@ This tutorial will get you started with `adevur/easy-samba` docker image. It wil
     
       > SEE ALSO: [`networking` section of Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking).
 
-    - `-v /nas/share:/share`: we tell docker to mount our local folder `/nas/share` so that the container will see it as `/share`.
+    - `-v /easy-samba/share:/share`: we tell docker to mount our local folder `/easy-samba/share` so that the container will see it as `/share`.
 
     - `--name samba`: we tell docker that the container will be named `samba`.
     This parameter is optional and you can choose whatever name you want for your container.
@@ -106,9 +106,9 @@ Windows will ask you for a username and a password, and they are `user1` and `12
 as we specified in the `config.json` file earlier.
 
 - Every file or folder that you create or change in the shared folder, will be permanently saved on your computer's disk
-at location `/nas/share/folder1`. So, next time you start `easy-samba` container, it will just re-use the existing folder.
+at location `/easy-samba/share/folder1`. So, next time you start `easy-samba` container, it will just re-use the existing folder.
 Even if you edit the `config.json` configuration file and you change the shared folder's path to something else,
-your `/nas/share/folder1` directory will be left untouched.
+your `/easy-samba/share/folder1` directory will be left untouched.
 
 ### now what?
 For further information about all the configuration options of `config.json`,
