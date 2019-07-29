@@ -9,7 +9,7 @@ module.exports = fnCreateUsers;
 // dependencies
 const { spawnSync } = require("child_process");
 const assert = require("assert");
-const fnUserExists = require("/startup/functions/fnUserExists.js");
+const fnListUsers = require("/startup/functions/fnListUsers.js");
 const fnListSambaUsers = require("/startup/functions/fnListSambaUsers.js");
 
 
@@ -29,7 +29,7 @@ function fnCreateUsers(users){
         try {
             spawnSync("useradd", ["-M", "-s", "/sbin/nologin", user["name"]], { stdio: "ignore" });
             spawnSync("passwd", [user["name"], "--stdin"], { input: `${user["password"]}\n`, stdio: [undefined, "ignore", "ignore"] });
-            assert( fnUserExists(user["name"]) );
+            assert( fnListUsers().includes(user["name"]) );
         }
         catch (error){
             errorMsg = `USER '${user["name"]}' COULD NOT BE ADDED TO OS`;

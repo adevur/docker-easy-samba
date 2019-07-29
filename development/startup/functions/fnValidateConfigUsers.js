@@ -12,8 +12,8 @@ const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnIsValidUsername = require("/startup/functions/fnIsValidUsername.js");
 const fnIsValidPassword = require("/startup/functions/fnIsValidPassword.js");
-const fnUserExists = require("/startup/functions/fnUserExists.js");
-const fnGroupExists = require("/startup/functions/fnGroupExists.js");
+const fnListUsers = require("/startup/functions/fnListUsers.js");
+const fnListGroups = require("/startup/functions/fnListGroups.js");
 
 
 
@@ -53,13 +53,13 @@ function fnValidateConfigUsers(users, sharedb){
         }
 
         // user must not exist in the OS
-        if (fnUserExists(user["name"])){
+        if (fnListUsers().includes(user["name"])){
             error = `USER '${user["name"]}' ALREADY EXISTS IN THE OS`;
             return false;
         }
 
         // user must not exist in the OS as a group
-        if (fnGroupExists(user["name"])){
+        if (fnListGroups().includes(user["name"])){
             error = `USERNAME '${user["name"]}' ALREADY EXISTS IN THE OS AS A GROUP`;
             return false;
         }
