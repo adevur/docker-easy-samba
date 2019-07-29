@@ -133,7 +133,7 @@ This is the list of supported properties for a `shares`'s element: `name`, `path
 
 - `guest` is an optional property. If it's present, it is a string (equal to `"rw"` or to `"ro"`) that specifies if the shared folder can be accessed without login (i.e. if the share is an anonymous shared folder). In case it's equal to `"rw"`, it means that guest users (i.e. users without login) can read and write inside the shared folder; in case it's equal to `"ro"`, it means that guest users can only read contents inside the shared folder. If `guest` property is missing, it means that this shared folder cannot be accessed by users without login.
 
-- `access` is an array of strings that contains all the "access rules" for the shared folder. This property is optional if `guest` property is present. If `guest` property is absent, `access` property is mandatory and defines the rules that `easy-samba` must apply to the shared folder. An access rule is a string that tells `easy-samba` who can access the shared folder, and with what permissions. See below for more info.
+- `access` is an array of strings that contains all the "access rules" for the shared folder. This property defines the rules that `easy-samba` must apply to the shared folder. An access rule is a string that tells `easy-samba` who can access the shared folder, and with what permissions. See below for more info.
 
 - `soft-quota` is an optional property that can be used to limit the size of the shared folder. This property is an object with two mandatory properties: `limit` and `whitelist`.
 
