@@ -65,6 +65,8 @@
     remote.setConfig()
     remote.getInfo()
     remote.hello()
+    remote.getLogs()
+    remote.getAvailableAPI()
 
 */
 
@@ -1433,7 +1435,11 @@ const ConfigGen = class {
             // remote.getConfig()
             async getConfig(){
                 const { res, err } = await this.cmd("get-config");
-                if (err !== false){
+                try {
+                    assert( err === false );
+                    assert( fnIsString(res) );
+                }
+                catch (error){
                     throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
                 }
                 return res;
@@ -1441,8 +1447,15 @@ const ConfigGen = class {
 
             // remote.setConfig()
             async setConfig(configjson){
+                if (fnIsString(configjson) !== true){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
                 const { res, err } = await this.cmd("set-config", { "config.json": configjson });
-                if (err !== false || res !== "SUCCESS"){
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                }
+                catch (error){
                     throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
                 }
                 return true;
@@ -1451,7 +1464,13 @@ const ConfigGen = class {
             // remote.getInfo()
             async getInfo(){
                 const { res, err } = await this.cmd("get-info");
-                if (err !== false || fnHas(res, ["running", "version"]) !== true){
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, ["running", "version"]) );
+                    assert( res["running"] === true || res["running"] === false );
+                    assert( fnIsString(res["version"]) );
+                }
+                catch (error){
                     throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
                 }
                 return { running: res.running, version: res.version };
@@ -1460,10 +1479,43 @@ const ConfigGen = class {
             // remote.hello()
             async hello(){
                 const { res, err } = await this.cmd("hello");
-                if (err !== false || res !== "world"){
+                try {
+                    assert( err === false );
+                    assert( res === "world" );
+                }
+                catch (error){
                     throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
                 }
                 return "world";
+            }
+            
+            // remote.getLogs()
+            async getLogs(){
+                const { res, err } = await this.cmd("get-logs");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "easy-samba-logs") );
+                    assert( fnIsString(res["easy-samba-logs"]) );
+                }
+                catch (error){
+                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                }
+                return res["easy-samba-logs"];
+            }
+            
+            // remote.getAvailableAPI()
+            async getAvailableAPI(){
+                const { res, err } = await this.cmd("get-available-api");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "available-api") );
+                    assert( fnIsArray(res["available-api"]) );
+                    assert( res["available-api"].every(fnIsString) );
+                }
+                catch (error){
+                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                }
+                return res["available-api"];
             }
         };
 

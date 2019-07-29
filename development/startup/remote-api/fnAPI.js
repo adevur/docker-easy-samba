@@ -22,7 +22,7 @@ function fnAPI(str, token){
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
-        assert( ["set-config", "get-config", "get-info", "hello"].includes(input["method"]) );
+        assert( ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"].includes(input["method"]) );
         assert( fnIsString(input["id"]) );
 
         const id = input["id"];
@@ -51,6 +51,13 @@ function fnAPI(str, token){
             }
             else if (input["method"] === "hello"){
                 return { "jsonrpc": "2.0", "result": "world", "error": null, "id": id };
+            }
+            else if (input["method"] === "get-logs"){
+                const logs = (CFG === "/share/config" && fs.existsSync("/share/config/easy-samba.logs")) ? fs.readFileSync("/share/config/easy-samba.logs", "utf8") : "";
+                return { "jsonrpc": "2.0", "result": { "easy-samba-logs": logs }, "error": null, "id": id };
+            }
+            else if (input["method"] === "get-available-api"){
+                return { "jsonrpc": "2.0", "result": { "available-api": ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"] }, "error": null, "id": id };
             }
             else {
                 return { "jsonrpc": "2.0", "result": null, "error": `UNKNOWN ERROR`, "id": id };
