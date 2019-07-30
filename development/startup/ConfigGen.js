@@ -1408,41 +1408,58 @@ const ConfigGen = class {
                                 try {
                                     result = Buffer.concat(result).toString();
                                     result = JSON.parse(result);
-                                    assert(fnHas(result, ["jsonrpc", "result", "id"]));
-                                    assert(result["jsonrpc"] === "2.0");
-                                    assert(result["id"] === id);
+                                    assert( fnHas(result, ["jsonrpc", "result", "id"]) );
+                                    assert( result["jsonrpc"] === "2.0" );
+                                    assert( result["id"] === id );
+                                    assert( fnHas(result, "error") ? (result["error"] === null || fnIsString(result["error"])) : true );
+                                    
+                                    if (fnHas(result, "error") && result["error"] !== null){
+                                        resolve({ res: undefined, err: result["error"] });
+                                        return;
+                                    }
+                                    
                                     resolve({ res: result["result"], err: false });
                                 }
                                 catch (error){
-                                    resolve({ res: undefined, err: "INVALID RESPONSE FROM REMOTE API" });
+                                    resolve({ res: undefined, err: "INVALID-RESPONSE" });
                                 }
                             });
                         });
 
                         req.on("error", () => {
-                            resolve({ res: undefined, err: "COULD NOT CONNECT TO REMOTE API" });
+                            resolve({ res: undefined, err: "CANNOT-CONNECT" });
                         });
 
                         req.write(data);
                         req.end();
                     }
                     catch (error){
-                        resolve({ res: undefined, err: "COULD NOT CONNECT TO REMOTE API" });
+                        resolve({ res: undefined, err: "CANNOT-CONNECT" });
                     }
                 });
             }
 
             // remote.getConfig()
             async getConfig(){
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("get-config") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
+                }
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
                 const { res, err } = await this.cmd("get-config");
                 try {
                     assert( err === false );
                     assert( fnIsString(res) );
+                    return res;
                 }
                 catch (error){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
-                return res;
             }
 
             // remote.setConfig()
@@ -1450,57 +1467,98 @@ const ConfigGen = class {
                 if (fnIsString(configjson) !== true){
                     throw new Error("ERROR: INVALID INPUT");
                 }
+                
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("set-config") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
+                }
+                catch (error){
+                    throw new Error(error.message);
+                }
+                
                 const { res, err } = await this.cmd("set-config", { "config.json": configjson });
                 try {
                     assert( err === false );
                     assert( res === "SUCCESS" );
+                    return true;
                 }
                 catch (error){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
-                return true;
             }
 
             // remote.getInfo()
             async getInfo(){
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("get-info") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
+                }
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
                 const { res, err } = await this.cmd("get-info");
                 try {
                     assert( err === false );
                     assert( fnHas(res, ["running", "version"]) );
                     assert( res["running"] === true || res["running"] === false );
                     assert( fnIsString(res["version"]) );
+                    return { running: res.running, version: res.version };
                 }
                 catch (error){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
-                return { running: res.running, version: res.version };
             }
 
             // remote.hello()
             async hello(){
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("hello") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
+                }
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
                 const { res, err } = await this.cmd("hello");
                 try {
                     assert( err === false );
                     assert( res === "world" );
+                    return "world";
                 }
                 catch (error){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
-                return "world";
             }
             
             // remote.getLogs()
             async getLogs(){
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("get-logs") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
+                }
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
                 const { res, err } = await this.cmd("get-logs");
                 try {
                     assert( err === false );
                     assert( fnHas(res, "easy-samba-logs") );
                     assert( fnIsString(res["easy-samba-logs"]) );
+                    return res["easy-samba-logs"];
                 }
                 catch (error){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
-                return res["easy-samba-logs"];
             }
             
             // remote.getAvailableAPI()
@@ -1511,11 +1569,11 @@ const ConfigGen = class {
                     assert( fnHas(res, "available-api") );
                     assert( fnIsArray(res["available-api"]) );
                     assert( res["available-api"].every(fnIsString) );
+                    return res["available-api"];
                 }
                 catch (error){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
-                return res["available-api"];
             }
         };
 

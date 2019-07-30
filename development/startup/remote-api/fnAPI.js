@@ -32,43 +32,62 @@ function fnAPI(str, token){
         assert( fnIsString(params["token"]) && (input["method"] === "set-config") ? fnIsString(params["config.json"]) : true );
 
         if (params["token"] !== token){
-            return { "jsonrpc": "2.0", "result": null, "error": `AUTHORIZATION FAILED`, "id": id };
+            return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-TOKEN`, "id": id };
         }
 
         try {
             if (input["method"] === "set-config"){
-                fnWriteFile(`${CFG}/remote-api.config.json`, params["config.json"]);
+                if (fnWriteFile(`${CFG}/remote-api.config.json`, params["config.json"]) !== true){
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:SET-CONFIG:CANNOT-WRITE", "id": id };
+                }
                 return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
             }
             else if (input["method"] === "get-config"){
-                const configjson = (fs.existsSync(`${CFG}/remote-api.config.json`)) ? fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8") : "{}";
-                return { "jsonrpc": "2.0", "result": configjson, "error": null, "id": id };
+                try {
+                    const configjson = (fs.existsSync(`${CFG}/remote-api.config.json`)) ? fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8") : "{}";
+                    assert( fnIsString(configjson) );
+                    return { "jsonrpc": "2.0", "result": configjson, "error": null, "id": id };
+                }
+                catch (error){
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:GET-CONFIG:CANNOT-READ", "id": id };
+                }
             }
             else if (input["method"] === "get-info"){
-                const running = fs.existsSync("/startup/easy-samba.running");
-                const version = fnGetVersion().version;
-                return { "jsonrpc": "2.0", "result": { "running": running, "version": version }, "error": null, "id": id };
+                try {
+                    const running = fs.existsSync("/startup/easy-samba.running");
+                    const version = fnGetVersion().version;
+                    return { "jsonrpc": "2.0", "result": { "running": running, "version": version }, "error": null, "id": id };
+                }
+                catch (error){
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:GET-INFO:ERROR", "id": id };
+                }
             }
             else if (input["method"] === "hello"){
                 return { "jsonrpc": "2.0", "result": "world", "error": null, "id": id };
             }
             else if (input["method"] === "get-logs"){
-                const logs = (CFG === "/share/config" && fs.existsSync("/share/config/easy-samba.logs")) ? fs.readFileSync("/share/config/easy-samba.logs", "utf8") : "";
-                return { "jsonrpc": "2.0", "result": { "easy-samba-logs": logs }, "error": null, "id": id };
+                try {
+                    const logs = (CFG === "/share/config" && fs.existsSync("/share/config/easy-samba.logs")) ? fs.readFileSync("/share/config/easy-samba.logs", "utf8") : "";
+                    assert( fnIsString(logs) );
+                    return { "jsonrpc": "2.0", "result": { "easy-samba-logs": logs }, "error": null, "id": id };
+                }
+                catch (error){
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:GET-LOGS:CANNOT-READ", "id": id };
+                }
             }
             else if (input["method"] === "get-available-api"){
                 return { "jsonrpc": "2.0", "result": { "available-api": ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"] }, "error": null, "id": id };
             }
             else {
-                return { "jsonrpc": "2.0", "result": null, "error": `UNKNOWN ERROR`, "id": id };
+                return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:CANNOT-RESPOND`, "id": id };
             }
         }
         catch (error){
-            return { "jsonrpc": "2.0", "result": null, "error": `UNKNOWN ERROR`, "id": id };
+            return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:CANNOT-RESPOND`, "id": id };
         }
     }
     catch (error){
-        return { "jsonrpc": "2.0", "result": null, "error": "INVALID INPUT" };
+        return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:INVALID-INPUT" };
     }
 }
 
