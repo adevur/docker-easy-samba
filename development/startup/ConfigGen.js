@@ -67,6 +67,7 @@
     remote.hello()
     remote.getLogs()
     remote.getAvailableAPI()
+    remote.getConfigHash()
 
 */
 
@@ -187,6 +188,9 @@ const ConfigGen = class {
         this["$users"] = [];
         this["$groups"] = [];
         this["$shares"] = [];
+        
+        // internal variable used for Remote API hash-checking
+        this["$remote-hash"] = undefined;
 
         // events
         this["$on-user-add"] = [];
@@ -1335,14 +1339,15 @@ const ConfigGen = class {
         let res = undefined;
         try {
             res = await remote.getConfig();
-            assert( fnIsString(res) );
         }
         catch (error){
-            throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+            throw new Error(error.message);
         }
 
         try {
-            return this.fromJson(res);
+            const ret = this.fromJson(res);
+            ret["$remote-hash"] = remote.getConfigHash(res);
+            return ret;
         }
         catch (error){
             throw new Error("ERROR: REMOTE CONFIGURATION FILE IS NOT VALID");
@@ -1378,6 +1383,9 @@ const ConfigGen = class {
                     const body = { "token": token };
                     if (fnHas(other, "config.json")){
                         body["config.json"] = other["config.json"];
+                    }
+                    if (fnHas(other, "hash")){
+                        body["hash"] = other["hash"];
                     }
                     const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
 
@@ -1461,10 +1469,21 @@ const ConfigGen = class {
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
             }
+            
+            // remote.getConfigHash()
+            getConfigHash(input){
+                try {
+                    assert( fnIsString(input) );
+                    return crypto.createHash("md5").update(input, "utf8").digest("hex").toUpperCase();
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+            }
 
             // remote.setConfig()
-            async setConfig(configjson){
-                if (fnIsString(configjson) !== true){
+            async setConfig(configjson, hash = undefined){
+                if (fnIsString(configjson) !== true || (hash !== undefined && fnIsString(hash) !== true)){
                     throw new Error("ERROR: INVALID INPUT");
                 }
                 
@@ -1478,7 +1497,11 @@ const ConfigGen = class {
                     throw new Error(error.message);
                 }
                 
-                const { res, err } = await this.cmd("set-config", { "config.json": configjson });
+                const params = { "config.json": configjson };
+                if (hash !== undefined){
+                    params.hash = hash.toUpperCase();
+                }
+                const { res, err } = await this.cmd("set-config", params);
                 try {
                     assert( err === false );
                     assert( res === "SUCCESS" );
@@ -1754,13 +1777,20 @@ const ConfigGen = class {
         let url = undefined;
         let token = undefined;
         let ca = undefined;
+        let options = {};
 
         if (args.length === 1){
             remote = args[0];
         }
         else if (args.length === 2){
-            url = args[0];
-            token = args[1];
+            if (fnIsString(args[0]) && fnIsString(args[1])){
+                url = args[0];
+                token = args[1];
+            }
+            else {
+                remote = args[0];
+                options = args[1];
+            }
         }
         else if (args.length === 3){
             url = args[0];
@@ -1781,14 +1811,23 @@ const ConfigGen = class {
         catch (error){
             throw new Error("ERROR: INVALID INPUT");
         }
+        
+        let configjson = "";
+        try {
+            configjson = this.saveToJson();
+            assert( fnIsString(configjson) );
+        }
+        catch (error){
+            throw new Error("ERROR: IT'S NOT BEEN POSSIBLE TO RUN 'config.saveToJson()'");
+        }
 
         try {
-            const res = await remote.setConfig(this.saveToJson());
-            assert( res === true );
+            const res = await remote.setConfig(configjson, (fnHas(options, "checkSavedHash") && options["checkSavedHash"] === true) ? this["$remote-hash"] : undefined);
+            this["$remote-hash"] = (fnHas(options, "checkSavedHash") && options["checkSavedHash"] === true) ? remote.getConfigHash(configjson) : this["$remote-hash"];
             return true;
         }
         catch (error){
-            throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+            throw new Error(error.message);
         }
     }
 

@@ -9,6 +9,7 @@ module.exports = fnAPI;
 // dependencies
 const fs = require("fs");
 const assert = require("assert");
+const crypto = require("crypto");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
@@ -30,6 +31,7 @@ function fnAPI(str, token){
 
         assert( fnHas(params, "token") && (input["method"] === "set-config") ? fnHas(params, "config.json") : true );
         assert( fnIsString(params["token"]) && (input["method"] === "set-config") ? fnIsString(params["config.json"]) : true );
+        assert( (input["method"] === "set-config" && fnHas(params, "hash")) ? fnIsString(params["hash"]) : true );
 
         if (params["token"] !== token){
             return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-TOKEN`, "id": id };
@@ -37,6 +39,16 @@ function fnAPI(str, token){
 
         try {
             if (input["method"] === "set-config"){
+                try {
+                    if (fnHas(params, "hash")){
+                        const configjson = (fs.existsSync(`${CFG}/remote-api.config.json`)) ? fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8") : "{}";
+                        const hash = crypto.createHash("md5").update(configjson, "utf8").digest("hex").toUpperCase();
+                        assert( hash === params["hash"].toUpperCase() );
+                    }
+                }
+                catch (error){
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:SET-CONFIG:INVALID-HASH", "id": id };
+                }
                 if (fnWriteFile(`${CFG}/remote-api.config.json`, params["config.json"]) !== true){
                     return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:SET-CONFIG:CANNOT-WRITE", "id": id };
                 }
