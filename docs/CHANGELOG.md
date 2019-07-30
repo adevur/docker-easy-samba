@@ -2,11 +2,32 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.15.0`
+### Current stable release: `1.16.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.16.0 (2019-07-30 UTC)
+- New features:
+
+  - Two new `Remote API` calls have been implemented: `get-logs` and `get-available-api`. And `ConfigGen.js` library has been updated with two new functions accordingly: `remote.getLogs()` and `remote.getAvailableAPI()`. Method `get-available-api` returns the list of `Remote API` methods supported by the `easy-samba` container (e.g. `["get-config", "set-config", "hello", ...]`).
+  
+  - `Remote API` method `set-config` now accepts optional parameter `hash`, that is the MD5 hash of the current `remote-api.config.json` file. This is useful in order to verify that no one else has modified that file while you were manipulating it. In `ConfigGen.js` library, new function `remote.getConfigHash()` has been added, and functions `ConfigGen.fromRemote()`, `config.saveToRemote()` and `remote.setConfig()` have extended their functionalities.
+  
+  - Error handling in `Remote API` has been improved, and now it is possible to exactly know what went wrong during communication with `easy-samba` container's `Remote API`. Error handling of `Remote API` has been improved also in `ConfigGen.js` library.
+
+- Bug fixes:
+
+  - Now, script `config.gen.js` gets killed if you delete `/share/config/config.gen.js` file.
+
+  - Minor bugfixes.
+  
+  - Several code cleanup.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.15.0 (2019-07-25 UTC)
 - New features:

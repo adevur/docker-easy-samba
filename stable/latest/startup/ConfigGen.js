@@ -65,6 +65,9 @@
     remote.setConfig()
     remote.getInfo()
     remote.hello()
+    remote.getLogs()
+    remote.getAvailableAPI()
+    remote.getConfigHash()
 
 */
 
@@ -77,7 +80,7 @@ const assert = require("assert");
 const https = require("https");
 
 // global variables
-const globalVersion = "1.15";
+const globalVersion = "1.16";
 
 
 
@@ -185,6 +188,9 @@ const ConfigGen = class {
         this["$users"] = [];
         this["$groups"] = [];
         this["$shares"] = [];
+        
+        // internal variable used for Remote API hash-checking
+        this["$remote-hash"] = undefined;
 
         // events
         this["$on-user-add"] = [];
@@ -1333,14 +1339,15 @@ const ConfigGen = class {
         let res = undefined;
         try {
             res = await remote.getConfig();
-            assert( fnIsString(res) );
         }
         catch (error){
-            throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+            throw new Error(error.message);
         }
 
         try {
-            return this.fromJson(res);
+            const ret = this.fromJson(res);
+            ret["$remote-hash"] = remote.getConfigHash(res);
+            return ret;
         }
         catch (error){
             throw new Error("ERROR: REMOTE CONFIGURATION FILE IS NOT VALID");
@@ -1377,6 +1384,9 @@ const ConfigGen = class {
                     if (fnHas(other, "config.json")){
                         body["config.json"] = other["config.json"];
                     }
+                    if (fnHas(other, "hash")){
+                        body["hash"] = other["hash"];
+                    }
                     const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
 
                     const options = {
@@ -1406,64 +1416,187 @@ const ConfigGen = class {
                                 try {
                                     result = Buffer.concat(result).toString();
                                     result = JSON.parse(result);
-                                    assert(fnHas(result, ["jsonrpc", "result", "id"]));
-                                    assert(result["jsonrpc"] === "2.0");
-                                    assert(result["id"] === id);
+                                    assert( fnHas(result, ["jsonrpc", "result", "id"]) );
+                                    assert( result["jsonrpc"] === "2.0" );
+                                    assert( result["id"] === id );
+                                    assert( fnHas(result, "error") ? (result["error"] === null || fnIsString(result["error"])) : true );
+                                    
+                                    if (fnHas(result, "error") && result["error"] !== null){
+                                        resolve({ res: undefined, err: result["error"] });
+                                        return;
+                                    }
+                                    
                                     resolve({ res: result["result"], err: false });
                                 }
                                 catch (error){
-                                    resolve({ res: undefined, err: "INVALID RESPONSE FROM REMOTE API" });
+                                    resolve({ res: undefined, err: "INVALID-RESPONSE" });
                                 }
                             });
                         });
 
                         req.on("error", () => {
-                            resolve({ res: undefined, err: "COULD NOT CONNECT TO REMOTE API" });
+                            resolve({ res: undefined, err: "CANNOT-CONNECT" });
                         });
 
                         req.write(data);
                         req.end();
                     }
                     catch (error){
-                        resolve({ res: undefined, err: "COULD NOT CONNECT TO REMOTE API" });
+                        resolve({ res: undefined, err: "CANNOT-CONNECT" });
                     }
                 });
             }
 
             // remote.getConfig()
             async getConfig(){
-                const { res, err } = await this.cmd("get-config");
-                if (err !== false){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("get-config") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
                 }
-                return res;
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
+                const { res, err } = await this.cmd("get-config");
+                try {
+                    assert( err === false );
+                    assert( fnIsString(res) );
+                    return res;
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
+            // remote.getConfigHash()
+            getConfigHash(input){
+                try {
+                    assert( fnIsString(input) );
+                    return crypto.createHash("md5").update(input, "utf8").digest("hex").toUpperCase();
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
             }
 
             // remote.setConfig()
-            async setConfig(configjson){
-                const { res, err } = await this.cmd("set-config", { "config.json": configjson });
-                if (err !== false || res !== "SUCCESS"){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+            async setConfig(configjson, hash = undefined){
+                if (fnIsString(configjson) !== true || (hash !== undefined && fnIsString(hash) !== true)){
+                    throw new Error("ERROR: INVALID INPUT");
                 }
-                return true;
+                
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("set-config") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
+                }
+                catch (error){
+                    throw new Error(error.message);
+                }
+                
+                const params = { "config.json": configjson };
+                if (hash !== undefined){
+                    params.hash = hash.toUpperCase();
+                }
+                const { res, err } = await this.cmd("set-config", params);
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    return true;
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
             }
 
             // remote.getInfo()
             async getInfo(){
-                const { res, err } = await this.cmd("get-info");
-                if (err !== false || fnHas(res, ["running", "version"]) !== true){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("get-info") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
                 }
-                return { running: res.running, version: res.version };
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
+                const { res, err } = await this.cmd("get-info");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, ["running", "version"]) );
+                    assert( res["running"] === true || res["running"] === false );
+                    assert( fnIsString(res["version"]) );
+                    return { running: res.running, version: res.version };
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
             }
 
             // remote.hello()
             async hello(){
-                const { res, err } = await this.cmd("hello");
-                if (err !== false || res !== "world"){
-                    throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("hello") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
                 }
-                return "world";
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
+                const { res, err } = await this.cmd("hello");
+                try {
+                    assert( err === false );
+                    assert( res === "world" );
+                    return "world";
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
+            // remote.getLogs()
+            async getLogs(){
+                try {
+                    const apis = await this.getAvailableAPI();
+                    if (apis.includes("get-logs") !== true){
+                        throw new Error("API-NOT-SUPPORTED");
+                    }
+                }
+                catch (error){
+                    throw new Error(error.message);
+                }
+            
+                const { res, err } = await this.cmd("get-logs");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "easy-samba-logs") );
+                    assert( fnIsString(res["easy-samba-logs"]) );
+                    return res["easy-samba-logs"];
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
+            // remote.getAvailableAPI()
+            async getAvailableAPI(){
+                const { res, err } = await this.cmd("get-available-api");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "available-api") );
+                    assert( fnIsArray(res["available-api"]) );
+                    assert( res["available-api"].every(fnIsString) );
+                    return res["available-api"];
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
             }
         };
 
@@ -1644,13 +1777,20 @@ const ConfigGen = class {
         let url = undefined;
         let token = undefined;
         let ca = undefined;
+        let options = {};
 
         if (args.length === 1){
             remote = args[0];
         }
         else if (args.length === 2){
-            url = args[0];
-            token = args[1];
+            if (fnIsString(args[0]) && fnIsString(args[1])){
+                url = args[0];
+                token = args[1];
+            }
+            else {
+                remote = args[0];
+                options = args[1];
+            }
         }
         else if (args.length === 3){
             url = args[0];
@@ -1671,14 +1811,23 @@ const ConfigGen = class {
         catch (error){
             throw new Error("ERROR: INVALID INPUT");
         }
+        
+        let configjson = "";
+        try {
+            configjson = this.saveToJson();
+            assert( fnIsString(configjson) );
+        }
+        catch (error){
+            throw new Error("ERROR: IT'S NOT BEEN POSSIBLE TO RUN 'config.saveToJson()'");
+        }
 
         try {
-            const res = await remote.setConfig(this.saveToJson());
-            assert( res === true );
+            const res = await remote.setConfig(configjson, (fnHas(options, "checkSavedHash") && options["checkSavedHash"] === true) ? this["$remote-hash"] : undefined);
+            this["$remote-hash"] = (fnHas(options, "checkSavedHash") && options["checkSavedHash"] === true) ? remote.getConfigHash(configjson) : this["$remote-hash"];
             return true;
         }
         catch (error){
-            throw new Error("ERROR: COULD NOT CONNECT TO REMOTE API");
+            throw new Error(error.message);
         }
     }
 
