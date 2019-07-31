@@ -39,12 +39,12 @@ function fnLog(path){
                 const datetime = (msg.trim() !== "") ? `[${Y}-${M}-${D} ${h}:${m}:${s} UTC]` : ``;
                 
                 fs.appendFileSync(path, `${datetime}  ${msg}\n`, { encoding: "utf8" });
+                
+                return true;
             }
             catch (error){
                 return false;
             }
-            
-            return true;
         });
     };
 }
