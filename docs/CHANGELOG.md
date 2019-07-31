@@ -2,11 +2,26 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.16.0`
+### Current stable release: `1.16.1`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] 1.16.1 (2019-07-31 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Fixed behavior of `EasySamba Remote API`: now it sends error `REMOTE-API:API-NOT-SUPPORTED` properly; and validation of `token` is done before validation of API method.
+  
+  - Logs to stdout are now properly colorized in case of errors or warnings.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.16.0 (2019-07-30 UTC)
 - New features:
