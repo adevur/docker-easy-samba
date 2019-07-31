@@ -1449,16 +1449,6 @@ const ConfigGen = class {
 
             // remote.getConfig()
             async getConfig(){
-                try {
-                    const apis = await this.getAvailableAPI();
-                    if (apis.includes("get-config") !== true){
-                        throw new Error("API-NOT-SUPPORTED");
-                    }
-                }
-                catch (error){
-                    throw new Error(error.message);
-                }
-            
                 const { res, err } = await this.cmd("get-config");
                 try {
                     assert( err === false );
@@ -1487,16 +1477,6 @@ const ConfigGen = class {
                     throw new Error("ERROR: INVALID INPUT");
                 }
                 
-                try {
-                    const apis = await this.getAvailableAPI();
-                    if (apis.includes("set-config") !== true){
-                        throw new Error("API-NOT-SUPPORTED");
-                    }
-                }
-                catch (error){
-                    throw new Error(error.message);
-                }
-                
                 const params = { "config.json": configjson };
                 if (hash !== undefined){
                     params.hash = hash.toUpperCase();
@@ -1514,16 +1494,6 @@ const ConfigGen = class {
 
             // remote.getInfo()
             async getInfo(){
-                try {
-                    const apis = await this.getAvailableAPI();
-                    if (apis.includes("get-info") !== true){
-                        throw new Error("API-NOT-SUPPORTED");
-                    }
-                }
-                catch (error){
-                    throw new Error(error.message);
-                }
-            
                 const { res, err } = await this.cmd("get-info");
                 try {
                     assert( err === false );
@@ -1539,16 +1509,6 @@ const ConfigGen = class {
 
             // remote.hello()
             async hello(){
-                try {
-                    const apis = await this.getAvailableAPI();
-                    if (apis.includes("hello") !== true){
-                        throw new Error("API-NOT-SUPPORTED");
-                    }
-                }
-                catch (error){
-                    throw new Error(error.message);
-                }
-            
                 const { res, err } = await this.cmd("hello");
                 try {
                     assert( err === false );
@@ -1562,16 +1522,6 @@ const ConfigGen = class {
             
             // remote.getLogs()
             async getLogs(){
-                try {
-                    const apis = await this.getAvailableAPI();
-                    if (apis.includes("get-logs") !== true){
-                        throw new Error("API-NOT-SUPPORTED");
-                    }
-                }
-                catch (error){
-                    throw new Error(error.message);
-                }
-            
                 const { res, err } = await this.cmd("get-logs");
                 try {
                     assert( err === false );

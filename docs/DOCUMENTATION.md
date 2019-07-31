@@ -473,7 +473,7 @@ The configuration is retrieved from a remote `easy-samba` container using `EasyS
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -595,7 +595,7 @@ This method can be used to set the configuration of a remote container using `Ea
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -659,7 +659,7 @@ This method can be used to get the configuration of a remote container using `Ea
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -717,7 +717,7 @@ This method can be used to get some information about a remote container using `
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `get-info` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-info` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -765,7 +765,7 @@ This method can be used to test connectivity towards a remote container using `E
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `hello` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `hello` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -795,7 +795,7 @@ async function testRemote(){
         else if (error.message === "REMOTE-API:INVALID-TOKEN"){
             console.log("Token is not correct.");
         }
-        else if (error.message === "API-NOT-SUPPORTED") {
+        else if (error.message === "REMOTE-API:API-NOT-SUPPORTED") {
             console.log("Remote container doesn't support 'hello' API call.");
         }
         else {
@@ -826,7 +826,7 @@ This method can be used to get `easy-samba` logs of a remote container using `Ea
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `get-logs` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-logs` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -873,7 +873,7 @@ This method can be used to get the list of supported `Remote API` methods of an 
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `get-available-api` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-available-api` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -893,7 +893,7 @@ async function printAvailableAPI(){
         console.log("Available API methods:", apis); // Available API methods: ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"]
     }
     catch (error){
-        if (error.message === "API-NOT-SUPPORTED"){
+        if (error.message === "REMOTE-API:API-NOT-SUPPORTED"){
             console.log("Remote container doesn't support 'get-available-api' method.");
         }
         else {
@@ -1200,7 +1200,7 @@ The configuration is sent to a remote `easy-samba` container using `EasySamba Re
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 

@@ -23,20 +23,23 @@ function fnAPI(str, token){
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
-        assert( ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"].includes(input["method"]) );
         assert( fnIsString(input["id"]) );
 
         const id = input["id"];
         const params = input["params"];
-
-        assert( fnHas(params, "token") && (input["method"] === "set-config") ? fnHas(params, "config.json") : true );
-        assert( fnIsString(params["token"]) && (input["method"] === "set-config") ? fnIsString(params["config.json"]) : true );
-        assert( (input["method"] === "set-config" && fnHas(params, "hash")) ? fnIsString(params["hash"]) : true );
-
-        if (params["token"] !== token){
+        
+        if (fnHas(params, "token") !== true || fnIsString(params["token"]) !== true || params["token"] !== token){
             return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-TOKEN`, "id": id };
         }
+        
+        if (["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"].includes(input["method"]) !== true){
+            return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:API-NOT-SUPPORTED`, "id": id };
+        }
 
+        assert( (input["method"] === "set-config") ? fnHas(params, "config.json") : true );
+        assert( (input["method"] === "set-config") ? fnIsString(params["config.json"]) : true );
+        assert( (input["method"] === "set-config" && fnHas(params, "hash")) ? fnIsString(params["hash"]) : true );
+        
         try {
             if (input["method"] === "set-config"){
                 try {
