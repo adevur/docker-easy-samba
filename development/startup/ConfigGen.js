@@ -1131,20 +1131,22 @@ const ConfigGen = class {
             setFixedRules: (...args) => {
                 let shares = undefined;
                 let rules = undefined;
-
-                if (args.length === 1 && fnIsArray(args[0]) && args[0].every(fnIsString)){
-                    rules = args[0];
+                
+                try {
+                    assert( args.length === 1 || args.length === 2 );
+                    
+                    shares = (args.length === 1) ? undefined : args[0];
+                    rules = (args.length === 1) ? args[0] : args[1];
+                    
+                    assert( shares === undefined || (fnIsArray(shares) && shares.every(fnIsString)) );
+                    assert( rules === undefined || (fnIsArray(rules) && rules.every(fnIsString)) );
                 }
-                else if (args.length === 2 && fnIsArray(args[0]) && args[0].every(fnIsString) && fnIsArray(args[1]) && args[1].every(fnIsString)){
-                    shares = args[0];
-                    rules = args[1];
-                }
-                else {
+                catch (error){
                     throw new Error("ERROR: INVALID INPUT");
                 }
 
                 this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
-                this["$fixedrules"]["rules"] = fnCopy(rules);
+                this["$fixedrules"]["rules"] = (rules === undefined) ? [] : fnCopy(rules);
 
                 return this;
             },
@@ -1152,8 +1154,8 @@ const ConfigGen = class {
             // config.shares.unsetFixedRules()
             // DEPRECATED
             unsetFixedRules: () => {
-                console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules([])'.`);
-                this.shares.setFixedRules([]);
+                console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules(undefined)'.`);
+                this.shares.setFixedRules(undefined);
                 return this;
             },
 
@@ -1161,20 +1163,22 @@ const ConfigGen = class {
             setBaseRules: (...args) => {
                 let shares = undefined;
                 let rules = undefined;
-
-                if (args.length === 1 && fnIsArray(args[0]) && args[0].every(fnIsString)){
-                    rules = args[0];
+                
+                try {
+                    assert( args.length === 1 || args.length === 2 );
+                    
+                    shares = (args.length === 1) ? undefined : args[0];
+                    rules = (args.length === 1) ? args[0] : args[1];
+                    
+                    assert( shares === undefined || (fnIsArray(shares) && shares.every(fnIsString)) );
+                    assert( rules === undefined || (fnIsArray(rules) && rules.every(fnIsString)) );
                 }
-                else if (args.length === 2 && fnIsArray(args[0]) && args[0].every(fnIsString) && fnIsArray(args[1]) && args[1].every(fnIsString)){
-                    shares = args[0];
-                    rules = args[1];
-                }
-                else {
+                catch (error){
                     throw new Error("ERROR: INVALID INPUT");
                 }
 
                 this["$baserules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
-                this["$baserules"]["rules"] = fnCopy(rules);
+                this["$baserules"]["rules"] = (rules === undefined) ? [] : fnCopy(rules);
 
                 return this;
             },
