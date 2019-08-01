@@ -181,6 +181,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
+        // DEPRECATED
         this.easysambaVersion = globalVersion;
 
         // internal variables used by an instance of ConfigGen
@@ -961,6 +962,7 @@ const ConfigGen = class {
             },
 
             // config.shares.removeRules()
+            // DEPRECATED
             removeRules: (sharename, rules) => {
                 console.log("[WARNING] 'config.shares.removeRules() is deprecated. Use 'config.shares.removeRuleAt()', instead.'");
 
@@ -1148,6 +1150,7 @@ const ConfigGen = class {
             },
 
             // config.shares.unsetFixedRules()
+            // DEPRECATED
             unsetFixedRules: () => {
                 console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules([])'.`);
                 this.shares.setFixedRules([]);
@@ -1685,6 +1688,22 @@ const ConfigGen = class {
 
         return result;
     }
+    
+    // ConfigGen.getConfigPath()
+    static getConfigPath(){
+        try {
+            assert( fs.existsSync("/startup/configdir.json") );
+            const configdir = fs.readFileSync("/startup/configdir.json", "utf8");
+            assert( fnIsString(configdir) );
+            const path = JSON.parse(configdir);
+            assert( fnIsString(path) );
+            assert( fs.existsSync(path) );
+            return path;
+        }
+        catch (error){
+            return "/share";
+        }
+    }
 
     // config.saveToFile()
     saveToFile(path){
@@ -1855,6 +1874,7 @@ const ConfigGen = class {
     }
 
     // config.guest()
+    // DEPRECATED
     guest(input = undefined){
         if (arguments.length < 1){
             console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
@@ -1880,6 +1900,7 @@ const ConfigGen = class {
     }
 
     // config.unsetGuest()
+    // DEPRECATED
     unsetGuest(){
         console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
 
@@ -1904,6 +1925,7 @@ const ConfigGen = class {
     }
 
     // config.unsetVersion()
+    // DEPRECATED
     unsetVersion(){
         console.log(`[WARNING] 'config.unsetVersion()' is deprecated. Use 'config.version(undefined)'.`);
         this.version(undefined);
@@ -1925,6 +1947,7 @@ const ConfigGen = class {
     }
 
     // config.unsetGlobal()
+    // DEPRECATED
     unsetGlobal(){
         console.log(`[WARNING] 'config.unsetGlobal()' is deprecated. Use 'config.global(undefined)'.`);
         this.global(undefined);
