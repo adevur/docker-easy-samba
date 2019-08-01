@@ -30,7 +30,7 @@ function fnCreateServer(httpsKey, httpsCert, port, token){
                 }
                 else {
                     res.writeHead(200, { "Content-Type": "application/json" });
-                    res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "WRONG PAGE REQUEST" }), "utf8");
+                    res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:WRONG-REQUEST" }), "utf8");
                 }
             }).listen(port, () => {
                 if (server.address().port !== port){
