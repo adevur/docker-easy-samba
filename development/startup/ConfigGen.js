@@ -69,6 +69,7 @@
     remote.getRemoteLogs()
     remote.getAvailableAPI()
     remote.getConfigHash()
+    remote.getConfigPath()
 
 */
 
@@ -1563,6 +1564,25 @@ const ConfigGen = class {
                 }
                 catch (error){
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
+            // remote.getConfigPath()
+            async getConfigPath(){
+                const { res, err } = await this.cmd("get-info");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "config-path") ? fnIsString(res["config-path"]) : true );
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+                
+                if (fnHas(res, "config-path")){
+                    return res["config-path"];
+                }
+                else {
+                    throw new Error("UNKNOWN-INFORMATION");
                 }
             }
         };

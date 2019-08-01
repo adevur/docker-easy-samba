@@ -73,7 +73,7 @@ function fnAPI(str, token){
                 try {
                     const running = fs.existsSync("/startup/easy-samba.running");
                     const version = fnGetVersion().version;
-                    return { "jsonrpc": "2.0", "result": { "running": running, "version": version }, "error": null, "id": id };
+                    return { "jsonrpc": "2.0", "result": { "running": running, "version": version, "config-path": CFG }, "error": null, "id": id };
                 }
                 catch (error){
                     return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:GET-INFO:ERROR", "id": id };
