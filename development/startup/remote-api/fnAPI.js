@@ -19,8 +19,11 @@ const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
 
-function fnAPI(str, token){
+function fnAPI(str, tk){
     try {
+        const token = tk["token"];
+        assert( fnIsString(token) && token.length > 0 );
+    
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
@@ -34,13 +37,15 @@ function fnAPI(str, token){
             return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-TOKEN`, "id": id };
         }
         
-        if (["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"].includes(input["method"]) !== true){
+        if (["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token"].includes(input["method"]) !== true){
             return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:API-NOT-SUPPORTED`, "id": id };
         }
 
         assert( (input["method"] === "set-config") ? fnHas(params, "config.json") : true );
         assert( (input["method"] === "set-config") ? fnIsString(params["config.json"]) : true );
         assert( (input["method"] === "set-config" && fnHas(params, "hash")) ? fnIsString(params["hash"]) : true );
+        assert( (input["method"] === "change-token") ? fnHas(params, "new-token") : true );
+        assert( (input["method"] === "change-token") ? (fnIsString(params["new-token"]) && params["new-token"].length > 0) : true );
         
         try {
             if (input["method"] === "set-config"){
@@ -95,7 +100,31 @@ function fnAPI(str, token){
                 }
             }
             else if (input["method"] === "get-available-api"){
-                return { "jsonrpc": "2.0", "result": { "available-api": ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api"] }, "error": null, "id": id };
+                return { "jsonrpc": "2.0", "result": { "available-api": ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token"] }, "error": null, "id": id };
+            }
+            else if (input["method"] === "change-token"){
+                const backup = token;
+                try {
+                    tk["token"] = params["new-token"];
+                    assert( fs.existsSync(`${CFG}/remote-api.json`) );
+                    const config = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
+                    config["token"] = params["new-token"];
+                    assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config)) );
+                    return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
+                }
+                catch (error){
+                    try {
+                        tk["token"] = backup;
+                        assert( fs.existsSync(`${CFG}/remote-api.json`) );
+                        const config = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
+                        config["token"] = backup;
+                        assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config)) );
+                    }
+                    catch (error){
+                        // do nothing
+                    }
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-TOKEN:ERROR", "id": id };
+                }
             }
             else {
                 return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:CANNOT-RESPOND`, "id": id };

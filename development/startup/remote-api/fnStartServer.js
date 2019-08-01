@@ -101,7 +101,7 @@ async function fnStartServer(){
 
     // start the HTTPS server
     try {
-        await fnCreateServer(httpsKey, httpsCert, port, token);
+        await fnCreateServer(httpsKey, httpsCert, port, { "token": token });
     }
     catch (error){
         log(`[ERROR] it's not been possible to start HTTPS server.`);

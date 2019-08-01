@@ -72,6 +72,7 @@
     remote.getAvailableAPI()
     remote.getConfigHash()
     remote.getConfigPath()
+    remote.changeRemoteToken()
 
 */
 
@@ -1398,6 +1399,9 @@ const ConfigGen = class {
                     if (fnHas(other, "hash")){
                         body["hash"] = other["hash"];
                     }
+                    if (fnHas(other, "new-token")){
+                        body["new-token"] = other["new-token"];
+                    }
                     const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
 
                     const options = {
@@ -1627,6 +1631,28 @@ const ConfigGen = class {
                 }
                 else {
                     throw new Error("UNKNOWN-INFORMATION");
+                }
+            }
+            
+            // remote.changeRemoteToken()
+            async changeRemoteToken(newToken){
+                try {
+                    assert( fnIsString(newToken) );
+                    assert( newToken.length > 0 );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+            
+                const { res, err } = await this.cmd("change-token", { "new-token": newToken });
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    this.token = newToken;
+                    return true;
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
             }
         };

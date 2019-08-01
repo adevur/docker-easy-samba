@@ -12,7 +12,6 @@ const fnValidateConfigVersion = require("/startup/functions/fnValidateConfigVers
 const fnValidateConfigUsers = require("/startup/functions/fnValidateConfigUsers.js");
 const fnValidateConfigGroups = require("/startup/functions/fnValidateConfigGroups.js");
 const fnValidateConfigShares = require("/startup/functions/fnValidateConfigShares.js");
-const fnValidateConfigGlobal = require("/startup/functions/fnValidateConfigGlobal.js");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
