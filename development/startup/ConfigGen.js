@@ -1563,8 +1563,14 @@ const ConfigGen = class {
             }
             
             // remote.isTokenValid()
-            async isTokenValid(){
-                const { res, err } = await this.cmd("hello");
+            async isTokenValid(customToken = undefined){
+                if (customToken !== undefined){
+                    if (fnIsString(customToken) !== true || customToken.length < 1){
+                        return false;
+                    }
+                }
+            
+                const { res, err } = await this.cmd("hello", {}, customToken);
                 
                 if (res === "world" || err === "REMOTE-API:API-NOT-SUPPORTED"){
                     return true;
