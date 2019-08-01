@@ -43,7 +43,7 @@ function fnValidateConfigShares(shares, sharedb){
     // for each "share" in "shares" ...
     let error = "";
     const result = shares.every((share) => {
-        // "share" must have "name" and "path" properties and must have "access" or "guest" properties
+        // "share" must have "name", "path" and "access" properties
         if (fnHas(share, ["name", "path", "access"]) !== true){
             error = `EVERY SHARED FOLDER IN 'shares' MUST HAVE 'name', 'path' AND 'access' PROPERTIES`;
             return false;

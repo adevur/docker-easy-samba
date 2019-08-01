@@ -34,11 +34,6 @@ function fnGenSmbConf(config){
     result += `vfs objects = acl_xattr\n`;
     result += `map acl inherit = yes\n`;
     result += `store dos attributes = yes\n`;
-
-    // add custom global entries from "global" property of "config.json"
-    if (fnHas(config, "global")){
-        result += config["global"].join("\n");
-    }
     result += "\n";
 
     // for each "share" in "shares" ...

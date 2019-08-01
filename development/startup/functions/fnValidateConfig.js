@@ -51,9 +51,8 @@ function fnValidateConfig(config){
     }
 
     // check "global" property
-    const validateConfigGlobal = fnValidateConfigGlobal(config);
-    if (validateConfigGlobal !== true){
-        return validateConfigGlobal;
+    if (fnHas(config, "global")){
+        log(`[WARNING] 'global' section is deprecated and will be ignored.`);
     }
 
     // check "domain" property
