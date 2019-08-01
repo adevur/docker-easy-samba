@@ -21,6 +21,7 @@ const fnStartRemoteAPI = require("/startup/functions/fnStartRemoteAPI.js");
 const fnKill = require("/startup/functions/fnKill.js");
 const fnCreateShares = require("/startup/functions/fnCreateShares.js");
 const fnHas = require("/startup/functions/fnHas.js");
+const fnIsString = require("/startup/functions/fnIsString.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -35,6 +36,32 @@ async function fnEasySambaLoop(){
 
     // loop every 10 seconds
     while (true){
+        // in case someone used Remote API "stop-easy-samba"
+        if (fs.existsSync("/startup/easy-samba.stop")){
+            let message = "";
+            try {
+                message = JSON.parse( fs.readFileSync("/startup/easy-samba.stop", "utf8") );
+                assert( fnIsString(message) );
+            }
+            catch (error){
+                message = "";
+            }
+            try {
+                log(`[WARNING] easy-samba is being stopped via Remote API.`);
+                if (message.length > 0){
+                    log(`[LOG] ${message}`);
+                }
+            }
+            catch (error){
+                // do nothing
+            }
+            fnKill("/usr/sbin/smbd --foreground --no-process-group");
+            fnKill("/usr/sbin/nmbd --foreground --no-process-group");
+            fnKill(`node ${CFG}/config.gen.js`);
+            fnKill("node /startup/remote-api/index.js");
+            process.exit(0);
+        }
+    
         // execute "config.gen.js" in case "config.json" is missing
         if (fs.existsSync(`${CFG}/config.json`) !== true && fs.existsSync(`${CFG}/config.gen.js`) === true){
             if (fnIsRunning(`node ${CFG}/config.gen.js`) !== true){

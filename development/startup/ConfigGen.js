@@ -73,6 +73,7 @@
     remote.getConfigHash()
     remote.getConfigPath()
     remote.changeRemoteToken()
+    remote.stopEasySamba()
 
 */
 
@@ -1402,6 +1403,9 @@ const ConfigGen = class {
                     if (fnHas(other, "new-token")){
                         body["new-token"] = other["new-token"];
                     }
+                    if (fnHas(other, "message")){
+                        body["message"] = other["message"];
+                    }
                     const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
 
                     const options = {
@@ -1652,7 +1656,37 @@ const ConfigGen = class {
                     return true;
                 }
                 catch (error){
-                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    if (err === "REMOTE-API:CHANGE-TOKEN:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
+                }
+            }
+            
+            // remote.stopEasySamba()
+            async stopEasySamba(message = ""){
+                try {
+                    assert( fnIsString(message) );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+            
+                const { res, err } = await this.cmd("stop-easy-samba", { "message": message });
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:STOP-EASY-SAMBA:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
                 }
             }
         };

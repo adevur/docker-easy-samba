@@ -5,6 +5,7 @@
 const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnEasySambaStartup = require("/startup/functions/fnEasySambaStartup.js");
 const fnEasySambaLoop = require("/startup/functions/fnEasySambaLoop.js");
+const fnKill = require("/startup/functions/fnKill.js");
 
 
 
@@ -24,6 +25,10 @@ fnMain().then(() => {
 async function fnMain(){
     // handle SIGTERM signals in case someone tries to stop this script
     process.on("SIGTERM", () => {
+        fnKill("/usr/sbin/smbd --foreground --no-process-group");
+        fnKill("/usr/sbin/nmbd --foreground --no-process-group");
+        fnKill(`node ${CFG}/config.gen.js`);
+        fnKill("node /startup/remote-api/index.js");
         process.exit(0);
     });
     
