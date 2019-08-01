@@ -22,7 +22,7 @@
     [deprecated] config.unsetGuest()
     config.version()
     [deprecated] config.unsetVersion()
-    config.global()
+    [deprecated] config.global()
     [deprecated] config.unsetGlobal()
 
     config.users.add()
@@ -1937,7 +1937,10 @@ const ConfigGen = class {
     }
 
     // config.global()
+    // DEPRECATED
     global(input = undefined){
+        console.log(`[WARNING] 'config.global()' is deprecated.`);
+    
         if (arguments.length < 1){
             return this["$global"];
         }

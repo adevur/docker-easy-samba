@@ -7,6 +7,7 @@ module.exports = fnValidateConfigGlobal;
 
 
 // dependencies
+const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
@@ -20,6 +21,9 @@ function fnValidateConfigGlobal(config){
     if (fnHas(config, "global") !== true){
         return true;
     }
+    
+    // "global" property is deprecated
+    log(`[WARNING] 'global' section is deprecated.`);
 
     // "global" must be a non-empty array
     if (fnIsArray(config["global"]) !== true || config["global"].length < 1){
