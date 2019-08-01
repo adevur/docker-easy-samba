@@ -19,10 +19,9 @@ const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
 
-function fnAPI(str, tk){
+function fnAPI(str, config){
     try {
-        const token = tk["token"];
-        assert( fnIsString(token) && token.length > 0 );
+        const token = config["token"];
         
         const METHODS = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba"];
     
@@ -108,20 +107,20 @@ function fnAPI(str, tk){
             else if (input["method"] === "change-token"){
                 const backup = token;
                 try {
-                    tk["token"] = params["new-token"];
-                    assert( fs.existsSync(`${CFG}/remote-api.json`) );
-                    const config = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
                     config["token"] = params["new-token"];
-                    assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config)) );
+                    assert( fs.existsSync(`${CFG}/remote-api.json`) );
+                    const fileConfig = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
+                    fileConfig["token"] = params["new-token"];
+                    assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(fileConfig)) );
                     return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
                 }
                 catch (error){
                     try {
-                        tk["token"] = backup;
-                        assert( fs.existsSync(`${CFG}/remote-api.json`) );
-                        const config = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
                         config["token"] = backup;
-                        assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config)) );
+                        assert( fs.existsSync(`${CFG}/remote-api.json`) );
+                        const fileConfig = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
+                        fileConfig["token"] = backup;
+                        assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(fileConfig)) );
                     }
                     catch (error){
                         // do nothing

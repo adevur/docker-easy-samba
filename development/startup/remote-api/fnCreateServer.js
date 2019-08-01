@@ -14,7 +14,7 @@ const fnAPI = require("/startup/remote-api/fnAPI.js");
 
 
 
-function fnCreateServer(httpsKey, httpsCert, port, tk){
+function fnCreateServer(httpsKey, httpsCert, config){
     return new Promise((resolve, reject) => {
         try {
             log(`[LOG] starting HTTPS server...`);
@@ -23,7 +23,7 @@ function fnCreateServer(httpsKey, httpsCert, port, tk){
                     const body = [];
                     req.on("data", (chunk) => { body.push(chunk); });
                     req.on("end", () => {
-                        const result = fnAPI(Buffer.concat(body).toString(), tk);
+                        const result = fnAPI(Buffer.concat(body).toString(), config);
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify(result), "utf8");
                     });
@@ -32,8 +32,8 @@ function fnCreateServer(httpsKey, httpsCert, port, tk){
                     res.writeHead(200, { "Content-Type": "application/json" });
                     res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:WRONG-REQUEST" }), "utf8");
                 }
-            }).listen(port, () => {
-                if (server.address().port !== port){
+            }).listen(config["port"], () => {
+                if (server.address().port !== config["port"]){
                     reject(new Error("ERROR"));
                 }
                 else {

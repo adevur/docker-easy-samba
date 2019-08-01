@@ -53,8 +53,6 @@ async function fnStartServer(){
     // if "remote-api.json" could not be loaded, or it is not valid, abort
     assert(config !== false);
 
-    const token = config["token"];
-
     // load private key and certificate for the HTTPS server
     //   if they don't exist, generate new ones
     let httpsKey = undefined;
@@ -98,10 +96,11 @@ async function fnStartServer(){
             log(`[WARNING] it's been defined a custom port in '${CFG}/remote-api.json', but it will not be used, since it is not in the allowed range 1024-49151.`);
         }
     }
+    config["port"] = port;
 
     // start the HTTPS server
     try {
-        await fnCreateServer(httpsKey, httpsCert, port, { "token": token });
+        await fnCreateServer(httpsKey, httpsCert, config);
     }
     catch (error){
         log(`[ERROR] it's not been possible to start HTTPS server.`);

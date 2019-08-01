@@ -1507,7 +1507,12 @@ const ConfigGen = class {
                     return true;
                 }
                 catch (error){
-                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    if (err === "REMOTE-API:SET-CONFIG:CANNOT-WRITE"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
                 }
             }
 
