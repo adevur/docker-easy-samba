@@ -64,7 +64,9 @@
     remote.getConfig()
     remote.setConfig()
     remote.getInfo()
-    remote.hello()
+    [deprecated] remote.hello()
+    remote.isReachable()
+    remote.isTokenValid()
     [deprecated] remote.getLogs()
     remote.getRemoteLogs()
     remote.getAvailableAPI()
@@ -1382,9 +1384,9 @@ const ConfigGen = class {
                 return this;
             }
 
-            cmd(method, other = {}){
+            cmd(method, other = {}, tk = undefined){
                 const url = this.url;
-                const token = this.token;
+                const token = (tk === undefined) ? this.token : tk;
                 const ca = this.ca;
 
                 return new Promise((resolve, reject) => {
@@ -1517,7 +1519,10 @@ const ConfigGen = class {
             }
 
             // remote.hello()
+            // DEPRECATED
             async hello(){
+                console.log(`[WARNING] 'remote.hello()' is deprecated. Use 'remote.isReachable()' and 'remote.isTokenValid()'.`);
+            
                 const { res, err } = await this.cmd("hello");
                 try {
                     assert( err === false );
@@ -1529,9 +1534,41 @@ const ConfigGen = class {
                 }
             }
             
+            // remote.isReachable()
+            async isReachable(){
+                const { res, err } = await this.cmd("hello", {}, "");
+                
+                if (err === "REMOTE-API:INVALID-TOKEN" || err === "REMOTE-API:API-NOT-SUPPORTED" || res === "world"){
+                    return true;
+                }
+                else if (err === "CANNOT-CONNECT"){
+                    return false;
+                }
+                else {
+                    throw new Error(err);
+                }
+            }
+            
+            // remote.isTokenValid()
+            async isTokenValid(){
+                const { res, err } = await this.cmd("hello");
+                
+                if (res === "world" || err === "REMOTE-API:API-NOT-SUPPORTED"){
+                    return true;
+                }
+                else if (err === "REMOTE-API:INVALID-TOKEN"){
+                    return false;
+                }
+                else {
+                    throw new Error(err);
+                }
+            }
+            
             // remote.getLogs()
             // DEPRECATED
             async getLogs(){
+                console.log(`[WARNING] 'remote.getLogs()' is deprecated. Use 'remote.getRemoteLogs()'.`);
+            
                 const { res, err } = await this.cmd("get-logs");
                 try {
                     assert( err === false );
