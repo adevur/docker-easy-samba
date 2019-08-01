@@ -14,6 +14,7 @@ const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
+const fnSecureStringCompare = require("/startup/functions/fnSecureStringCompare.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -29,7 +30,7 @@ function fnAPI(str, token){
         const id = input["id"];
         const params = input["params"];
         
-        if (fnHas(params, "token") !== true || fnIsString(params["token"]) !== true || params["token"] !== token){
+        if (fnHas(params, "token") !== true || fnIsString(params["token"]) !== true || fnSecureStringCompare(params["token"], token) !== true){
             return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-TOKEN`, "id": id };
         }
         
