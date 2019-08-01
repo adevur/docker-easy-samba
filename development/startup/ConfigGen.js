@@ -65,7 +65,8 @@
     remote.setConfig()
     remote.getInfo()
     remote.hello()
-    remote.getLogs()
+    [deprecated] remote.getLogs()
+    remote.getRemoteLogs()
     remote.getAvailableAPI()
     remote.getConfigHash()
 
@@ -1521,6 +1522,7 @@ const ConfigGen = class {
             }
             
             // remote.getLogs()
+            // DEPRECATED
             async getLogs(){
                 const { res, err } = await this.cmd("get-logs");
                 try {
@@ -1528,6 +1530,21 @@ const ConfigGen = class {
                     assert( fnHas(res, "easy-samba-logs") );
                     assert( fnIsString(res["easy-samba-logs"]) );
                     return res["easy-samba-logs"];
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
+            // remote.getRemoteLogs()
+            async getRemoteLogs(){
+                const { res, err } = await this.cmd("get-logs");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "easy-samba-logs") );
+                    assert( fnIsString(res["easy-samba-logs"]) );
+                    assert( fnHas(res, "remote-api-logs") ? fnIsString(res["remote-api-logs"]) : true );
+                    return res;
                 }
                 catch (error){
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");

@@ -24,6 +24,7 @@ function fnAPI(str, token){
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
         assert( input["jsonrpc"] === "2.0" );
         assert( fnIsString(input["id"]) );
+        assert( fnIsString(input["method"]) );
 
         const id = input["id"];
         const params = input["params"];
@@ -45,6 +46,7 @@ function fnAPI(str, token){
                 try {
                     if (fnHas(params, "hash")){
                         const configjson = (fs.existsSync(`${CFG}/remote-api.config.json`)) ? fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8") : "{}";
+                        assert( fnIsString(configjson) );
                         const hash = crypto.createHash("md5").update(configjson, "utf8").digest("hex").toUpperCase();
                         assert( hash === params["hash"].toUpperCase() );
                     }
@@ -82,9 +84,10 @@ function fnAPI(str, token){
             }
             else if (input["method"] === "get-logs"){
                 try {
-                    const logs = (CFG === "/share/config" && fs.existsSync("/share/config/easy-samba.logs")) ? fs.readFileSync("/share/config/easy-samba.logs", "utf8") : "";
-                    assert( fnIsString(logs) );
-                    return { "jsonrpc": "2.0", "result": { "easy-samba-logs": logs }, "error": null, "id": id };
+                    const esLogs = (CFG === "/share/config" && fs.existsSync("/share/config/easy-samba.logs")) ? fs.readFileSync("/share/config/easy-samba.logs", "utf8") : "";
+                    const raLogs = (CFG === "/share/config" && fs.existsSync("/share/config/remote-api.logs")) ? fs.readFileSync("/share/config/remote-api.logs", "utf8") : "";
+                    assert( fnIsString(esLogs) && fnIsString(raLogs) );
+                    return { "jsonrpc": "2.0", "result": { "easy-samba-logs": esLogs, "remote-api-logs": raLogs }, "error": null, "id": id };
                 }
                 catch (error){
                     return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:GET-LOGS:CANNOT-READ", "id": id };
