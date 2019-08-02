@@ -74,6 +74,8 @@
     remote.getConfigPath()
     remote.changeRemoteToken()
     remote.stopEasySamba()
+    remote.pauseEasySamba()
+    remote.startEasySamba()
 
 */
 
@@ -1524,7 +1526,8 @@ const ConfigGen = class {
                     assert( fnHas(res, ["running", "version"]) );
                     assert( res["running"] === true || res["running"] === false );
                     assert( fnIsString(res["version"]) );
-                    return { running: res.running, version: res.version };
+                    assert( fnHas(res, "config-path") ? fnIsString(res["config-path"]) : true );
+                    return res;
                 }
                 catch (error){
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");
@@ -1693,6 +1696,42 @@ const ConfigGen = class {
                 }
                 catch (error){
                     if (err === "REMOTE-API:STOP-EASY-SAMBA:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
+                }
+            }
+            
+            // remote.pauseEasySamba()
+            async pauseEasySamba(){
+                const { res, err } = await this.cmd("pause-easy-samba");
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:PAUSE-EASY-SAMBA:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
+                }
+            }
+            
+            // remote.startEasySamba()
+            async startEasySamba(){
+                const { res, err } = await this.cmd("start-easy-samba");
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:START-EASY-SAMBA:ERROR"){
                         return false;
                     }
                     else {

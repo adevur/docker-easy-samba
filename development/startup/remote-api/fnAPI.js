@@ -14,6 +14,7 @@ const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
+const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnSecureStringCompare = require("/startup/functions/fnSecureStringCompare.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
@@ -23,7 +24,7 @@ function fnAPI(str, config){
     try {
         const token = config["token"];
         
-        const METHODS = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba"];
+        const METHODS = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba", "pause-easy-samba", "start-easy-samba"];
     
         const input = JSON.parse(str);
         assert( fnHas(input, ["jsonrpc", "method", "params", "id"]) );
@@ -136,6 +137,24 @@ function fnAPI(str, config){
                 }
                 catch (error){
                     return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:STOP-EASY-SAMBA:ERROR", "id": id };
+                }
+            }
+            else if (input["method"] === "pause-easy-samba"){
+                try {
+                    assert( fnWriteFile("/startup/easy-samba.pause") );
+                    return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
+                }
+                catch (error){
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:PAUSE-EASY-SAMBA:ERROR", "id": id };
+                }
+            }
+            else if (input["method"] === "start-easy-samba"){
+                try {
+                    assert( fnDeleteFile("/startup/easy-samba.pause") );
+                    return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
+                }
+                catch (error){
+                    return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:START-EASY-SAMBA:ERROR", "id": id };
                 }
             }
             else {

@@ -48,6 +48,9 @@ function fnEasySambaStartup(){
     // delete "/startup/easy-samba.stop"
     fnDeleteFile("/startup/easy-samba.stop");
     
+    // delete "/startup/easy-samba.pause"
+    fnDeleteFile("/startup/easy-samba.pause");
+    
     // in case of first startup, save a list of container's OS native users
     if (fs.existsSync("/startup/native_users.json") !== true){
         fnWriteFile("/startup/native_users.json", JSON.stringify(fnListUsers()));
