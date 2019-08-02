@@ -32,27 +32,46 @@ function fnValidateConfigSharesQuota(share, sharedb){
         
         // check "limit" property
         assert( fnIsString(quota["limit"]) && quota["limit"].length > 2 && quota["limit"].length < 12 );
-        const u = quota["limit"].slice(quota["limit"].length - 2, quota["limit"].length);
-        assert( ["kB", "MB", "GB"].includes(u) );
-        let n = quota["limit"].slice(0, quota["limit"].length - 2);
-        assert( fnValidateString(n, ["09"]) );
-        n = parseInt(n, 10);
-        let m = 0;
-        m = (u === "kB") ? (n * 1024) : m;
-        m = (u === "MB") ? (n * 1024 * 1024) : m;
-        m = (u === "GB") ? (n * 1024 * 1024 * 1024) : m;
+        const unit = quota["limit"].slice(quota["limit"].length - 2, quota["limit"].length);
+        assert( ["kB", "MB", "GB"].includes(unit) );
+        let limitRaw = quota["limit"].slice(0, quota["limit"].length - 2);
+        assert( fnValidateString(limitRaw, ["09"]) );
+        limitRaw = parseInt(limitRaw, 10);
+        let limitBytes = 0;
+        limitBytes = (unit === "kB") ? (limitRaw * 1024) : limitBytes;
+        limitBytes = (unit === "MB") ? (limitRaw * 1024 * 1024) : limitBytes;
+        limitBytes = (unit === "GB") ? (limitRaw * 1024 * 1024 * 1024) : limitBytes;
         
         // check "whitelist" property
         assert( fnIsArray(quota["whitelist"]) );
-        assert( quota["whitelist"].every(fnIsString) );
+        let whitelist = [];
         assert(quota["whitelist"].every((e) => {
-            return sharedb.users.includes(e);
+            if (fnIsString(e) !== true){
+                return false;
+            }
+        
+            if (e === "nobody"){
+                whitelist.push("nobody");
+                return true;
+            }
+            else if (sharedb.users.includes(e)){
+                whitelist.push(e);
+                return true;
+            }
+            else if (fnHas(sharedb.groups, e)){
+                whitelist = whitelist.concat(sharedb.groups[e]);
+                return true;
+            }
+            else {
+                return false;
+            }
         }));
+        
         // remove duplicates from "whitelist"
-        quota["whitelist"] = fnRemoveDuplicates(quota["whitelist"]);
+        whitelist = fnRemoveDuplicates(whitelist);
         
         // add "$soft-quota" to "share"
-        share["$soft-quota"] = { "limit": m, "whitelist": quota["whitelist"] };
+        share["$soft-quota"] = { "limit": limitBytes, "whitelist": whitelist };
         
         return true;
     }

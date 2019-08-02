@@ -62,7 +62,7 @@ function fnCreateShares(shares){
         if (fnHas(share, "guest")){
             let perm = (share["guest"] === "rw") ? "rwx" : "rx";
             // apply soft-quota
-            if (quota !== undefined && quota["limit"] <= du){
+            if (quota !== undefined && quota["whitelist"].includes("nobody") !== true && quota["limit"] <= du){
                 perm = "rx";
             }
             entries.push(`u:nobody:${perm},g:nobody:${perm}`);
