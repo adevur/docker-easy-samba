@@ -21,7 +21,7 @@ function fnLog(path){
         return args.every((input) => {
             try {
                 const msg = String(input);
-                const color = (msg.startsWith("[ERROR]") || msg.startsWith("[WARNING]")) ? "\x1b[33m" : "";
+                const color = (msg.startsWith("[ERROR]") || msg.startsWith("[WARNING]") || msg.startsWith("[DEBUG]")) ? "\x1b[33m" : "";
                 
                 process.stdout.write(color + msg + "\x1b[0m" + "\n");
                 
