@@ -194,7 +194,7 @@ async function fnEasySambaCycleProcess(vars){
             res = await fnUpdateConfig(config);
             vars["previousConfig"] = rawConfig;
         }
-        else if (previousConfig !== undefined && config === false){
+        else if (vars["previousConfig"] !== undefined && config === false){
             res = await fnUpdateConfig(JSON.parse(vars["previousConfig"]));
         }
         else if (vars["previousConfig"] !== undefined && config !== false){
@@ -224,15 +224,22 @@ async function fnEasySambaCycleProcess(vars){
 
 
 
+// FIXME: implement "quotaBrokenAware" in order not to restart SAMBA constantly
 function fnEasySambaCycleQuota(vars){
     if (vars["shares"] !== undefined && fs.existsSync("/startup/easy-samba.running")){
         // if there's at least one shared folder with soft-quota
         if (vars["shares"].some((e) => { return fnHas(e, "$soft-quota"); })){
-            try {
-                assert( fnCreateShares(vars["shares"]) === true );
-            }
-            catch (error){
-                log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
+            if (require("/startup/functions/fnDiskUsage.js")("/share/s1") >= (50 * 1024 * 1024)){
+                try {
+                    fnKill("/usr/sbin/smbd --foreground --no-process-group");
+                    fnKill("/usr/sbin/nmbd --foreground --no-process-group");
+                }
+                catch (error){
+                    fnDeleteFile("/startup/easy-samba.running");
+                    vars["previousConfig"] = undefined;
+                    vars["shares"] = undefined;
+                    log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
+                }
             }
         }
     }
