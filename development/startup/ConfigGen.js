@@ -76,6 +76,7 @@
     remote.stopEasySamba()
     remote.pauseEasySamba()
     remote.startEasySamba()
+    remote.certNego()
 
 */
 
@@ -175,6 +176,40 @@ const fnRemoveDuplicates = (input) => {
         return (result.indexOf(e) === i);
     });
     return result;
+};
+
+// fnRequestHTTPS()
+//   makes an HTTPS request and returns a Promise
+const fnRequestHTTPS = (url, options, data = undefined) => {
+    return new Promise((resolve, reject) => {
+        let result = [];
+
+        try {
+            const req = https.request(url, options, (res) => {
+                res.on("data", (chunk) => {
+                    result.push(chunk);
+                });
+
+                res.on("end", () => {
+                    result = Buffer.concat(result).toString();
+                    resolve(result);
+                });
+            });
+
+            req.on("error", () => {
+                reject(new Error("CANNOT-CONNECT"));
+            });
+
+            if (data !== undefined){
+                req.write(data);
+            }
+            
+            req.end();
+        }
+        catch (error){
+            reject(new Error("CANNOT-CONNECT"));
+        }
+    });
 };
 
 
@@ -1387,85 +1422,118 @@ const ConfigGen = class {
 
                 return this;
             }
-
-            cmd(method, other = {}, tk = undefined){
+            
+            // remote.certNego()
+            async certNego(){
+                const thisUrl = new URL(this.url);
+                let url = new URL("https://localhost:9595/cert-nego");
+                url.hostname = thisUrl.hostname;
+                url.port = thisUrl.port;
+                url = url.toString();
+                const token = this.token;
+                
+                const options = {
+                    method: "GET",
+                    rejectUnauthorized: false,
+                    requestCert: true
+                };
+                
+                try {
+                    let result = await fnRequestHTTPS(url, options);
+                    result = JSON.parse(result);
+                    assert( fnHas(result, ["jsonrpc", "result"]) );
+                    assert( result["jsonrpc"] === "2.0" );
+                    assert( fnIsString(result["result"]) );
+                    
+                    const decipher = crypto.createDecipher("aes-256-ctr", token);
+                    let decrypted = decipher.update(result["result"], "hex", "utf8");
+                    decrypted += decipher.final("utf8");
+                    const parsed = JSON.parse(decrypted);
+                    
+                    assert( fnHas(parsed, ["httpsCert", "certHash"]) );
+                    assert( [parsed["httpsCert"], parsed["certHash"]].every(fnIsString) );
+                    assert( parsed["certHash"].toUpperCase() === crypto.createHash("md5").update(parsed["httpsCert"], "ascii").digest("hex").toUpperCase() );
+                    
+                    return parsed["httpsCert"];
+                }
+                catch (error){
+                    return undefined;
+                }
+            }
+            
+            async cmd(method, other = {}, tk = undefined){
                 const url = this.url;
                 const token = (tk === undefined) ? this.token : tk;
-                const ca = this.ca;
-
-                return new Promise((resolve, reject) => {
-                    const id = crypto.randomBytes(16).toString("hex").toUpperCase();
-                    const body = { "token": token };
-                    if (fnHas(other, "config.json")){
-                        body["config.json"] = other["config.json"];
-                    }
-                    if (fnHas(other, "hash")){
-                        body["hash"] = other["hash"];
-                    }
-                    if (fnHas(other, "new-token")){
-                        body["new-token"] = other["new-token"];
-                    }
-                    if (fnHas(other, "message")){
-                        body["message"] = other["message"];
-                    }
-                    const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
-
-                    const options = {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Content-Length": data.length
-                        }
-                    };
-                    if (ca === "unsafe") {
-                        options.rejectUnauthorized = false;
-                        options.requestCert = true;
-                    }
-                    else if (fnIsString(ca)){
-                        options.ca = ca;
-                    }
-
-                    let result = [];
-
+                let ca = this.ca;
+                
+                if (ca === undefined){
                     try {
-                        const req = https.request(url, options, (res) => {
-                            res.on("data", (chunk) => {
-                                result.push(chunk);
-                            });
-
-                            res.on("end", () => {
-                                try {
-                                    result = Buffer.concat(result).toString();
-                                    result = JSON.parse(result);
-                                    assert( fnHas(result, ["jsonrpc", "result", "id"]) );
-                                    assert( result["jsonrpc"] === "2.0" );
-                                    assert( result["id"] === id );
-                                    assert( fnHas(result, "error") ? (result["error"] === null || fnIsString(result["error"])) : true );
-                                    
-                                    if (fnHas(result, "error") && result["error"] !== null){
-                                        resolve({ res: undefined, err: result["error"] });
-                                        return;
-                                    }
-                                    
-                                    resolve({ res: result["result"], err: false });
-                                }
-                                catch (error){
-                                    resolve({ res: undefined, err: "INVALID-RESPONSE" });
-                                }
-                            });
-                        });
-
-                        req.on("error", () => {
-                            resolve({ res: undefined, err: "CANNOT-CONNECT" });
-                        });
-
-                        req.write(data);
-                        req.end();
+                        ca = await this.certNego();
+                        this.ca = ca;
                     }
                     catch (error){
-                        resolve({ res: undefined, err: "CANNOT-CONNECT" });
+                        ca = "global";
                     }
-                });
+                }
+                
+                const id = crypto.randomBytes(16).toString("hex").toUpperCase();
+                const body = { "token": token };
+                if (fnHas(other, "config.json")){
+                    body["config.json"] = other["config.json"];
+                }
+                if (fnHas(other, "hash")){
+                    body["hash"] = other["hash"];
+                }
+                if (fnHas(other, "new-token")){
+                    body["new-token"] = other["new-token"];
+                }
+                if (fnHas(other, "message")){
+                    body["message"] = other["message"];
+                }
+                const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
+
+                const options = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Content-Length": data.length
+                    }
+                };
+                if (ca === "unsafe") {
+                    options.rejectUnauthorized = false;
+                    options.requestCert = true;
+                }
+                else if (ca === "global"){
+                    // do nothing
+                }
+                else if (fnIsString(ca)){
+                    options.ca = ca;
+                }
+                
+                let result = undefined;
+                try {
+                    result = await fnRequestHTTPS(url, options, data);
+                }
+                catch (error){
+                    return { res: undefined, err: "CANNOT-CONNECT" };
+                }
+                
+                try {
+                    result = JSON.parse(result);
+                    assert( fnHas(result, ["jsonrpc", "result", "id"]) );
+                    assert( result["jsonrpc"] === "2.0" );
+                    assert( result["id"] === id );
+                    assert( fnHas(result, "error") ? (result["error"] === null || fnIsString(result["error"])) : true );
+                    
+                    if (fnHas(result, "error") && result["error"] !== null){
+                        return { res: undefined, err: result["error"] };
+                    }
+                    
+                    return { res: result["result"], err: false };
+                }
+                catch (error){
+                    return { res: undefined, err: "INVALID-RESPONSE" };
+                }
             }
 
             // remote.getConfig()

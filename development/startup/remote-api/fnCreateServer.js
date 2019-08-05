@@ -8,6 +8,7 @@ module.exports = fnCreateServer;
 
 // dependencies
 const https = require("https");
+const crypto = require("crypto");
 const log = require("/startup/functions/fnLog.js")("/share/config/remote-api.logs");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnAPI = require("/startup/remote-api/fnAPI.js");
@@ -28,6 +29,11 @@ function fnCreateServer(httpsKey, httpsCert, config){
                         res.end(JSON.stringify(result), "utf8");
                     });
                 }
+                else if (req.url === "/cert-nego" && req.method === "GET"){
+                    const result = { "jsonrpc": "2.0", "result": fnGetCryptedCert(httpsCert, config["token"]), "error": null };
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify(result), "utf8");
+                }
                 else {
                     res.writeHead(200, { "Content-Type": "application/json" });
                     res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:WRONG-REQUEST" }), "utf8");
@@ -46,6 +52,20 @@ function fnCreateServer(httpsKey, httpsCert, config){
             reject(error);
         }
     });
+}
+
+
+
+function fnGetCryptedCert(httpsCert, token){
+    const certHash = crypto.createHash("md5").update(httpsCert, "ascii").digest("hex").toUpperCase();
+    const cipher = crypto.createCipher("aes-256-ctr", token);
+    
+    const body = { httpsCert: httpsCert, certHash: certHash };
+    
+    let crypted = cipher.update(JSON.stringify(body), "utf8", "hex").toUpperCase();
+    crypted += cipher.final("hex").toUpperCase();
+    
+    return crypted;
 }
 
 
