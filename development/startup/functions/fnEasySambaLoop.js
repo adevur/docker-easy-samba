@@ -22,6 +22,7 @@ const fnKill = require("/startup/functions/fnKill.js");
 const fnCreateShares = require("/startup/functions/fnCreateShares.js");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
+const fnDiskUsage = require("/startup/functions/fnDiskUsage.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -35,7 +36,8 @@ async function fnEasySambaLoop(){
         previousConfig: undefined,
         shares: undefined,
         paused: false,
-        pausedAware: false
+        pausedAware: false,
+        quotaBroken: false
     };
 
     // loop every 10 seconds
@@ -61,12 +63,12 @@ async function fnEasySambaCycle(vars){
 
     // start EasySamba Remote API
     await fnStartRemoteAPI();
-
-    // start easy-samba configuration process
-    await fnEasySambaCycleProcess(vars);
     
     // apply soft-quota
     fnEasySambaCycleQuota(vars);
+
+    // start easy-samba configuration process
+    await fnEasySambaCycleProcess(vars);
 }
 
 
@@ -150,6 +152,7 @@ async function fnEasySambaCycleProcess(vars){
         fnKill("/usr/sbin/nmbd --foreground --no-process-group");
         vars["previousConfig"] = undefined;
         vars["shares"] = undefined;
+        vars["quotaBroken"] = false;
         log(`[WARNING] easy-samba has been paused via Remote API. It will not restart until you send command 'start-easy-samba' via Remote API.\n`);
         vars["pausedAware"] = true;
         return;
@@ -176,11 +179,6 @@ async function fnEasySambaCycleProcess(vars){
         let res = false;
         
         vars["shares"] = undefined;
-        
-        // if SAMBA crashed, show a warning
-        if (sambaCrashed){
-            log(`[WARNING] 'smbd' or 'nmbd' crashed unexpectedly.`);
-        }
         
         if (vars["previousConfig"] !== undefined || config !== false){
             log(`[LOG] SAMBA server configuration process has started.`);
@@ -214,6 +212,7 @@ async function fnEasySambaCycleProcess(vars){
             fnKill("/usr/sbin/nmbd --foreground --no-process-group");
             vars["previousConfig"] = undefined;
             vars["shares"] = undefined;
+            vars["quotaBroken"] = false;
             log(`[WARNING] configuration process has failed, re-trying in 10 seconds.`);
         }
 
@@ -224,23 +223,33 @@ async function fnEasySambaCycleProcess(vars){
 
 
 
-// FIXME: implement "quotaBrokenAware" in order not to restart SAMBA constantly
 function fnEasySambaCycleQuota(vars){
     if (vars["shares"] !== undefined && fs.existsSync("/startup/easy-samba.running")){
-        // if there's at least one shared folder with soft-quota
-        if (vars["shares"].some((e) => { return fnHas(e, "$soft-quota"); })){
-            if (require("/startup/functions/fnDiskUsage.js")("/share/s1") >= (50 * 1024 * 1024)){
-                try {
-                    fnKill("/usr/sbin/smbd --foreground --no-process-group");
-                    fnKill("/usr/sbin/nmbd --foreground --no-process-group");
-                }
-                catch (error){
-                    fnDeleteFile("/startup/easy-samba.running");
-                    vars["previousConfig"] = undefined;
-                    vars["shares"] = undefined;
-                    log("[WARNING] it's not been possible to apply soft-quota to shared folders.\n");
+        // get the list of shared folders with broken soft-quota
+        let s = [];
+        vars["shares"].forEach((e) => {
+            if (fnHas(e, "$soft-quota")){
+                const du = fnDiskUsage(e["path"]);
+                if (du >= e["$soft-quota"]["limit"]){
+                    s.push(e["path"]);
                 }
             }
+        });
+        s = s.map((e) => { return `'${e}'`; });
+        const broken = (s.length > 0);
+        
+        // if limit has been broken
+        if (broken && vars["quotaBroken"] !== true){
+            log(`[WARNING] soft-quota limit has been broken by the following shared folders: ${s.join(", ")}.\n`);
+            vars["quotaBroken"] = true;
+            fnKill("/usr/sbin/smbd --foreground --no-process-group");
+            fnKill("/usr/sbin/nmbd --foreground --no-process-group");
+        }
+        // if limit has been restored
+        else if (broken !== true && vars["quotaBroken"]){
+            vars["quotaBroken"] = false;
+            fnKill("/usr/sbin/smbd --foreground --no-process-group");
+            fnKill("/usr/sbin/nmbd --foreground --no-process-group");
         }
     }
 }
