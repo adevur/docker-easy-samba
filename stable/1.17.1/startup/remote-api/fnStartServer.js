@@ -1,0 +1,112 @@
+
+
+
+// exports
+module.exports = fnStartServer;
+
+
+
+// dependencies
+const fs = require("fs");
+const assert = require("assert");
+const { spawnSync } = require("child_process");
+const log = require("/startup/functions/fnLog.js")("/share/config/remote-api.logs");
+const fnHas = require("/startup/functions/fnHas.js");
+const fnIsString = require("/startup/functions/fnIsString.js");
+const fnIsInteger = require("/startup/functions/fnIsInteger.js");
+const fnWriteFile = require("/startup/functions/fnWriteFile.js");
+const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
+const CFG = require("/startup/functions/fnGetConfigDir.js")();
+const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
+const fnCreateServer = require("/startup/remote-api/fnCreateServer.js");
+
+
+
+async function fnStartServer(){
+    log(`[LOG] EasySamba Remote API startup procedure has started.`);
+
+    // load "remote-api.json"
+    log(`[LOG] loading '${CFG}/remote-api.json'...`);
+    let config = false;
+    try {
+        assert( fs.existsSync(`${CFG}/remote-api.json`) );
+        try {
+            config = JSON.parse(fs.readFileSync(`${CFG}/remote-api.json`, "utf8"));
+        }
+        catch (error){
+            config = {};
+            log(`[WARNING] '${CFG}/remote-api.json' exists, but it is not a valid JSON file.`);
+        }
+        if (fnHas(config, "token") !== true){
+            log(`[WARNING] since '${CFG}/remote-api.json' doesn't have a 'token' property, a new token will be randomly-generated and will be written to file '${CFG}/remote-api.json'...`);
+            config["token"] = ConfigGen.genRandomPassword(12);
+            fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config));
+        }
+        assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
+        log(`[LOG] '${CFG}/remote-api.json' has been correctly loaded and token has been successfully validated.`);
+    }
+    catch (error){
+        config = false;
+        log(`[ERROR] it's not been possible to validate the token in '${CFG}/remote-api.json'.`);
+    }
+
+    // if "remote-api.json" could not be loaded, or it is not valid, abort
+    assert(config !== false);
+
+    // load private key and certificate for the HTTPS server
+    //   if they don't exist, generate new ones
+    let httpsKey = undefined;
+    let httpsCert = undefined;
+    try {
+        assert( fs.existsSync(`${CFG}/remote-api.key`) );
+        assert( fs.existsSync(`${CFG}/remote-api.cert`) );
+        httpsKey = fs.readFileSync(`${CFG}/remote-api.key`, "ascii");
+        httpsCert = fs.readFileSync(`${CFG}/remote-api.cert`, "ascii");
+        log(`[LOG] private key and certificate for HTTPS protocol have been correctly loaded.`);
+    }
+    catch (error){
+        log(`[WARNING] it's not been possible to read private key and certificate for HTTPS protocol.`);
+        try {
+            log(`[LOG] generating new private key '${CFG}/remote-api.key' and new certificate '${CFG}/remote-api.cert' using OpenSSL...`);
+            assert( fnDeleteFile(`${CFG}/remote-api.key`) );
+            assert( fnDeleteFile(`${CFG}/remote-api.cert`) );
+
+            spawnSync("openssl", ["req", "-nodes", "-days", "7300", "-new", "-x509", "-keyout", `${CFG}/remote-api.key`, "-out", `${CFG}/remote-api.cert`, "-subj", "/C=US/ST=Some-State/O=localhost/CN=localhost"], { stdio: "ignore" });
+
+            assert( fs.existsSync(`${CFG}/remote-api.key`) );
+            assert( fs.existsSync(`${CFG}/remote-api.cert`) );
+            httpsKey = fs.readFileSync(`${CFG}/remote-api.key`, "ascii");
+            httpsCert = fs.readFileSync(`${CFG}/remote-api.cert`, "ascii");
+            log(`[LOG] new private key and certificate have been correctly generated and loaded.`);
+        }
+        catch (error){
+            log(`[ERROR] it's not been possible to generate a new private key and a new certificate for HTTPS protocol.`);
+            assert(false);
+        }
+    }
+
+    // load the port to use
+    let port = 9595;
+    if (fnHas(config, "port")){
+        if (fnIsInteger(config["port"]) && config["port"] >= 1024 && config["port"] <= 49151){
+            port = config["port"];
+            log(`[LOG] EasySamba Remote API will listen to custom port ${port}.`);
+        }
+        else {
+            log(`[WARNING] it's been defined a custom port in '${CFG}/remote-api.json', but it will not be used, since it is not in the allowed range 1024-49151.`);
+        }
+    }
+    config["port"] = port;
+
+    // start the HTTPS server
+    try {
+        await fnCreateServer(httpsKey, httpsCert, config);
+    }
+    catch (error){
+        log(`[ERROR] it's not been possible to start HTTPS server.`);
+        throw error;
+    }
+}
+
+
+

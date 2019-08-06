@@ -2,11 +2,28 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.17.0`
+### Current stable release: `1.17.1`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] 1.17.1 (2019-08-06 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Improved behavior of function `remote.certNego()` in `ConfigGen.js` library.
+
+  - Improved error handling in `ConfigGen.js` library.
+  
+  - Minor code cleanup.
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] [SECURITY] 1.17.0 (2019-08-06 UTC)
 - New features:
