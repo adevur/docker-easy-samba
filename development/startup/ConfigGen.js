@@ -1432,24 +1432,43 @@ const ConfigGen = class {
                 url = url.toString();
                 const token = this.token;
                 
-                const options = {
-                    method: "GET",
-                    rejectUnauthorized: false,
-                    requestCert: true
-                };
-                
+                // check if remote container is reachable
                 try {
+                    const tempRemote = ConfigGen.remote(thisUrl.hostname, parseInt(thisUrl.port, 10), token, "unsafe");
+                    assert( (await tempRemote.isReachable()) === true );
+                }
+                catch (error){
+                    throw new Error("CANNOT-CONNECT");
+                }
+                
+                // get remote container's response and try to decrypt it
+                let decrypted = undefined;
+                try {
+                    const options = {
+                        method: "GET",
+                        rejectUnauthorized: false,
+                        requestCert: true
+                    };
+                    
                     let result = await fnRequestHTTPS(url, options);
                     result = JSON.parse(result);
                     assert( fnHas(result, ["jsonrpc", "result"]) );
                     assert( result["jsonrpc"] === "2.0" );
                     assert( fnIsString(result["result"]) );
+                    assert( fnHas(result, "error") ? (result["error"] === null) : true );
                     
                     const decipher = crypto.createDecipher("aes-256-ctr", token);
-                    let decrypted = decipher.update(result["result"], "hex", "utf8");
+                    decrypted = decipher.update(result["result"], "hex", "utf8");
                     decrypted += decipher.final("utf8");
+                }
+                catch (error){
+                    throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
+                }
+                
+                // check if decryption has been successful
+                try {
                     const parsed = JSON.parse(decrypted);
-                    
+                
                     assert( fnHas(parsed, ["httpsCert", "certHash"]) );
                     assert( [parsed["httpsCert"], parsed["certHash"]].every(fnIsString) );
                     assert( parsed["certHash"].toUpperCase() === crypto.createHash("md5").update(parsed["httpsCert"], "ascii").digest("hex").toUpperCase() );
@@ -1457,7 +1476,7 @@ const ConfigGen = class {
                     return parsed["httpsCert"];
                 }
                 catch (error){
-                    return undefined;
+                    throw new Error(`INVALID-TOKEN`);
                 }
             }
             
@@ -1472,7 +1491,15 @@ const ConfigGen = class {
                         this.ca = ca;
                     }
                     catch (error){
-                        ca = "global";
+                        if (error.message === "CANNOT-CONNECT"){
+                            return { res: undefined, err: "CANNOT-CONNECT" };
+                        }
+                        else if (error.message === "INVALID-TOKEN"){
+                            return { res: undefined, err: "REMOTE-API:INVALID-TOKEN" };
+                        }
+                        else {
+                            ca = "global";
+                        }
                     }
                 }
                 
