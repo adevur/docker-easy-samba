@@ -32,8 +32,6 @@ This chapter is divided into these sections:
 
 - [`version` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#version-section)
 
-- [`global` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#global-section)
-
 - [`domain` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section)
 
 - [`users` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section)
@@ -43,7 +41,7 @@ This chapter is divided into these sections:
 - [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
 
 ### general structure of the file
-`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `global` (optional), `domain`, `users`, `groups` (optional),
+`config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `domain`, `users`, `groups` (optional),
 and `shares`. `config.json` must be placed in the container's directory `/share/config`.
 
 ### `version` section
@@ -57,17 +55,6 @@ this log: `[ERROR] easy-samba configuration syntax is not correct: THIS CONFIGUR
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
 At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"`, `"1.8"`, `"1.9"`, `"1.10"`, `"1.11"`, `"1.12"`, `"1.13"`, `"1.14"`, `"1.15"`, `"1.16"` or `"1.17"`. Note that `"1"` and `"1.0"` are equivalent.
-
-### `global` section
-This section is optional and lets you customize `[global]` section of `/etc/samba/smb.conf`. It is a non-empty array of non-empty strings. Each string is the line to be added to `[global]` section.
-
-For example, if you add `"global": ["a", "b"]` to your `config.json`, the following `[global]` section will be written inside `/etc/samba/smb.conf`:
-```
-[global]
-...
-a
-b
-```
 
 ### `domain` section
 It's a string that contains the domain name of the SAMBA server. It must be a valid [NetBIOS name](https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name) that follows these rules:
@@ -139,7 +126,7 @@ This is the list of supported properties for a `shares`'s element: `name`, `path
 
   - `limit`: it is a string that specifies the limit of directory's size. This string must contain an integer (greater or equal to `0`) followed by `GB`, `MB` or `kB`. For example: `"limit": "150MB"`. If the shared folder's size is greater than this limit, every user will lose write-access to the share (i.e. they keep reading files, but cannot modify or delete any). When shared folder's size decreases under the imposed limit, users will automatically gain write-access to the shared folder again.
   
-  - `whitelist`: it is an array that contains the list of users to which the soft-quota limit is not applied (and that will keep write-access to the share). For example: `"whitelist": ["admin"]`. This way, an eventual administrator can delete files in order to free space, after the size limit is crossed.
+  - `whitelist`: it is an array that contains the list of users or groups to which the soft-quota limit is not applied (and that will keep write-access to the share). For example: `"whitelist": ["admin"]`. This way, an eventual administrator can delete files in order to free space, after the size limit is crossed. If you include user `"nobody"` in your `whitelist`, soft-quota limit will not be applied to guest users (i.e. users without login).
 
 ACCESS RULE SYNTAX: these are the types of access rules supported:
 
@@ -266,6 +253,8 @@ This is a list of all available methods of `ConfigGen.js` library:
     - [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
 
     - [`ConfigGen.remote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenremote-static-method)
+    
+    - [`ConfigGen.getConfigPath()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengetconfigpath-static-method)
 
 - `remote` namespace methods:
 
@@ -275,19 +264,31 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`remote.getInfo()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetinfo-method)
 
-    - [`remote.hello()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotehello-method)
+    - [`remote.isReachable()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remoteisreachable-method)
     
-    - [`remote.getLogs()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetlogs-method)
+    - [`remote.isTokenValid()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remoteistokenvalid-method)
+    
+    - [`remote.getRemoteLogs()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetremotelogs-method)
     
     - [`remote.getAvailableAPI()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetavailableapi-method)
     
     - [`remote.getConfigHash()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfighash-method)
+    
+    - [`remote.getConfigPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfigpath-method)
+    
+    - [`remote.changeRemoteToken()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotechangeremotetoken-method)
+    
+    - [`remote.stopEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotestopeasysamba-method)
+    
+    - [`remote.pauseEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotepauseeasysamba-method)
+    
+    - [`remote.startEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotestarteasysamba-method)
+    
+    - [`remote.certNego()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotecertnego-method)
 
 - `config` namespace methods:
 
     - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
-
-    - [`config.global()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configglobal-method)
 
     - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
 
@@ -465,6 +466,10 @@ The configuration is retrieved from a remote `easy-samba` container using `EasyS
 
 - ERRORS: this is the list of possible error messages that can be thrown by this function:
 
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
+
+  - `"INVALID-REMOTE-CONFIG"`: configuration retrieved from remote container contains errors and cannot be imported using function `ConfigGen.fromJson()`
+
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
   - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
@@ -485,7 +490,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
     // let's retrieve remote config
     let config = undefined;
@@ -542,15 +547,19 @@ All the methods available for `remote` objects are listed as "`remote` namespace
 
   - PARAMETER `token`: a string that contains the secret token used to authenticate on the remote container
 
-  - PARAMETER `ca`: a string that contains the certificate used by the remote container for the HTTPS protocol (i.e. in case the remote container's certificate is self-signed); this parameter can be set to `"unsafe"` if you don't want to verify the remote certificate (i.e. in case you're just debugging or testing); if this parameter is missing, certificate will be verified against a list of known certificates (i.e. in case the remote container's certificate is signed by a recognized global certification authority)
+  - PARAMETER `ca`: a string that contains the certificate used by the remote container for the HTTPS protocol (i.e. in case the remote container's certificate is self-signed or custom); this parameter can be set to `"unsafe"` if you don't want to verify the remote certificate (i.e. in case you're just debugging or testing); if this parameter is equal to `"global"`, certificate will be verified against a list of known certificates (i.e. in case the remote container's certificate is signed by a recognized global certification authority); if this parameter is missing or it's equal to `undefined`, remote container's certificate will be automatically retrieved via certificate negotiation feature of `Remote API` (i.e. using `remote.certNego()`)
 
 - OUTPUT: an instance of `remote` object
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
 
 EXAMPLE:
 ```js
 const ConfigGen = require("./ConfigGen.js");
 
-const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
 remote.getInfo().then((result) => {
     console.log(`Remote container localhost is using easy-samba version ${result.version}`);
@@ -558,15 +567,18 @@ remote.getInfo().then((result) => {
 
 
 // about "ca" parameter:
-    // if the remote container has a self-signed certificate, you should pass it to this function
+    // the simplest thing you can do is letting ConfigGen retrieve automatically remote container's certificate through negotiation
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+    // if the remote container has a self-signed certificate, you can pass it to this function
     //  NOTE: the self-signed certificate is located into the remote container at path "/share/config/remote-api.cert" (so you can copy it to all the clients)
     const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", require("fs").readFileSync("/path/to/remote-api.cert", "ascii"));
 
-    // if the remote container has a certificate that's been signed by a global-recognized Certification Authority, you don't have to pass a certificate
-    const remote = ConfigGen.remote("www.example.com", 9595, "my-secret-token");
+    // if the remote container has a certificate that's been signed by a global-recognized Certification Authority, you can pass "global" as certificate
+    const remote = ConfigGen.remote("www.example.com", 9595, "my-secret-token", "global");
 
-    // if you don't care about security (e.g. you're just testing), you can also disable certificate verification process
-    //  NOTE: this will work with both self-signed certificates and global-recognized Certification Authorities
+    // if you don't care about security (e.g. you're just testing), you can also disable certificate verification process, passing "unsafe" as certificate
+    //   SUGGESTION: use this only for testing and only if certificate negotiation is not available on the remote container
     const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
 ```
 
@@ -581,15 +593,15 @@ This method can be used to set the configuration of a remote container using `Ea
   
   - PARAMETER `hash`: a string that contains the MD5 hash of the previous configuration (hash must be in hexadecimal notation); if this parameter is present, remote container will check that old configuration has not changed in the meanwhile
 
-- OUTPUT: it returns a Promise that resolves to `true`, in case of success
+- OUTPUT: it returns a Promise that resolves to `true` in case of success, otherwise `false`
 
 - ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
   - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
-  
-  - `"REMOTE-API:SET-CONFIG:CANNOT-WRITE"`: remote container is not able to write file `remote-api.config.json` for unknown reasons
   
   - `"REMOTE-API:SET-CONFIG:INVALID-HASH"`: in case configuration has changed
   
@@ -607,7 +619,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
     // let's retrieve remote config
     let configjson = undefined;
@@ -626,8 +638,8 @@ async function myAsyncFunction(){
     // now let's write a new config to remote container,
     //   passing hash of old config as parameter in order to be sure that no one else has modified remote config in the meanwhile
     try {
-        await remote.setConfig(`{ "domain": "NEW-DOMAIN", "users": [], "shares": [] }`, hash);
-        console.log("SUCCESS");
+        const result = await remote.setConfig(`{ "domain": "NEW-DOMAIN", "users": [], "shares": [] }`, hash);
+        console.log((result) ? "SUCCESS" : "ERROR");
     }
     catch (error){
         if (error.message === "REMOTE-API:SET-CONFIG:INVALID-HASH"){
@@ -671,7 +683,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
     
     // let's retrieve remote config
     let configjson = undefined;
@@ -705,7 +717,7 @@ This method can be used to get some information about a remote container using `
 
 - ARGUMENTS: N/A
 
-- OUTPUT: it returns a Promise that resolves to an object like this: `{ running: true, version: "1.12.0" }`; where `running` can be equal to `true` or `false` and tells us if the remote `easy-samba` container is currently working (in case no errors have been encountered during configuration validation process); and where `version` is a string that tells us which version of `easy-samba` is running in the remote container
+- OUTPUT: it returns a Promise that resolves to an object like this: `{ running: true, version: "1.12.0", "config-path": "/share/config" }`; where `running` can be equal to `true` or `false` and tells us if the remote `easy-samba` container is currently working (in case no errors have been encountered during configuration validation process); where `version` is a string that tells us which version of `easy-samba` is running in the remote container; and where `config-path` is a string that contains the path where configuration files are located inside the remote container
 
 - ERRORS: this is the list of possible error messages that can be thrown by this function:
 
@@ -729,13 +741,14 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
     // let's retrieve remote information
     try {
         const info = await remote.getInfo();
         console.log("easy-samba status: " + (info.running) ? "running" : "not running");
         console.log("easy-samba version: " + info.version);
+        console.log("easy-samba config path: " + info["config-path"]);
     }
     catch (error){
         if (error.message === "REMOTE-API:GET-INFO:ERROR"){
@@ -748,14 +761,14 @@ async function myAsyncFunction(){
 }
 ```
 
-### `remote.hello()` method
-This method can be used to test connectivity towards a remote container using `EasySamba Remote API`. This method throws an error in case the remote container is not reachable, or in case the certificate is not valid, or in case the token is not correct.
+### `remote.getConfigPath()` method
+This method can be used to get the path where configuration files are located inside a remote container, using `EasySamba Remote API`.
 
 > NOTE: this function is async and returns a Promise.
 
 - ARGUMENTS: N/A
 
-- OUTPUT: it returns a Promise that resolves to string `"world"`; otherwise it throws an error
+- OUTPUT: it returns a Promise that resolves to a string that contains the path where configuration files are located inside the remote container
 
 - ERRORS: this is the list of possible error messages that can be thrown by this function:
 
@@ -763,40 +776,37 @@ This method can be used to test connectivity towards a remote container using `E
 
   - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
   
+  - `"REMOTE-API:GET-INFO:ERROR"`: remote container is not able to retrieve info from remote container
+  
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `hello` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-info` API
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+  
+  - `"UNKNOWN-INFORMATION"`: remote container supports `get-info` API, but it doesn't include `config-path` property in the returned informations
 
 EXAMPLE:
 ```js
 const ConfigGen = require("./ConfigGen.js");
-const fs = require("fs");
 
-testRemote();
+myAsyncFunction();
 
-async function testRemote(){
+async function myAsyncFunction(){
+    // remote container connection object
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+    // let's retrieve remote information
     try {
-        // retrieve certificate for remote container
-        const cert = fs.readFileSync("/path/to/remote-api.cert", "ascii");
-        
-        // remote container connection object
-        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", cert);
-
-        const hello = await remote.hello();
-
-        console.log("Connection was successful.");
+        const path = await remote.getConfigPath();
+        console.log("easy-samba config path: " + path);
     }
     catch (error){
-        if (error.message === "CANNOT-CONNECT"){
-            console.log("Remote API is not running, or parameters are not correct.");
+        if (error.message === "REMOTE-API:API-NOT-SUPPORTED" || error.message === "UNKNOWN-INFORMATION"){
+            console.log("Remote container can't tell us config path.");
         }
-        else if (error.message === "REMOTE-API:INVALID-TOKEN"){
-            console.log("Token is not correct.");
-        }
-        else if (error.message === "REMOTE-API:API-NOT-SUPPORTED") {
-            console.log("Remote container doesn't support 'hello' API call.");
+        else if (error.message === "REMOTE-API:GET-INFO:ERROR"){
+            console.log("It's not been possible to retrieve remote container info for unknown reasons.");
         }
         else {
             throw new Error("Unhandled error: " + error.message);
@@ -805,16 +815,103 @@ async function testRemote(){
 }
 ```
 
-### `remote.getLogs()` method
-This method can be used to get `easy-samba` logs of a remote container using `EasySamba Remote API`.
+### `remote.isReachable()` method
+This method can be used to test connectivity towards a remote container using `EasySamba Remote API`. This method returns `false` in case the remote container is not reachable: URL, port or certificate are not correct, or remote container is not running, or `Remote API` is not running. This function doesn't check if provided `token` is valid (see function `remote.isTokenValid()` for that purpose).
 
 > NOTE: this function is async and returns a Promise.
 
-> NOTE 2: this function will resolve to `""` in case the remote container's logs have not been enabled (i.e. file `/share/config/easy-samba.logs` doesn't exist).
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a Promise that resolves to `true` or `false`
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+  
+  - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
+  
+  - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+testRemote();
+
+async function testRemote(){
+    try {
+        // remote container connection object
+        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+        if ((await remote.isReachable()) === true){
+            console.log("Connection was successful.");
+        }
+        else {
+            console.log("It's not been possible to connect to remote container.");
+        }
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+}
+```
+
+### `remote.isTokenValid()` method
+This method can be used to check if a token is valid for connecting to a remote container via `EasySamba Remote API`. By default, the token that this function checks is the one that you passed to `ConfigGen.remote()`, but you can pass a custom token to check as a parameter.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: `customToken` (optional)
+
+  - PARAMETER `customToken`: it is a non-empty string that contains the token to validate against the remote container; if this parameter is missing, this function will validate the token that you passed to `ConfigGen.remote()`
+
+- OUTPUT: it returns a Promise that resolves to `true` or `false`
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+  
+  - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
+  
+  - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
+  
+  - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+testToken();
+
+async function testToken(){
+    try {
+        // remote container connection object
+        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+        if ((await remote.isTokenValid()) === true){
+            console.log("Token 'my-secret-token' is valid.");
+        }
+        else {
+            console.log("Token 'my-secret-token' is not valid.");
+        }
+        
+        if ((await remote.isTokenValid("token2")) === true){
+            console.log("Token 'token2' is valid.");
+        }
+        else {
+            console.log("Token 'token2' is not valid.");
+        }
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+}
+```
+
+### `remote.getRemoteLogs()` method
+This method can be used to get `easy-samba` and `Remote API` logs of a remote container using `EasySamba Remote API`.
+
+> NOTE: this function is async and returns a Promise.
 
 - ARGUMENTS: N/A
 
-- OUTPUT: it returns a Promise that resolves to a string that contains `easy-samba` logs, retrieved from file `/share/config/easy-samba.logs` located inside the remote container
+- OUTPUT: it returns a Promise that resolves to an object that looks like this: `{ "easy-samba-logs": "...", "remote-api-logs": "..." }`; logs are retrieved from files `/share/config/easy-samba.logs` and `/share/config/remote-api.logs`, located inside the remote container
 
 - ERRORS: this is the list of possible error messages that can be thrown by this function:
 
@@ -822,7 +919,7 @@ This method can be used to get `easy-samba` logs of a remote container using `Ea
 
   - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
   
-  - `"REMOTE-API:GET-LOGS:CANNOT-READ"`: remote container is not able to read file `/share/config/easy-samba.logs` for unknown reasons
+  - `"REMOTE-API:GET-LOGS:CANNOT-READ"`: remote container is not able to read files `/share/config/easy-samba.logs` or `/share/config/remote-api.logs` for unknown reasons
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
@@ -838,12 +935,13 @@ printLogs();
 
 async function printLogs(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
     // let's retrieve remote logs
     try {
-        const logs = await remote.getLogs();
-        console.log("Remote container logs:\n" + logs);
+        const logs = await remote.getRemoteLogs();
+        console.log("Remote container logs:\n" + logs["easy-samba-logs"]);
+        console.log("EasySamba Remote API logs:\n" + logs["remote-api-logs"]);
     }
     catch (error){
         if (error.message === "REMOTE-API:GET-LOGS:CANNOT-READ"){
@@ -885,7 +983,7 @@ printAvailableAPI();
 
 async function printAvailableAPI(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
     // let's retrieve supported api
     try {
@@ -904,13 +1002,17 @@ async function printAvailableAPI(){
 ```
 
 ### `remote.getConfigHash()` method
-This method can be used to calculate the MD5 hash of a string, that can be used by `remote.setConfig()` function.
+This method can be used to calculate the MD5 hash of a string, that can be then passed to `remote.setConfig()` function.
 
 - ARGUMENTS: `input`
 
   - PARAMETER `input`: it is the string of which the hash will be calculated
 
 - OUTPUT: it returns a string that contains the MD5 hash of `input`; this hash is in hexadecimal notation, with all uppercase letters
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
 
 EXAMPLE:
 ```js
@@ -920,7 +1022,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
     // let's retrieve remote config
     let configjson = undefined;
@@ -939,8 +1041,8 @@ async function myAsyncFunction(){
     // now let's write a new config to remote container,
     //   passing hash of old config as parameter in order to be sure that no one else has modified remote config in the meanwhile
     try {
-        await remote.setConfig(`{ "domain": "NEW-DOMAIN", "users": [], "shares": [] }`, hash);
-        console.log("SUCCESS");
+        const result = await remote.setConfig(`{ "domain": "NEW-DOMAIN", "users": [], "shares": [] }`, hash);
+        console.log((result) ? "SUCCESS" : "ERROR");
     }
     catch (error){
         if (error.message === "REMOTE-API:SET-CONFIG:INVALID-HASH"){
@@ -949,6 +1051,61 @@ async function myAsyncFunction(){
         else {
             throw new Error("Unhandled error: " + error.message);
         }
+    }
+}
+```
+
+### `remote.changeRemoteToken()` method
+This method can be used to modify the secret token on a remote container, using `EasySamba Remote API`. This function also updates the token stored in the current `remote` object, so that when you use `remote` functions, they will use updated token. This function will also update file `/share/config/remote-api.json` inside the remote container.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: `newToken`
+
+  - PARAMETER `newToken`: it is a non-empty string that contains the new token to permanently set in the remote container for future use
+
+- OUTPUT: it returns a Promise that resolves to `true` or `false`
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
+
+  - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
+  
+  - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
+  
+  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `change-token` API
+  
+  - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+changeToken();
+
+async function changeToken(){
+    try {
+        // remote container connection object
+        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+        console.log("Token 'my-secret-token' is valid? " + (await remote.isTokenValid())); // Token 'my-secret-token' is valid? true
+        
+        if (await remote.changeRemoteToken("new-token")){
+            console.log("Token changed successfully.");
+        }
+        else {
+            console.log("ERROR");
+        }
+        
+        console.log("Token 'new-token' is valid? " + (await remote.isTokenValid())); // Token 'new-token' is valid? true
+        
+        console.log("Token 'my-secret-token' is valid? " + (await remote.isTokenValid("my-secret-token"))); // Token 'my-secret-token' is valid? false
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
     }
 }
 ```
@@ -973,29 +1130,6 @@ const config = new ConfigGen();
 console.log( config.domain() ); // WORKGROUP
 config.domain("NEW-DOMAIN");
 console.log( config.domain() ); // NEW-DOMAIN
-```
-
-### `config.global()` method
-This is a method that can be used in order to set the `global` section of an instance of `ConfigGen`. It can also be used to retrieve current value of `global` section, if used without parameters.
-
-- ARGUMENTS: `input` (optional)
-
-  - PARAMETER `input`: it is a Javascript array of strings that contains the `global` value to set; if `input` is equal to `undefined`, `global` section will be removed
-
-- OUTPUT: in case no parameters are passed, it returns the current value of `global`
-
-EXAMPLE:
-```js
-const ConfigGen = require("./ConfigGen.js");
-
-const config = new ConfigGen();
-
-console.log( config.global() ); // undefined
-config.global(["a", "b"]);
-console.log( config.global() ); // ["a", "b"]
-
-// since "global" section is optional, you can also remove it this way:
-config.global(undefined);
 ```
 
 ### `config.version()` method
@@ -1186,15 +1320,17 @@ The configuration is sent to a remote `easy-samba` container using `EasySamba Re
   
   - PARAMETER `options`: an object that contains additional options; key `checkSavedHash` is a boolean (default value is `false`), and if it's set to `true`, `config.saveToRemote()` will pass previous config's hash (saved by `ConfigGen.fromRemote(remote)` and `config.saveToRemote(remote, { checkSavedHash: true })` earlier)
 
-- OUTPUT: a Promise that resolves to `true` in case of success
+- OUTPUT: a Promise that resolves to `true` in case of success, otherwise `false`
 
 - ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
+  
+  - `"CANNOT-SAVE-TO-JSON"`: it's not been possible to use function `config.saveToJson()` to generate JSON output (before sending it to remote container)
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
   - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
-  
-  - `"REMOTE-API:SET-CONFIG:CANNOT-WRITE"`: remote container is not able to write file `remote-api.config.json` for unknown reasons
   
   - `"REMOTE-API:SET-CONFIG:INVALID-HASH"`: in case configuration has changed
   
@@ -1207,6 +1343,7 @@ The configuration is sent to a remote `easy-samba` container using `EasySamba Re
 EXAMPLE:
 ```js
 const ConfigGen = require("./ConfigGen.js");
+const assert = require("assert");
 
 myAsyncFunction();
 
@@ -1216,14 +1353,14 @@ async function myAsyncFunction(){
     config.users.add("user1");
 
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
 
     // let's save local config to remote container
     try {
-        await config.saveToRemote(remote);
+        assert( await config.saveToRemote(remote) );
     }
     catch (error){
-        throw new Error("Cannot save to remote: " + error.message);
+        throw new Error("Cannot save to remote.");
     }
     
     
@@ -1231,7 +1368,7 @@ async function myAsyncFunction(){
     // another scenario
     
     
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
     
     // let's retrieve remote config
     let config = undefined;
@@ -1248,8 +1385,8 @@ async function myAsyncFunction(){
     // let's save config to remote,
     //   and let's check that no one else has modified remote config in the meanwhile
     try {
-        await config.saveToRemote(remote, { checkSavedHash: true });
-        console.log("SUCCESS");
+        const result = await config.saveToRemote(remote, { checkSavedHash: true });
+        console.log((result) ? "SUCCESS" : "ERROR");
     }
     catch (error){
         if (error.message === "REMOTE-API:SET-CONFIG:INVALID-HASH"){
@@ -2061,7 +2198,7 @@ config.shares.add("folder2", "/share/folder2", ["ro:user2"]);
 console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin", "rw:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2", "rw:admin"] } ]
 
 // if we want to disable fixed rules completely, we use:
-config.shares.setFixedRules([]);
+config.shares.setFixedRules(undefined);
 
 // next time we generate a configuration file, fixed rules aren't going to be applied anymore
 console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1", "no:admin"] }, { "name": "folder2", "path": "/share/folder2", "access": ["ro:user2"] } ]
@@ -2099,7 +2236,7 @@ config.shares.setBaseRules(["ro:*"]);
 console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["ro:*", "rw:user1"] } ]
 
 // if we want to disable fixed rules completely, we use:
-config.shares.setBaseRules([]);
+config.shares.setBaseRules(undefined);
 
 // next time we generate a configuration file, base rules aren't going to be applied anymore
 console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["rw:user1"] } ]
