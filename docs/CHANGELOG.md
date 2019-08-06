@@ -2,11 +2,55 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.16.1`
+### Current stable release: `1.17.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] [SECURITY] 1.17.0 (2019-08-06 UTC)
+- New features:
+
+  - `Remote API` method `get-logs` now returns also the logs of `Remote API` (located at `/share/config/remote-api.logs`), if available. In `ConfigGen.js` library, function `remote.getLogs()` has been replaced by `remote.getRemoteLogs()`.
+  
+  - `Remote API` method `get-info` now returns also the path where configuration files are located inside the remote container (e.g. `"/share/config"`). In `ConfigGen.js` library, function `remote.getInfo()` has been updated, and function `remote.getConfigPath()` has been added.
+  
+  - In `ConfigGen.js` library, new static function `ConfigGen.getConfigPath()` has been added, and returns the path where configuration files are located inside the local machine (e.g. `"/share/config"`). This way, when your `config.gen.js` script is running inside the container, you will be able to know where to save the `config.json` file. For example:
+  
+    ```js
+    const ConfigGen = require("/startup/ConfigGen.js");
+    const config = new ConfigGen();
+    const CFG = ConfigGen.getConfigPath();
+    config.saveToFile(`${CFG}/config.json`);
+    ```
+    
+  - In `ConfigGen.js` library, in order to unset fixed or base rules, expressions `config.shares.setFixedRules([])` and `config.shares.setBaseRules([])` are now deprecated, while `config.shares.setFixedRules(undefined)` and `config.shares.setBaseRules(undefined)` should be used.
+  
+  - `global` section of `config.json` is now deprecated, and it will be ignored if present. Accordingly, function `config.global()` of `ConfigGen.js` library is now deprecated as well.
+  
+  - In `ConfigGen.js` library, function `remote.hello()` is now deprecated, and it's been replaced by new functions `remote.isReachable()` and `remote.isTokenValid()`.
+  
+  - New `Remote API` method `change-token` has been added, that will let you change the secret token of the remote container from a remote client. New function `remote.changeRemoteToken()` has been added to `ConfigGen.js` library, accordingly.
+  
+  - New `Remote API` method `stop-easy-samba` has been added, that will let you stop an `easy-samba` container from a remote client. New function `remote.stopEasySamba()` has been added to `ConfigGen.js` library, accordingly. Note that if you stop an `easy-samba` container this way, you will also stop `Remote API` server (because it's located inside the container), so you won't be able to restart `easy-samba` with `Remote API`, but you will have to restart manually the container (e.g. using Docker or `systemd`). Also note that if you have set your machine to restart `easy-samba`'s container automatically in case it stops (e.g. using Docker's parameter `--restart always` or `systemd`'s option `Restart=always`), method `stop-easy-samba` is almost useless.
+  
+  - New `Remote API` methods `pause-easy-samba` and `start-easy-samba` have been added, that will let you pause and start an `easy-samba` container from a remote client. New functions `remote.pauseEasySamba()` and `remote.startEasySamba()` have been added to `ConfigGen.js` library, accordingly. The difference between methods `stop-easy-samba` and `pause-easy-samba` is that the former will stop the remote container, while the latter will tell `easy-samba` to pause its status, keeping the container and `Remote API` running (and, as a consequence, you will be able to unpause `easy-samba` using method `start-easy-samba`).
+  
+  - Now `soft-quota`'s property `whitelist` can contain also group names and user `nobody`. In case `whitelist` contains user `nobody`, `soft-quota` will not be applied to guest users (i.e. users without login).
+  
+  - `Remote API` now exposes a way to automatically negotiate server's certificate using its secret token. This API is placed at `https://hostname:port/cert-nego` and is also used by `ConfigGen.js` library to automatically retrieve the remote container server's certificate when no certificate has been supplied to `ConfigGen.remote()` function. Remote container will send its certificate encrypted using the secret token. In `ConfigGen.js` library, new function `remote.certNego()` can be used in order to retrieve the remote container server's certificate manually.
+
+- Bug fixes:
+
+  - `soft-quota` implementation has been improved a lot, and now it is more effective when blocking write-access to shared folders that have broken their maximum allowed size limit.
+
+  - There's been a code rewrite of `/startup/functions/fnEasySambaLoop.js` and `/startup/remote-api/fnAPI.js`, in order to improve stability and clearness.
+
+  - Minor bugfixes and improvements.
+
+- Security fixes:
+
+  - In `Remote API`, `token` provided by a remote client is more securely checked. This prevents the use of timing attacks to brute force the secret token.
 
 ### [STABLE] 1.16.1 (2019-07-31 UTC)
 - New features:

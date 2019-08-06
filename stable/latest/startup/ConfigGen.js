@@ -22,7 +22,7 @@
     [deprecated] config.unsetGuest()
     config.version()
     [deprecated] config.unsetVersion()
-    config.global()
+    [deprecated] config.global()
     [deprecated] config.unsetGlobal()
 
     config.users.add()
@@ -64,10 +64,19 @@
     remote.getConfig()
     remote.setConfig()
     remote.getInfo()
-    remote.hello()
-    remote.getLogs()
+    [deprecated] remote.hello()
+    remote.isReachable()
+    remote.isTokenValid()
+    [deprecated] remote.getLogs()
+    remote.getRemoteLogs()
     remote.getAvailableAPI()
     remote.getConfigHash()
+    remote.getConfigPath()
+    remote.changeRemoteToken()
+    remote.stopEasySamba()
+    remote.pauseEasySamba()
+    remote.startEasySamba()
+    remote.certNego()
 
 */
 
@@ -80,7 +89,7 @@ const assert = require("assert");
 const https = require("https");
 
 // global variables
-const globalVersion = "1.16";
+const globalVersion = "1.17";
 
 
 
@@ -169,6 +178,40 @@ const fnRemoveDuplicates = (input) => {
     return result;
 };
 
+// fnRequestHTTPS()
+//   makes an HTTPS request and returns a Promise
+const fnRequestHTTPS = (url, options, data = undefined) => {
+    return new Promise((resolve, reject) => {
+        let result = [];
+
+        try {
+            const req = https.request(url, options, (res) => {
+                res.on("data", (chunk) => {
+                    result.push(chunk);
+                });
+
+                res.on("end", () => {
+                    result = Buffer.concat(result).toString();
+                    resolve(result);
+                });
+            });
+
+            req.on("error", () => {
+                reject(new Error("CANNOT-CONNECT"));
+            });
+
+            if (data !== undefined){
+                req.write(data);
+            }
+            
+            req.end();
+        }
+        catch (error){
+            reject(new Error("CANNOT-CONNECT"));
+        }
+    });
+};
+
 
 
 // ConfigGen
@@ -179,6 +222,7 @@ const ConfigGen = class {
     //   it doesn't accept any parameters
     constructor(){
         // in order to know which ConfigGen.js version we're using
+        // DEPRECATED
         this.easysambaVersion = globalVersion;
 
         // internal variables used by an instance of ConfigGen
@@ -959,6 +1003,7 @@ const ConfigGen = class {
             },
 
             // config.shares.removeRules()
+            // DEPRECATED
             removeRules: (sharename, rules) => {
                 console.log("[WARNING] 'config.shares.removeRules() is deprecated. Use 'config.shares.removeRuleAt()', instead.'");
 
@@ -1127,28 +1172,31 @@ const ConfigGen = class {
             setFixedRules: (...args) => {
                 let shares = undefined;
                 let rules = undefined;
-
-                if (args.length === 1 && fnIsArray(args[0]) && args[0].every(fnIsString)){
-                    rules = args[0];
+                
+                try {
+                    assert( args.length === 1 || args.length === 2 );
+                    
+                    shares = (args.length === 1) ? undefined : args[0];
+                    rules = (args.length === 1) ? args[0] : args[1];
+                    
+                    assert( shares === undefined || (fnIsArray(shares) && shares.every(fnIsString)) );
+                    assert( rules === undefined || (fnIsArray(rules) && rules.every(fnIsString)) );
                 }
-                else if (args.length === 2 && fnIsArray(args[0]) && args[0].every(fnIsString) && fnIsArray(args[1]) && args[1].every(fnIsString)){
-                    shares = args[0];
-                    rules = args[1];
-                }
-                else {
+                catch (error){
                     throw new Error("ERROR: INVALID INPUT");
                 }
 
                 this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
-                this["$fixedrules"]["rules"] = fnCopy(rules);
+                this["$fixedrules"]["rules"] = (rules === undefined) ? [] : fnCopy(rules);
 
                 return this;
             },
 
             // config.shares.unsetFixedRules()
+            // DEPRECATED
             unsetFixedRules: () => {
-                console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules([])'.`);
-                this.shares.setFixedRules([]);
+                console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules(undefined)'.`);
+                this.shares.setFixedRules(undefined);
                 return this;
             },
 
@@ -1156,20 +1204,22 @@ const ConfigGen = class {
             setBaseRules: (...args) => {
                 let shares = undefined;
                 let rules = undefined;
-
-                if (args.length === 1 && fnIsArray(args[0]) && args[0].every(fnIsString)){
-                    rules = args[0];
+                
+                try {
+                    assert( args.length === 1 || args.length === 2 );
+                    
+                    shares = (args.length === 1) ? undefined : args[0];
+                    rules = (args.length === 1) ? args[0] : args[1];
+                    
+                    assert( shares === undefined || (fnIsArray(shares) && shares.every(fnIsString)) );
+                    assert( rules === undefined || (fnIsArray(rules) && rules.every(fnIsString)) );
                 }
-                else if (args.length === 2 && fnIsArray(args[0]) && args[0].every(fnIsString) && fnIsArray(args[1]) && args[1].every(fnIsString)){
-                    shares = args[0];
-                    rules = args[1];
-                }
-                else {
+                catch (error){
                     throw new Error("ERROR: INVALID INPUT");
                 }
 
                 this["$baserules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
-                this["$baserules"]["rules"] = fnCopy(rules);
+                this["$baserules"]["rules"] = (rules === undefined) ? [] : fnCopy(rules);
 
                 return this;
             },
@@ -1372,79 +1422,118 @@ const ConfigGen = class {
 
                 return this;
             }
-
-            cmd(method, other = {}){
-                const url = this.url;
+            
+            // remote.certNego()
+            async certNego(){
+                const thisUrl = new URL(this.url);
+                let url = new URL("https://localhost:9595/cert-nego");
+                url.hostname = thisUrl.hostname;
+                url.port = thisUrl.port;
+                url = url.toString();
                 const token = this.token;
-                const ca = this.ca;
-
-                return new Promise((resolve, reject) => {
-                    const id = crypto.randomBytes(16).toString("hex").toUpperCase();
-                    const body = { "token": token };
-                    if (fnHas(other, "config.json")){
-                        body["config.json"] = other["config.json"];
-                    }
-                    if (fnHas(other, "hash")){
-                        body["hash"] = other["hash"];
-                    }
-                    const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
-
-                    const options = {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Content-Length": data.length
-                        }
-                    };
-                    if (ca === "unsafe") {
-                        options.rejectUnauthorized = false;
-                        options.requestCert = true;
-                    }
-                    else if (fnIsString(ca)){
-                        options.ca = ca;
-                    }
-
-                    let result = [];
-
+                
+                const options = {
+                    method: "GET",
+                    rejectUnauthorized: false,
+                    requestCert: true
+                };
+                
+                try {
+                    let result = await fnRequestHTTPS(url, options);
+                    result = JSON.parse(result);
+                    assert( fnHas(result, ["jsonrpc", "result"]) );
+                    assert( result["jsonrpc"] === "2.0" );
+                    assert( fnIsString(result["result"]) );
+                    
+                    const decipher = crypto.createDecipher("aes-256-ctr", token);
+                    let decrypted = decipher.update(result["result"], "hex", "utf8");
+                    decrypted += decipher.final("utf8");
+                    const parsed = JSON.parse(decrypted);
+                    
+                    assert( fnHas(parsed, ["httpsCert", "certHash"]) );
+                    assert( [parsed["httpsCert"], parsed["certHash"]].every(fnIsString) );
+                    assert( parsed["certHash"].toUpperCase() === crypto.createHash("md5").update(parsed["httpsCert"], "ascii").digest("hex").toUpperCase() );
+                    
+                    return parsed["httpsCert"];
+                }
+                catch (error){
+                    return undefined;
+                }
+            }
+            
+            async cmd(method, other = {}, tk = undefined){
+                const url = this.url;
+                const token = (tk === undefined) ? this.token : tk;
+                let ca = this.ca;
+                
+                if (ca === undefined){
                     try {
-                        const req = https.request(url, options, (res) => {
-                            res.on("data", (chunk) => {
-                                result.push(chunk);
-                            });
-
-                            res.on("end", () => {
-                                try {
-                                    result = Buffer.concat(result).toString();
-                                    result = JSON.parse(result);
-                                    assert( fnHas(result, ["jsonrpc", "result", "id"]) );
-                                    assert( result["jsonrpc"] === "2.0" );
-                                    assert( result["id"] === id );
-                                    assert( fnHas(result, "error") ? (result["error"] === null || fnIsString(result["error"])) : true );
-                                    
-                                    if (fnHas(result, "error") && result["error"] !== null){
-                                        resolve({ res: undefined, err: result["error"] });
-                                        return;
-                                    }
-                                    
-                                    resolve({ res: result["result"], err: false });
-                                }
-                                catch (error){
-                                    resolve({ res: undefined, err: "INVALID-RESPONSE" });
-                                }
-                            });
-                        });
-
-                        req.on("error", () => {
-                            resolve({ res: undefined, err: "CANNOT-CONNECT" });
-                        });
-
-                        req.write(data);
-                        req.end();
+                        ca = await this.certNego();
+                        this.ca = ca;
                     }
                     catch (error){
-                        resolve({ res: undefined, err: "CANNOT-CONNECT" });
+                        ca = "global";
                     }
-                });
+                }
+                
+                const id = crypto.randomBytes(16).toString("hex").toUpperCase();
+                const body = { "token": token };
+                if (fnHas(other, "config.json")){
+                    body["config.json"] = other["config.json"];
+                }
+                if (fnHas(other, "hash")){
+                    body["hash"] = other["hash"];
+                }
+                if (fnHas(other, "new-token")){
+                    body["new-token"] = other["new-token"];
+                }
+                if (fnHas(other, "message")){
+                    body["message"] = other["message"];
+                }
+                const data = Buffer.from(JSON.stringify({ "jsonrpc": "2.0", "method": method, "id": id, "params": body }), "utf8");
+
+                const options = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Content-Length": data.length
+                    }
+                };
+                if (ca === "unsafe") {
+                    options.rejectUnauthorized = false;
+                    options.requestCert = true;
+                }
+                else if (ca === "global"){
+                    // do nothing
+                }
+                else if (fnIsString(ca)){
+                    options.ca = ca;
+                }
+                
+                let result = undefined;
+                try {
+                    result = await fnRequestHTTPS(url, options, data);
+                }
+                catch (error){
+                    return { res: undefined, err: "CANNOT-CONNECT" };
+                }
+                
+                try {
+                    result = JSON.parse(result);
+                    assert( fnHas(result, ["jsonrpc", "result", "id"]) );
+                    assert( result["jsonrpc"] === "2.0" );
+                    assert( result["id"] === id );
+                    assert( fnHas(result, "error") ? (result["error"] === null || fnIsString(result["error"])) : true );
+                    
+                    if (fnHas(result, "error") && result["error"] !== null){
+                        return { res: undefined, err: result["error"] };
+                    }
+                    
+                    return { res: result["result"], err: false };
+                }
+                catch (error){
+                    return { res: undefined, err: "INVALID-RESPONSE" };
+                }
             }
 
             // remote.getConfig()
@@ -1488,7 +1577,12 @@ const ConfigGen = class {
                     return true;
                 }
                 catch (error){
-                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    if (err === "REMOTE-API:SET-CONFIG:CANNOT-WRITE"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
                 }
             }
 
@@ -1500,7 +1594,8 @@ const ConfigGen = class {
                     assert( fnHas(res, ["running", "version"]) );
                     assert( res["running"] === true || res["running"] === false );
                     assert( fnIsString(res["version"]) );
-                    return { running: res.running, version: res.version };
+                    assert( fnHas(res, "config-path") ? fnIsString(res["config-path"]) : true );
+                    return res;
                 }
                 catch (error){
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");
@@ -1508,7 +1603,10 @@ const ConfigGen = class {
             }
 
             // remote.hello()
+            // DEPRECATED
             async hello(){
+                console.log(`[WARNING] 'remote.hello()' is deprecated. Use 'remote.isReachable()' and 'remote.isTokenValid()'.`);
+            
                 const { res, err } = await this.cmd("hello");
                 try {
                     assert( err === false );
@@ -1520,14 +1618,68 @@ const ConfigGen = class {
                 }
             }
             
+            // remote.isReachable()
+            async isReachable(){
+                const { res, err } = await this.cmd("hello", {}, "");
+                
+                if (err === "REMOTE-API:INVALID-TOKEN" || err === "REMOTE-API:API-NOT-SUPPORTED" || res === "world"){
+                    return true;
+                }
+                else if (err === "CANNOT-CONNECT"){
+                    return false;
+                }
+                else {
+                    throw new Error(err);
+                }
+            }
+            
+            // remote.isTokenValid()
+            async isTokenValid(customToken = undefined){
+                if (customToken !== undefined){
+                    if (fnIsString(customToken) !== true || customToken.length < 1){
+                        return false;
+                    }
+                }
+            
+                const { res, err } = await this.cmd("hello", {}, customToken);
+                
+                if (res === "world" || err === "REMOTE-API:API-NOT-SUPPORTED"){
+                    return true;
+                }
+                else if (err === "REMOTE-API:INVALID-TOKEN"){
+                    return false;
+                }
+                else {
+                    throw new Error(err);
+                }
+            }
+            
             // remote.getLogs()
+            // DEPRECATED
             async getLogs(){
+                console.log(`[WARNING] 'remote.getLogs()' is deprecated. Use 'remote.getRemoteLogs()'.`);
+            
                 const { res, err } = await this.cmd("get-logs");
                 try {
                     assert( err === false );
                     assert( fnHas(res, "easy-samba-logs") );
                     assert( fnIsString(res["easy-samba-logs"]) );
                     return res["easy-samba-logs"];
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
+            // remote.getRemoteLogs()
+            async getRemoteLogs(){
+                const { res, err } = await this.cmd("get-logs");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "easy-samba-logs") );
+                    assert( fnIsString(res["easy-samba-logs"]) );
+                    assert( fnHas(res, "remote-api-logs") ? fnIsString(res["remote-api-logs"]) : true );
+                    return res;
                 }
                 catch (error){
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");
@@ -1546,6 +1698,113 @@ const ConfigGen = class {
                 }
                 catch (error){
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
+            // remote.getConfigPath()
+            async getConfigPath(){
+                const { res, err } = await this.cmd("get-info");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "config-path") ? fnIsString(res["config-path"]) : true );
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+                
+                if (fnHas(res, "config-path")){
+                    return res["config-path"];
+                }
+                else {
+                    throw new Error("UNKNOWN-INFORMATION");
+                }
+            }
+            
+            // remote.changeRemoteToken()
+            async changeRemoteToken(newToken){
+                try {
+                    assert( fnIsString(newToken) );
+                    assert( newToken.length > 0 );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+            
+                const { res, err } = await this.cmd("change-token", { "new-token": newToken });
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    this.token = newToken;
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:CHANGE-TOKEN:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
+                }
+            }
+            
+            // remote.stopEasySamba()
+            async stopEasySamba(message = ""){
+                try {
+                    assert( fnIsString(message) );
+                }
+                catch (error){
+                    throw new Error("ERROR: INVALID INPUT");
+                }
+            
+                const { res, err } = await this.cmd("stop-easy-samba", { "message": message });
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:STOP-EASY-SAMBA:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
+                }
+            }
+            
+            // remote.pauseEasySamba()
+            async pauseEasySamba(){
+                const { res, err } = await this.cmd("pause-easy-samba");
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:PAUSE-EASY-SAMBA:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
+                }
+            }
+            
+            // remote.startEasySamba()
+            async startEasySamba(){
+                const { res, err } = await this.cmd("start-easy-samba");
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:START-EASY-SAMBA:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
                 }
             }
         };
@@ -1647,6 +1906,22 @@ const ConfigGen = class {
         result = result.join("");
 
         return result;
+    }
+    
+    // ConfigGen.getConfigPath()
+    static getConfigPath(){
+        try {
+            assert( fs.existsSync("/startup/configdir.json") );
+            const configdir = fs.readFileSync("/startup/configdir.json", "utf8");
+            assert( fnIsString(configdir) );
+            const path = JSON.parse(configdir);
+            assert( fnIsString(path) );
+            assert( fs.existsSync(path) );
+            return path;
+        }
+        catch (error){
+            return "/share";
+        }
     }
 
     // config.saveToFile()
@@ -1818,6 +2093,7 @@ const ConfigGen = class {
     }
 
     // config.guest()
+    // DEPRECATED
     guest(input = undefined){
         if (arguments.length < 1){
             console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
@@ -1843,6 +2119,7 @@ const ConfigGen = class {
     }
 
     // config.unsetGuest()
+    // DEPRECATED
     unsetGuest(){
         console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
 
@@ -1867,6 +2144,7 @@ const ConfigGen = class {
     }
 
     // config.unsetVersion()
+    // DEPRECATED
     unsetVersion(){
         console.log(`[WARNING] 'config.unsetVersion()' is deprecated. Use 'config.version(undefined)'.`);
         this.version(undefined);
@@ -1874,7 +2152,10 @@ const ConfigGen = class {
     }
 
     // config.global()
+    // DEPRECATED
     global(input = undefined){
+        console.log(`[WARNING] 'config.global()' is deprecated.`);
+    
         if (arguments.length < 1){
             return this["$global"];
         }
@@ -1888,6 +2169,7 @@ const ConfigGen = class {
     }
 
     // config.unsetGlobal()
+    // DEPRECATED
     unsetGlobal(){
         console.log(`[WARNING] 'config.unsetGlobal()' is deprecated. Use 'config.global(undefined)'.`);
         this.global(undefined);
