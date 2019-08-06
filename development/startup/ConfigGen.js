@@ -1499,6 +1499,7 @@ const ConfigGen = class {
                         }
                         else {
                             ca = "global";
+                            this.ca = "global";
                         }
                     }
                 }
