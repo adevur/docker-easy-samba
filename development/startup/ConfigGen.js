@@ -120,7 +120,7 @@ const fnHas = (obj, keys) => {
 // fnIsInteger()
 //   checks if a given Javascript object "input" is a valid integer
 const fnIsInteger = (input) => {
-    return ( input !== undefined && input === parseInt(String(input), 10) && Number.isNaN(input) !== true );
+    return ( input !== undefined && input !== null && input === parseInt(String(input), 10) && Number.isNaN(input) !== true );
 };
 
 // fnIsFunction()
@@ -266,11 +266,16 @@ const ConfigGen = class {
                     return;
                 }
                 this["$trigger-stack"].push(cb);
-                if (previous !== undefined){
-                    cb(current, previous);
+                try {
+                    if (previous !== undefined){
+                        cb(current, previous);
+                    }
+                    else {
+                        cb(current);
+                    }
                 }
-                else {
-                    cb(current);
+                catch (error){
+                    // do nothing
                 }
                 this["$trigger-stack"].splice(this["$trigger-stack"].indexOf(cb), 1);
             });
@@ -298,7 +303,7 @@ const ConfigGen = class {
                     password = args[1];
                 }
                 else {
-                    throw new Error("ERROR: INVALID ARGUMENTS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (password === undefined || fnIsInteger(password)){
@@ -307,11 +312,11 @@ const ConfigGen = class {
                 }
 
                 if (fnIsString(username) !== true || username.length < 1 || fnIsString(password) !== true){
-                    throw new Error("ERROR: USERNAME AND PASSWORD MUST BE NON-EMPTY STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (this.users.get().includes(username) || this.groups.get().includes(username)){
-                    throw new Error("ERROR: USERNAME ALREADY USED");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 this["$users"].push({ "name": username, "password": password });
@@ -325,14 +330,17 @@ const ConfigGen = class {
             // config.users.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
-                    throw new Error("ERROR: INPUT MUST BE AN ARRAY");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 input.forEach((elem) => {
-                    if (fnHas(elem, "name") !== true){
-                        throw new Error("ERROR: INPUT IS NOT VALID");
+                    try {
+                        assert( fnHas(elem, "name") );
+                        this.users.add(elem["name"], (fnHas(elem, "password")) ? elem["password"] : undefined);
                     }
-                    this.users.add(elem["name"], (fnHas(elem, "password")) ? elem["password"] : undefined);
+                    catch (error){
+                        throw new Error("INVALID-INPUT");
+                    }
                 });
 
                 return this;
@@ -348,7 +356,7 @@ const ConfigGen = class {
                 }
 
                 if (fnIsString(username) !== true){
-                    throw new Error("ERROR: USERNAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.users.get().indexOf(username);
@@ -375,13 +383,13 @@ const ConfigGen = class {
 
                 const username = args[0];
                 if (fnIsString(username) !== true){
-                    throw new Error("ERROR: USERNAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.users.get().indexOf(username);
 
                 if (index < 0){
-                    throw new Error("ERROR: USER NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 return fnCopy(this["$users"][index]);
@@ -395,13 +403,13 @@ const ConfigGen = class {
             // config.users.setPassword()
             setPassword: (username, password) => {
                 if (fnIsString(username) !== true || fnIsString(password) !== true){
-                    throw new Error("ERROR: USERNAME AND PASSWORD MUST BE STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.users.get().indexOf(username);
 
                 if (index < 0){
-                    throw new Error("ERROR: USER NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const previous = this.users.get(username);
@@ -423,16 +431,13 @@ const ConfigGen = class {
         this.groups = {
             // config.groups.add()
             add: (groupname, members) => {
-                if (fnIsString(groupname) !== true || groupname.length < 1){
-                    throw new Error("ERROR: GROUP NAME MUST BE A NON-EMPTY STRING");
+                try {
+                    assert( fnIsString(groupname) && groupname.length >= 1 );
+                    assert( fnIsArray(members) && members.every(fnIsString) );
+                    assert( this.groups.get().includes(groupname) !== true && this.users.get().includes(groupname) !== true );
                 }
-
-                if (fnIsArray(members) !== true || members.every(fnIsString) !== true){
-                    throw new Error("ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS");
-                }
-
-                if (this.groups.get().includes(groupname) || this.users.get().includes(groupname)){
-                    throw new Error("ERROR: GROUP NAME ALREADY USED");
+                catch (error){
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const members_unique = fnRemoveDuplicates(members);
@@ -448,14 +453,17 @@ const ConfigGen = class {
             // config.groups.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
-                    throw new Error("ERROR: INPUT MUST BE AN ARRAY");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 input.forEach((elem) => {
-                    if (fnHas(elem, ["name", "members"]) !== true){
-                        throw new Error("ERROR: INPUT IS NOT VALID");
+                    try {
+                        assert( fnHas(elem, ["name", "members"]) );
+                        this.groups.add(elem["name"], elem["members"]);
                     }
-                    this.groups.add(elem["name"], elem["members"]);
+                    catch (error){
+                        throw new Error("INVALID-INPUT");
+                    }
                 });
 
                 return this;
@@ -471,7 +479,7 @@ const ConfigGen = class {
                 }
 
                 if (fnIsString(groupname) !== true){
-                    throw new Error("ERROR: GROUP NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.groups.get().indexOf(groupname);
@@ -499,13 +507,13 @@ const ConfigGen = class {
                 const groupname = args[0];
 
                 if (fnIsString(groupname) !== true){
-                    throw new Error("ERROR: GROUP NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.groups.get().indexOf(groupname);
 
                 if (index < 0){
-                    throw new Error("ERROR: GROUP NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 return fnCopy(this["$groups"][index]);
@@ -524,7 +532,7 @@ const ConfigGen = class {
                     assert( this.groups.get().includes(groupname) );
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 let result = [groupname];
@@ -551,24 +559,18 @@ const ConfigGen = class {
 
             // config.groups.addMembers()
             addMembers: (groupname, members) => {
-                const addMember = (groupname, member) => {
-                    if (this["$groups"][index]["members"].includes(member) !== true){
-                        this["$groups"][index]["members"].push(member);
-                    }
-                };
-
                 if (fnIsString(groupname) !== true){
-                    throw new Error("ERROR: GROUP NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsArray(members) !== true || members.every(fnIsString) !== true){
-                    throw new Error("ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.groups.get().indexOf(groupname);
 
                 if (index < 0){
-                    throw new Error("ERROR: GROUP NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const previous = this.groups.get(groupname);
@@ -591,17 +593,17 @@ const ConfigGen = class {
             // config.groups.removeMembers()
             removeMembers: (groupname, members) => {
                 if (fnIsString(groupname) !== true){
-                    throw new Error("ERROR: GROUP NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsArray(members) !== true || members.every(fnIsString) !== true){
-                    throw new Error("ERROR: MEMBERS MUST BE AN ARRAY OF STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.groups.get().indexOf(groupname);
 
                 if (index < 0){
-                    throw new Error("ERROR: GROUP NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const previous = this.groups.get(groupname);
@@ -654,27 +656,27 @@ const ConfigGen = class {
                     softquota = args[4];
                 }
                 else {
-                    throw new Error("ERROR: INPUT IS NOT VALID");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsString(path) !== true){
-                    throw new Error("ERROR: SHARE PATH MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (this.shares.get().includes(sharename)){
-                    throw new Error("ERROR: SHARE ALREADY EXISTS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsArray(access) !== true || access.every(fnIsString) !== true){
-                    throw new Error("ERROR: SHARE ACCESS RULES MUST BE AN ARRAY OF STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (guest !== "rw" && guest !== "ro" && guest !== "no") {
-                    throw new Error("ERROR: SHARE GUEST PROPERTY MUST BE EQUAL TO 'rw', 'ro' OR 'no'");
+                    throw new Error("INVALID-INPUT");
                 }
                 
                 if (softquota !== undefined){
@@ -685,7 +687,7 @@ const ConfigGen = class {
                         assert( softquota["whitelist"].every(fnIsString) );
                     }
                     catch (error){
-                        throw new Error("ERROR: SHARE SOFT-QUOTA IS INVALID");
+                        throw new Error("INVALID-INPUT");
                     }
                 }
 
@@ -707,17 +709,18 @@ const ConfigGen = class {
             // config.shares.addArray()
             addArray: (input) => {
                 if (fnIsArray(input) !== true){
-                    throw new Error("ERROR: INPUT MUST BE AN ARRAY");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 input.forEach((elem) => {
-                    if (fnHas(elem, ["name", "path"]) !== true){
-                        throw new Error("ERROR: INPUT IS NOT VALID");
+                    try {
+                        assert( fnHas(elem, ["name", "path"]) );
+                        assert( fnHas(elem, "access") || fnHas(elem, "guest") );
+                        this.shares.add(elem["name"], elem["path"], (fnHas(elem, "access")) ? elem["access"] : [], (fnHas(elem, "guest")) ? elem["guest"] : "no", (fnHas(elem, "soft-quota")) ? elem["soft-quota"] : undefined);
                     }
-                    if (fnHas(elem, "access") !== true && fnHas(elem, "guest") !== true){
-                        throw new Error("ERROR: INPUT IS NOT VALID");
+                    catch (error){
+                        throw new Error("INVALID-INPUT");
                     }
-                    this.shares.add(elem["name"], elem["path"], (fnHas(elem, "access")) ? elem["access"] : [], (fnHas(elem, "guest")) ? elem["guest"] : "no", (fnHas(elem, "soft-quota")) ? elem["soft-quota"] : undefined);
                 });
 
                 return this;
@@ -733,7 +736,7 @@ const ConfigGen = class {
                 }
 
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.shares.get().indexOf(sharename);
@@ -761,13 +764,13 @@ const ConfigGen = class {
                 const sharename = args[0];
 
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.shares.get().indexOf(sharename);
 
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 return fnCopy(this["$shares"][index]);
@@ -787,7 +790,7 @@ const ConfigGen = class {
                     rules = (fnIsString(share)) ? this.shares.get(share)["access"] : share["access"];
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const result = {};
@@ -865,7 +868,7 @@ const ConfigGen = class {
                     assert( ["+r", "+w", "+rw", "rw", "ro", "-r", "-w", "-rw"].includes(perm) );
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const subj = (fnIsArray(subject)) ? subject : [subject];
@@ -941,16 +944,16 @@ const ConfigGen = class {
             // config.shares.addRules()
             addRules: (sharename, rules) => {
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsArray(rules) !== true || rules.every(fnIsString) !== true){
-                    throw new Error("ERROR: RULES MUST BE AN ARRAY OF STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.shares.get().indexOf(sharename);
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 this.shares.addRuleAt(sharename, rules, this.shares.get(sharename)["access"].length);
@@ -962,26 +965,26 @@ const ConfigGen = class {
             addRuleAt: (sharename, rule, ruleIndex) => {
                 // check parameters
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsString(rule) !== true && (fnIsArray(rule) !== true || rule.every(fnIsString) !== true)){
-                    throw new Error("ERROR: RULE MUST BE A STRING OR AN ARRAY OF STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsInteger(ruleIndex) !== true || ruleIndex < 0){
-                    throw new Error("ERROR: INDEX MUST BE A POSITIVE INTEGER");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 // find share's index
                 const index = this.shares.get().indexOf(sharename);
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 // check ruleIndex range
                 if (ruleIndex > this.shares.get(sharename)["access"].length){
-                    throw new Error("ERROR: INDEX OUT OF RANGE");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const rules = (fnIsString(rule)) ? [rule] : rule;
@@ -1008,16 +1011,16 @@ const ConfigGen = class {
                 console.log("[WARNING] 'config.shares.removeRules() is deprecated. Use 'config.shares.removeRuleAt()', instead.'");
 
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsArray(rules) !== true || rules.every(fnIsString) !== true){
-                    throw new Error("ERROR: RULES MUST BE AN ARRAY OF STRINGS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.shares.get().indexOf(sharename);
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 let indices = rules.map((e) => {
@@ -1048,11 +1051,11 @@ const ConfigGen = class {
                     rulesToDelete = args[1];
                 }
                 else {
-                    throw new Error("ERROR: INPUT IS NOT VALID");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (this.shares.get().includes(sharename) !== true){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const indices = this.shares.get(sharename)["access"].filter((e) => {
@@ -1069,17 +1072,17 @@ const ConfigGen = class {
             // config.shares.removeRuleAt()
             removeRuleAt: (sharename, ruleIndices) => {
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsInteger(ruleIndices) !== true && (fnIsArray(ruleIndices) !== true || ruleIndices.every(fnIsInteger) !== true)){
-                    throw new Error("ERROR: RULE INDEX MUST BE A POSITIVE INTEGER OR AN ARRAY OF POSITIVE INTEGERS");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.shares.get().indexOf(sharename);
 
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -1104,17 +1107,17 @@ const ConfigGen = class {
             // config.shares.setPath()
             setPath: (sharename, path) => {
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsString(path) !== true){
-                    throw new Error("ERROR: PATH MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.shares.get().indexOf(sharename);
 
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -1133,21 +1136,21 @@ const ConfigGen = class {
             // config.shares.setGuest()
             setGuest: (sharename, permission) => {
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (fnIsString(permission) !== true){
-                    throw new Error("ERROR: PERMISSION MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (permission !== "rw" && permission !== "ro" && permission !== "no"){
-                    throw new Error("ERROR: PERMISSION MUST BE EQUAL TO 'rw', 'ro' OR 'no'");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 const index = this.shares.get().indexOf(sharename);
 
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -1183,7 +1186,7 @@ const ConfigGen = class {
                     assert( rules === undefined || (fnIsArray(rules) && rules.every(fnIsString)) );
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
@@ -1215,7 +1218,7 @@ const ConfigGen = class {
                     assert( rules === undefined || (fnIsArray(rules) && rules.every(fnIsString)) );
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 this["$baserules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
@@ -1227,7 +1230,7 @@ const ConfigGen = class {
             // config.shares.setSoftQuota()
             setSoftQuota: (sharename, softquota) => {
                 if (fnIsString(sharename) !== true){
-                    throw new Error("ERROR: SHARE NAME MUST BE A STRING");
+                    throw new Error("INVALID-INPUT");
                 }
 
                 if (softquota !== undefined){
@@ -1238,14 +1241,14 @@ const ConfigGen = class {
                         assert( softquota["whitelist"].every(fnIsString) );
                     }
                     catch (error){
-                        throw new Error("ERROR: SHARE SOFT-QUOTA IS INVALID");
+                        throw new Error("INVALID-INPUT");
                     }
                 }
 
                 const index = this.shares.get().indexOf(sharename);
 
                 if (index < 0){
-                    throw new Error("ERROR: SHARE NOT FOUND");
+                    throw new Error("NOT-FOUND");
                 }
 
                 const previous = this.shares.get(sharename);
@@ -1282,50 +1285,55 @@ const ConfigGen = class {
         return globalVersion;
     }
     static set version(value){
-        throw new Error("ERROR: YOU CANNOT MODIFY 'ConfigGen.version' PROPERTY");
+        throw new Error("READ-ONLY-PROPERTY");
     }
 
     // ConfigGen.fromObject()
     static fromObject(input){
         const result = new this();
 
-        if (fnHas(input, "domain")){
-            result.domain(input["domain"]);
-        }
+        try {
+            if (fnHas(input, "domain")){
+                result.domain(input["domain"]);
+            }
 
-        if (fnHas(input, "guest")){
-            result.guest(input["guest"]);
-        }
+            if (fnHas(input, "guest")){
+                result.guest(input["guest"]);
+            }
 
-        if (fnHas(input, "version")){
-            result.version(input["version"]);
-        }
+            if (fnHas(input, "version")){
+                result.version(input["version"]);
+            }
 
-        if (fnHas(input, "global")){
-            result.global(input["global"]);
-        }
+            if (fnHas(input, "global")){
+                result.global(input["global"]);
+            }
 
-        if (fnHas(input, "users") && fnIsArray(input["users"])){
-            result.users.addArray(input["users"]);
-        }
+            if (fnHas(input, "users") && fnIsArray(input["users"])){
+                result.users.addArray(input["users"]);
+            }
 
-        if (fnHas(input, "groups") && fnIsArray(input["groups"])){
-            const groups = fnCopy(input["groups"]);
-            groups.forEach((group) => {
-                if (fnHas(group, "users") && fnHas(group, "members") !== true && fnIsArray(group["users"]) && group["users"].every(fnIsString)){
-                    const backup = fnCopy(group["users"]);
-                    delete group["users"];
-                    group["members"] = backup;
-                }
-            });
-            result.groups.addArray(groups);
-        }
+            if (fnHas(input, "groups") && fnIsArray(input["groups"])){
+                const groups = fnCopy(input["groups"]);
+                groups.forEach((group) => {
+                    if (fnHas(group, "users") && fnHas(group, "members") !== true && fnIsArray(group["users"]) && group["users"].every(fnIsString)){
+                        const backup = fnCopy(group["users"]);
+                        delete group["users"];
+                        group["members"] = backup;
+                    }
+                });
+                result.groups.addArray(groups);
+            }
 
-        if (fnHas(input, "shares") && fnIsArray(input["shares"])){
-            result.shares.addArray(input["shares"]);
+            if (fnHas(input, "shares") && fnIsArray(input["shares"])){
+                result.shares.addArray(input["shares"]);
+            }
+            
+            return result;
         }
-
-        return result;
+        catch (error){
+            throw new Error("INVALID-INPUT");
+        }
     }
 
     // ConfigGen.fromJson()
@@ -1336,7 +1344,7 @@ const ConfigGen = class {
             return this.fromObject(json);
         }
         catch (error){
-            throw new Error("ERROR: INVALID INPUT");
+            throw new Error("INVALID-INPUT");
         }
     }
 
@@ -1345,10 +1353,11 @@ const ConfigGen = class {
         try {
             assert(fnIsString(input));
             const file = fs.readFileSync(input, "utf8");
+            assert( fnIsString(file) );
             return this.fromJson(file);
         }
         catch (error){
-            throw new Error("ERROR: INVALID INPUT");
+            throw new Error("INVALID-INPUT");
         }
     }
 
@@ -1372,7 +1381,7 @@ const ConfigGen = class {
             ca = args[2];
         }
         else {
-            throw new Error("ERROR: INVALID INPUT");
+            throw new Error("INVALID-INPUT");
         }
 
         try {
@@ -1383,7 +1392,7 @@ const ConfigGen = class {
             }
         }
         catch (error){
-            throw new Error("ERROR: INVALID INPUT");
+            throw new Error("INVALID-INPUT");
         }
 
         let res = undefined;
@@ -1400,7 +1409,7 @@ const ConfigGen = class {
             return ret;
         }
         catch (error){
-            throw new Error("ERROR: REMOTE CONFIGURATION FILE IS NOT VALID");
+            throw new Error("INVALID-REMOTE-CONFIG");
         }
     }
 
@@ -1584,14 +1593,14 @@ const ConfigGen = class {
                     return crypto.createHash("md5").update(input, "utf8").digest("hex").toUpperCase();
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
             }
 
             // remote.setConfig()
             async setConfig(configjson, hash = undefined){
                 if (fnIsString(configjson) !== true || (hash !== undefined && fnIsString(hash) !== true)){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
                 
                 const params = { "config.json": configjson };
@@ -1755,7 +1764,7 @@ const ConfigGen = class {
                     assert( newToken.length > 0 );
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
             
                 const { res, err } = await this.cmd("change-token", { "new-token": newToken });
@@ -1781,7 +1790,7 @@ const ConfigGen = class {
                     assert( fnIsString(message) );
                 }
                 catch (error){
-                    throw new Error("ERROR: INVALID INPUT");
+                    throw new Error("INVALID-INPUT");
                 }
             
                 const { res, err } = await this.cmd("stop-easy-samba", { "message": message });
@@ -1842,7 +1851,7 @@ const ConfigGen = class {
             ret = new c(hostname, port, token, ca);
         }
         catch (error){
-            throw new Error("ERROR: INVALID INPUT");
+            throw new Error("INVALID-INPUT");
         }
 
         return ret;
@@ -1852,7 +1861,7 @@ const ConfigGen = class {
     static genRandomPassword(len = 12){
         // check parameter "len"
         if (fnIsInteger(len) !== true || len < 4){
-            throw new Error("ERROR: PASSWORD LENGTH MUST BE AT LEAST 4");
+            throw new Error("INVALID-INPUT");
         }
 
         const TABLE = {};
@@ -1958,7 +1967,7 @@ const ConfigGen = class {
             fs.writeFileSync(path, this.saveToJson());
         }
         catch (error){
-            throw new Error("ERROR: CANNOT SAVE TO FILE");
+            throw new Error("CANNOT-SAVE-TO-FILE");
         }
 
         return this;
@@ -1969,7 +1978,7 @@ const ConfigGen = class {
         const result = {};
 
         if (fnIsString(this["$domain"]) !== true){
-            throw new Error("ERROR: DOMAIN SECTION IS MISSING");
+            throw new Error("INVALID-INPUT");
         }
         result["domain"] = this["$domain"];
 
@@ -2021,7 +2030,13 @@ const ConfigGen = class {
 
     // config.saveToJson()
     saveToJson(){
-        return JSON.stringify(this.saveToObject());
+        try {
+            const result = JSON.stringify(this.saveToObject());
+            assert( fnIsString(result) );
+        }
+        catch (error){
+            throw new Error("CANNOT-SAVE-TO-JSON");
+        }
     }
 
     // config.saveToRemote()
@@ -2051,7 +2066,7 @@ const ConfigGen = class {
             ca = args[2];
         }
         else {
-            throw new Error("ERROR: INVALID INPUT");
+            throw new Error("INVALID-INPUT");
         }
 
         try {
@@ -2062,25 +2077,32 @@ const ConfigGen = class {
             }
         }
         catch (error){
-            throw new Error("ERROR: INVALID INPUT");
+            throw new Error("INVALID-INPUT");
         }
         
-        let configjson = "";
+        let configjson = undefined;
         try {
             configjson = this.saveToJson();
-            assert( fnIsString(configjson) );
         }
         catch (error){
-            throw new Error("ERROR: IT'S NOT BEEN POSSIBLE TO RUN 'config.saveToJson()'");
+            throw new Error("CANNOT-SAVE-TO-JSON");
         }
 
+        let res = undefined;
         try {
-            const res = await remote.setConfig(configjson, (fnHas(options, "checkSavedHash") && options["checkSavedHash"] === true) ? this["$remote-hash"] : undefined);
+            res = await remote.setConfig(configjson, (fnHas(options, "checkSavedHash") && options["checkSavedHash"] === true) ? this["$remote-hash"] : undefined);
+        }
+        catch (error){
+            throw new Error(error.message);
+        }
+        
+        try{
+            assert( res === true );
             this["$remote-hash"] = (fnHas(options, "checkSavedHash") && options["checkSavedHash"] === true) ? remote.getConfigHash(configjson) : this["$remote-hash"];
             return true;
         }
         catch (error){
-            throw new Error(error.message);
+            return false;
         }
     }
 
@@ -2094,11 +2116,11 @@ const ConfigGen = class {
         }
 
         if (fnIsString(event) !== true || fnHas(this, `$on-${event}`) !== true){
-            throw new Error("ERROR: INVALID EVENT");
+            throw new Error("INVALID-INPUT");
         }
 
         if (fnIsFunction(cb) !== true){
-            throw new Error("ERROR: CALLBACK IS NOT A FUNCTION");
+            throw new Error("INVALID-INPUT");
         }
 
         this[`$on-${event}`].push(cb);
@@ -2117,7 +2139,7 @@ const ConfigGen = class {
             return this;
         }
 
-        throw new Error("ERROR: DOMAIN NAME MUST BE A STRING");
+        throw new Error("INVALID-INPUT");
     }
 
     // config.guest()
@@ -2143,7 +2165,7 @@ const ConfigGen = class {
             return this;
         }
 
-        throw new Error("ERROR: GUEST MUST BE false OR A STRING");
+        throw new Error("INVALID-INPUT");
     }
 
     // config.unsetGuest()
@@ -2168,7 +2190,7 @@ const ConfigGen = class {
             return this;
         }
 
-        throw new Error("ERROR: VERSION MUST BE A STRING");
+        throw new Error("INVALID-INPUT");
     }
 
     // config.unsetVersion()
@@ -2182,7 +2204,7 @@ const ConfigGen = class {
     // config.global()
     // DEPRECATED
     global(input = undefined){
-        console.log(`[WARNING] 'config.global()' is deprecated.`);
+        console.log(`[WARNING] 'config.global()' and 'config.unsetGlobal()' are deprecated.`);
     
         if (arguments.length < 1){
             return this["$global"];
@@ -2193,13 +2215,12 @@ const ConfigGen = class {
             return this;
         }
 
-        throw new Error("ERROR: GLOBAL MUST BE AN ARRAY OF STRINGS");
+        throw new Error("INVALID-INPUT");
     }
 
     // config.unsetGlobal()
     // DEPRECATED
     unsetGlobal(){
-        console.log(`[WARNING] 'config.unsetGlobal()' is deprecated. Use 'config.global(undefined)'.`);
         this.global(undefined);
         return this;
     }
