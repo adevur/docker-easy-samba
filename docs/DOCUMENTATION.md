@@ -534,6 +534,24 @@ const passw2 = ConfigGen.genRandomPassword(4);
 console.log( passw2 ); // 2[gT
 ```
 
+### `ConfigGen.getConfigPath()` static method
+This method can be used to get the path where configuration files are located inside the current container. This is useful in case your `config.gen.js` script doesn't know where to save the `config.json` file.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a string that contains the path where configuration files are located inside the local container (e.g. `"/share/config"`)
+
+EXAMPLE:
+```js
+const ConfigGen = require("/startup/ConfigGen.js");
+
+const path = ConfigGen.getConfigPath();
+
+const config = new ConfigGen();
+
+config.saveToFile(`${path}/config.json`);
+```
+
 ### `ConfigGen.remote()` static method
 This static method can be used to create a new object of type `remote`; the latter can be used to interact with a remote `easy-samba` container using `EasySamba Remote API`.
 
@@ -541,7 +559,7 @@ All the methods available for `remote` objects are listed as "`remote` namespace
 
 - ARGUMENTS: `hostname`, `port`, `token` and `ca` (optional)
 
-  - PARAMETER `hostname`: a string that contains the hostname of the remote container (e.g. `localhost`)
+  - PARAMETER `hostname`: a string that contains the hostname of the remote container (e.g. `"localhost"`, `"192.168.1.2"`, `"www.example.com"`, ...)
 
   - PARAMETER `port`: an integer that represents the port, which the remote container's `Remote API` is listening to (by default, it's `9595`)
 
@@ -1103,6 +1121,244 @@ async function changeToken(){
         console.log("Token 'new-token' is valid? " + (await remote.isTokenValid())); // Token 'new-token' is valid? true
         
         console.log("Token 'my-secret-token' is valid? " + (await remote.isTokenValid("my-secret-token"))); // Token 'my-secret-token' is valid? false
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+}
+```
+
+### `remote.certNego()` method
+This method can be used to manually retrieve the server's certificate of a remote container, using certificate-negotiation feature of `EasySamba Remote API`.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a Promise that resolves to a string that contains the actual certificate
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL or port) are not correct
+
+  - `"INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  
+  - `"CERT-NEGO-NOT-SUPPORTED"`: remote container doesn't support certification-negotiation feature
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    // remote container connection object
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+    // let's retrieve remote container's certificate
+    try {
+        const cert = await remote.certNego();
+        console.log(cert); // ----- BEGIN CERTIFICATE -----........
+    }
+    catch (error){
+        if (error.message === "INVALID-TOKEN"){
+            console.log("Token you passed to 'ConfigGen.remote()' is not correct.");
+        }
+        else if (error.message === "CERT-NEGO-NOT-SUPPORTED"){
+            console.log("Remote container doesn't support certification-negotiation.");
+        }
+        else {
+            throw new Error("Unhandled error: " + error.message);
+        }
+    }
+}
+```
+
+### `remote.stopEasySamba()` method
+This method can be used to stop a remote container using `EasySamba Remote API`. When you stop `easy-samba` this way, the container where `easy-samba` and `Remote API` are running will stop and exit.
+
+> NOTE: you will not be able to restart the remote container from a remote client: if you use this function, you have to use `Docker` or `systemd` in order to restart `easy-samba`. If you want to be able to restart `easy-samba` from a remote client, consider using `remote.pauseEasySamba()`.
+
+> NOTE 2: this function is almost useless in case you have set the container to automatically restart in case it stops (e.g. if you have set parameter `--restart always` in `Docker`, or you have set option `Restart=always` in `systemd`).
+
+> NOTE 3: this function is async and returns a Promise.
+
+- ARGUMENTS: `message` (optional)
+
+  - PARAMETER `message`: it is a string that will be included in `easy-samba` logs (e.g. if you want to remember why you stopped `easy-samba`)
+
+- OUTPUT: it returns a Promise that resolves to `true` in case of success, otherwise `false`
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
+
+  - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
+
+  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  
+  - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
+  
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `stop-easy-samba` API
+  
+  - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    // remote container connection object
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+    // let's try to stop easy-samba
+    try {
+        const result = await remote.stopEasySamba();
+        console.log((result) ? "SUCCESS" : "ERROR");
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+    
+    // let's wait few seconds
+    ......
+    
+    // let's check if remote container is still running
+    try {
+        const running = await remote.isReachable();
+        console.log((running) ? "Remote container is still running." : "Remote container is not running.");
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+}
+```
+
+### `remote.pauseEasySamba()` method
+This method can be used to pause the status of a remote container using `EasySamba Remote API`. When you pause `easy-samba` this way, the remote container will keep running, but `easy-samba` will interrupt its working status and the SAMBA server. To unpause the remote container, use `remote.startEasySamba()`.
+
+> NOTE: if you wish to stop the remote container completely (and not just pausing it), consider using `remote.stopEasySamba()`.
+
+> NOTE 2: this function is async and returns a Promise.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a Promise that resolves to `true` in case of success, otherwise `false`
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
+
+  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  
+  - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
+  
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `pause-easy-samba` API
+  
+  - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    // remote container connection object
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+    // let's try to pause easy-samba
+    try {
+        const result = await remote.pauseEasySamba();
+        console.log((result) ? "easy-samba paused" : "easy-samba not paused");
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+    
+    // let's wait few seconds
+    ......
+    
+    // let's check easy-samba status
+    try {
+        const info = await remote.getInfo();
+        console.log("easy-samba status:", (info.running === true) ? "running" : "not running");
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+    
+    // let's start easy-samba again
+    try {
+        const result = await remote.startEasySamba();
+        console.log((result) ? "easy-samba started" : "easy-samba not started");
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+}
+```
+
+### `remote.startEasySamba()` method
+This method can be used to unpause the status of a remote container using `EasySamba Remote API`. This method only works with remote containers that have been paused earlier with function `remote.pauseEasySamba()`.
+
+> NOTE: this function will not restart a remote container that has been stopped with function `remote.stopEasySamba()`.
+
+> NOTE 2: this function is async and returns a Promise.
+
+- ARGUMENTS: N/A
+
+- OUTPUT: it returns a Promise that resolves to `true` in case of success, otherwise `false`
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
+
+  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  
+  - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
+  
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `start-easy-samba` API
+  
+  - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+myAsyncFunction();
+
+async function myAsyncFunction(){
+    // remote container connection object
+    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+
+    // let's try to pause easy-samba
+    try {
+        const result = await remote.pauseEasySamba();
+        console.log((result) ? "easy-samba paused" : "easy-samba not paused");
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+    
+    // let's wait few seconds
+    ......
+    
+    // let's check easy-samba status
+    try {
+        const info = await remote.getInfo();
+        console.log("easy-samba status:", (info.running === true) ? "running" : "not running");
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+    
+    // let's start easy-samba again
+    try {
+        const result = await remote.startEasySamba();
+        console.log((result) ? "easy-samba started" : "easy-samba not started");
     }
     catch (error){
         throw new Error("Unhandled error: " + error.message);
