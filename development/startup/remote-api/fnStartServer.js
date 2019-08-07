@@ -14,6 +14,7 @@ const log = require("/startup/functions/fnLog.js")("/share/config/remote-api.log
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsInteger = require("/startup/functions/fnIsInteger.js");
+const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
@@ -84,19 +85,49 @@ async function fnStartServer(){
             assert(false);
         }
     }
-
-    // load the port to use
-    let port = 9595;
-    if (fnHas(config, "port")){
-        if (fnIsInteger(config["port"]) && config["port"] >= 1024 && config["port"] <= 49151){
-            port = config["port"];
-            log(`[LOG] EasySamba Remote API will listen to custom port ${port}.`);
-        }
-        else {
+    
+    // check property "port"
+    try {
+        assert( fnHas(config, "port") );
+        assert( fnIsInteger(config["port"]) );
+        assert( config["port"] >= 1024 && config["port"] <= 49151 );
+        log(`[LOG] EasySamba Remote API will listen to custom port ${config["port"]}.`);
+    }
+    catch (error){
+        config["port"] = 9595;
+        if (fnHas(config, "port")){
             log(`[WARNING] it's been defined a custom port in '${CFG}/remote-api.json', but it will not be used, since it is not in the allowed range 1024-49151.`);
         }
     }
-    config["port"] = port;
+    
+    // check property "cert-nego"
+    try {
+        assert( fnHas(config, "cert-nego") );
+        assert( [true, false].includes(config["cert-nego"]) );
+        if (config["cert-nego"] !== true){
+            log(`[LOG] EasySamba Remote API will not enable certificate-negotiation feature.`);
+        }
+    }
+    catch (error){
+        config["cert-nego"] = true;
+    }
+    
+    // check property "enabled-api"
+    try {
+        assert( fnHas(config, "enabled-api") );
+        assert( fnIsArray(config["enabled-api"]) || config["enabled-api"] === "*" );
+        assert( fnIsArray(config["enabled-api"]) ? config["enabled-api"].every(fnIsString) : true );
+        if (fnIsArray(config["enabled-api"]) && config["enabled-api"].length > 0){
+            const text = config["enabled-api"].map((e) => { return `'${e}'`; }).join(", ");
+            log(`[LOG] EasySamba Remote API will enable only these API methods: ${text}.`);
+        }
+        else if (fnIsArray(config["enabled-api"]) && config["enabled-api"].length === 0){
+            log(`[WARNING] EasySamba Remote API will not enable any API methods.`);
+        }
+    }
+    catch (error){
+        config["enabled-api"] = "*";
+    }
 
     // start the HTTPS server
     try {

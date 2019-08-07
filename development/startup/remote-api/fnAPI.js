@@ -49,7 +49,7 @@ function fnAPI(str, config){
     }
     
     // validate method
-    if (METHODS.includes(method) !== true){
+    if (METHODS.includes(method) !== true || (config["enabled-api"] !== "*" && config["enabled-api"].includes(method) !== true)){
         return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:API-NOT-SUPPORTED`, "id": id };
     }
     
