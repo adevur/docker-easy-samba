@@ -1285,7 +1285,19 @@ const ConfigGen = class {
         return globalVersion;
     }
     static set version(value){
-        throw new Error("READ-ONLY-PROPERTY");
+        try {
+            assert( fnHas(value, "question") );
+            assert( fnIsString(value["question"]) );
+            assert( value["question"] === "Is there an easter egg here?" );
+            delete value["question"];
+            value["M"] = "A";
+            value["R"] = "T";
+            value["I"] = "N";
+            value["A"] = "!";
+        }
+        catch (error){
+            throw new Error("READ-ONLY-PROPERTY");
+        }
     }
 
     // ConfigGen.fromObject()
