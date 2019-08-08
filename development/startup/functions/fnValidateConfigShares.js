@@ -72,7 +72,7 @@ function fnValidateConfigShares(shares, sharedb){
         if (
             fnIsString(share["name"]) !== true
             || share["name"].length < 1
-            || sharedb.names.includes(share["name"])
+            || sharedb.names.map((e) => { return e.toLowerCase(); }).includes(share["name"].toLowerCase())
             || fnValidateString(share["name"], ["az", "AZ", "09"]) !== true
         ){
             error = `SHARED FOLDER NAME MUST BE A UNIQUE ALPHANUMERIC NON-EMPTY STRING`;
