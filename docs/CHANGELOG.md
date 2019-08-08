@@ -2,11 +2,32 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.17.1`
+### Current stable release: `1.18.0`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [FEATURE] 1.18.0 (2019-08-08 UTC)
+- New features:
+
+  - New properties have been added in `remote-api.json` configuration file: `cert-nego` and `enabled-api`.
+  
+    - Property `cert-nego` is a boolean that specifies if certificate-negotiation feature of `Remote API` must be enabled or not (default value is `true`).
+    
+    - Property `enabled-api` can be equal to `"*"` or can be an array of strings; it specifies the list of `Remote API` methods that remote clients can use; default value is `"*"` (i.e. "all available API methods").
+    
+  - Shared folders name now cannot be more than 8 characters in length. This is because some SAMBA clients don't support names longer than 8 chars.
+  
+  - Shared folders name is now considered case-insensitive. For example: there cannot be two shared folders with names `"test"` and `"Test"`, because they would be considered as two shares with the same name.
+
+- Bug fixes:
+
+  - N/A
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] 1.17.1 (2019-08-06 UTC)
 - New features:

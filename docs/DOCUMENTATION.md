@@ -54,7 +54,7 @@ this log: `[ERROR] easy-samba configuration syntax is not correct: THIS CONFIGUR
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
-At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"`, `"1.8"`, `"1.9"`, `"1.10"`, `"1.11"`, `"1.12"`, `"1.13"`, `"1.14"`, `"1.15"`, `"1.16"` or `"1.17"`. Note that `"1"` and `"1.0"` are equivalent.
+At the moment, `version` property can only be equal to: `"1"`, `"1.0"`, `"1.1"`, `"1.2"`, `"1.3"`, `"1.4"`, `"1.5"`, `"1.6"`, `"1.7"`, `"1.8"`, `"1.9"`, `"1.10"`, `"1.11"`, `"1.12"`, `"1.13"`, `"1.14"`, `"1.15"`, `"1.16"`, `"1.17"` or `"1.18"`. Note that `"1"` and `"1.0"` are equivalent.
 
 ### `domain` section
 It's a string that contains the domain name of the SAMBA server. It must be a valid [NetBIOS name](https://en.wikipedia.org/wiki/NetBIOS#NetBIOS_name) that follows these rules:
@@ -102,7 +102,7 @@ This section can also be an empty array. An element of `shares` array looks like
 
 This is the list of supported properties for a `shares`'s element: `name`, `path`, `access`, `guest` (optional) and `soft-quota` (optional).
 
-- `name` is a unique name to identify the shared folder. It must be alphanumeric.
+- `name` is a unique name to identify the shared folder. It must be alphanumeric and cannot be more than 8 characters in length.
 
 - `path` is the location on disk of the shared folder. It must follow these rules:
 
@@ -1143,7 +1143,7 @@ This method can be used to manually retrieve the server's certificate of a remot
 
   - `"INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
   
-  - `"CERT-NEGO-NOT-SUPPORTED"`: remote container doesn't support certification-negotiation feature
+  - `"CERT-NEGO-NOT-SUPPORTED"`: remote container doesn't support certificate-negotiation feature
 
 EXAMPLE:
 ```js
@@ -1165,7 +1165,7 @@ async function myAsyncFunction(){
             console.log("Token you passed to 'ConfigGen.remote()' is not correct.");
         }
         else if (error.message === "CERT-NEGO-NOT-SUPPORTED"){
-            console.log("Remote container doesn't support certification-negotiation.");
+            console.log("Remote container doesn't support certificate-negotiation.");
         }
         else {
             throw new Error("Unhandled error: " + error.message);
