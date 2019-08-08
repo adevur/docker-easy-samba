@@ -2,6 +2,45 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-08-08 UTC) development status update
+Latest releases of `easy-samba` have brought many important features and improvements. Here's a short list:
+
+  - Implementation of `EasySamba Remote API`, that will let you manage an `easy-samba` container from a remote client.
+  
+  - New features to anonymous shared folders, that now are much more versatile.
+  
+  - Configuration files are now located inside sub-directory `/share/config` in order to avoid future filename conflicts.
+  
+  - Several improvements to logs, that now can also be saved to file.
+  
+  - Implementation of `soft-quota` feature, that will let you set the maximum allowed size of a shared folder.
+  
+  - Better error handling in `ConfigGen.js` library.
+  
+  - Several code rewrite that improved `easy-samba` overall stability.
+  
+About version `2.0`:
+  
+  Version `2.0` of `easy-samba` is not that far, especially since CentOS 8.0 should come out soon. `easy-samba` version `2.0` will also bring a completely-rewritten `ConfigGen.js` library. When `easy-samba` version `1.x.x` switches to long-term branch, it will be a more mature and complete product, suitable for use in small production. Also, `easy-samba` version `2.0` will focus much more on enterprise features (like clustering, fault-tolerance, integration with LDAP and Active Directory).
+  
+About new commit system:
+
+  Also, now commits will be named with this convention: `type-number` (e.g. `DOCS-23`). Where `type` specifies the type of commit, for example:
+  
+    - `DOCS`: documentation files have changed (e.g. `README.md`, `docs/DOCUMENTATION.md`, `docs/CHANGELOG.md`)
+    
+    - `REL`: new version of `easy-samba` has been released
+    
+    - `CC`: code cleanup (i.e. changes that don't alter code behavior, but makes it more clear or correct)
+    
+    - `TYPO`: correction of language typos (e.g. a wrong variable name, a grammar error in a comment, ...)
+    
+    - `PERF`: performance fix (i.e. changes that don't alter overall code behavior, but makes it more performant)
+    
+    - `FIX`: bugfix (i.e. changes that alter code in order to fix unwanted behavior)
+    
+    - `NEW`: feature implementation (i.e. changes that add new functionalities to code)
+
 ### (2019-08-08 UTC) easy-samba 1.18.0 released (with new features)
 Stable version 1.18.0 of `easy-samba` has been released.
 
