@@ -8,6 +8,9 @@ module.exports = fnGetVersion;
 
 // dependencies
 const fs = require("fs");
+const assert = require("assert");
+const fnIsString = require("/startup/functions/fnIsString.js");
+const fnHas = require("/startup/functions/fnHas.js");
 
 
 
@@ -19,9 +22,13 @@ function fnGetVersion(){
     let branch = "N/A";
 
     try {
-        const versionFile = fs.readFileSync("/startup/version.txt", "utf8").split("\n");
-        branch = versionFile[0].split("BRANCH: ")[1];
-        version = versionFile[1].split("VERSION: ")[1];
+        const json = fs.readFileSync("/startup/version.json", "utf8");
+        const parsed = JSON.parse(json);
+        assert( fnHas(parsed, ["branch", "version"]) );
+        assert( [parsed["branch"], parsed["version"]].every(fnIsString) );
+        
+        branch = parsed["branch"];
+        version = parsed["version"];
     }
     catch (error){
         // do nothing
