@@ -39,6 +39,14 @@ function fnValidateConfigShares(shares, sharedb){
     if (deprecated){
         log(`[WARNING] optional 'access' property for shares is deprecated. Add '"access": []' to shares that don't have access rules.`);
     }
+    
+    // display a warning if one or more share names are more than 8 characters in length
+    deprecated = shares.some((e) => {
+        return (fnHas(e, "name") && fnIsString(e["name"])) ? (e["name"].length > 8) : false;
+    });
+    if (deprecated){
+        log(`[WARNING] share names that have a length greater than 8 characters are deprecated.`);
+    }
 
     // for each "share" in "shares" ...
     let error = "";
