@@ -3,7 +3,7 @@
 Stay updated on `easy-samba` development.
 
 ### (2019-08-08 UTC) development status update
-Latest releases of `easy-samba` have brought many important features and improvements. Here's a short list:
+- Latest releases of `easy-samba` have brought many important features and improvements. Here's a short list:
 
   - Implementation of `EasySamba Remote API`, that will let you manage an `easy-samba` container from a remote client.
   
@@ -19,13 +19,21 @@ Latest releases of `easy-samba` have brought many important features and improve
   
   - Several code rewrite that improved `easy-samba` overall stability.
   
-About version `2.0`:
+- About version `2.0`:
   
-  Version `2.0` of `easy-samba` is not that far, especially since CentOS 8.0 should come out soon. `easy-samba` version `2.0` will also bring a completely-rewritten `ConfigGen.js` library. When `easy-samba` version `1.x.x` switches to long-term branch, it will be a more mature and complete product, suitable for use in small production. Also, `easy-samba` version `2.0` will focus much more on enterprise features (like clustering, fault-tolerance, integration with LDAP and Active Directory).
+  - It will be based on CentOS 8 (and SAMBA version `4.9.1`).
   
-About new commit system:
+  - It will bring a completely-rewritten `ConfigGen.js` library (that will be probably named `ConfigGen2.js`). Maybe some beta versions will also ship with `easy-samba` version `1.x.x` for testing purposes.
+  
+  - When `easy-samba` version `2.0` comes out, `easy-samba` version `1.x.x` will switch to long-term branch. Version `1.x.x` has evolved a lot in the past months and now is a much more mature and complete product, suitable for small production.
+  
+  - Also, `easy-samba` version `2.0` will focus much more on enterprise features (like clustering, fault-tolerance, integration with LDAP and Active Directory).
+  
+  - Note that `easy-samba` version `2.0` will not be compatible with any feature that's been deprecated in version `1.x.x`.
+  
+- About new commit system:
 
-  Also, now commits will be named with this convention: `type-number` (e.g. `DOCS-23`). Where `type` specifies the type of commit, for example:
+  - Now commits will be named with this convention: `type-number` (e.g. `DOCS-23`). Where `type` specifies the type of commit, for example:
   
     - `DOCS`: documentation files have changed (e.g. `README.md`, `docs/DOCUMENTATION.md`, `docs/CHANGELOG.md`)
     
