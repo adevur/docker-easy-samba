@@ -195,7 +195,10 @@ Version history and changelogs of `adevur/easy-samba` docker image.
   - In `ConfigGen.js` library, function `config.shares.removeRules()` is now deprecated; use `config.shares.removeRuleAt()`, instead. The purpose of `config.shares.removeRules()` was to remove only the first occurrency of a specified rule; this is achievable also with this snippet:
 
     ```js
-    const removeFirstOccurrencyOfRule = (sharename, ruleToDelete) => { return config.shares.removeRuleAt(sharename, config.shares.get(sharename)["access"].indexOf(ruleToDelete)); };
+    const removeFirstOccurrencyOfRule = (sharename, ruleToDelete) => {
+        const index = config.shares.get(sharename)["access"].indexOf(ruleToDelete);
+        return config.shares.removeRuleAt(sharename, index);
+    };
     ```
 
   - In `ConfigGen.js` library, a new function has been added: `config.shares.setBaseRules()`, and two other functions have changed their input arguments: `ConfigGen.fromRemote()` and `config.saveToRemote()`.

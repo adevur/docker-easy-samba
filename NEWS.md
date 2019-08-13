@@ -47,6 +47,8 @@ Stay updated on `easy-samba` development.
     
     - `FIX`: bugfix (i.e. changes that alter code in order to fix unwanted behavior)
     
+    - `SEC`: security fix (i.e. changes that alter code in order to fix unsafe behavior)
+    
     - `NEW`: feature implementation (i.e. changes that add new functionalities to code)
 
 ### (2019-08-08 UTC) easy-samba 1.18.0 released (with new features)
