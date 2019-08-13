@@ -68,7 +68,7 @@ function fnAPI(str, config){
         assert( (method === "stop-easy-samba" && fnHas(params, "message")) ? fnIsString(params["message"]) : true );
     }
     catch (error){
-        return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:INVALID-INPUT" };
+        return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:INVALID-PARAMS", "id": id };
     }
     
     // execute api call
