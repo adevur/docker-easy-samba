@@ -78,7 +78,7 @@ inside the container's OS. Note that, optionally, you can leave this array empty
 An element of `users` array looks like this: `{ "name": "user1", "password": "123456" }`.
 
 - `name` is the user's name. It must be a valid Linux username, it must not exist in the container's OS already
-(so it cannot be "root" or "nobody" etc.), and it must be unique (so there cannot be two or more users with the same name,
+(so it cannot be `root` or `nobody` etc.), and it must be unique (so there cannot be two or more users with the same name,
 and there cannot be a user and a group with the same name).
 
 - `password` is the user's password, with which the user will login to the SAMBA server.
@@ -98,7 +98,7 @@ with the same name).
 ### `shares` section
 This is an array that contains all the shared folders to be created by the SAMBA server.
 This section can also be an empty array. An element of `shares` array looks like this:
-`{ "name": "public", "path": "/share/public", "access": ["user1", "ro:group2", "rw:user3"] }` (in case of a regular shared folder that requires user login), or `{ "name": "anon", "path": "/share/anon", "guest": "rw" }` (in case of an anonymous shared folder, that doesn't require user login).
+`{ "name": "public", "path": "/share/public", "access": ["user1", "ro:group2", "rw:user3"] }` (in case of a regular shared folder that requires user login), or `{ "name": "anon", "path": "/share/anon", "access": [], "guest": "rw" }` (in case of an anonymous shared folder, that doesn't require user login).
 
 This is the list of supported properties for a `shares`'s element: `name`, `path`, `access`, `guest` (optional) and `soft-quota` (optional).
 
