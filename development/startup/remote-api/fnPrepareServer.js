@@ -2,7 +2,7 @@
 
 
 // exports
-module.exports = fnStartServer;
+module.exports = fnPrepareServer;
 
 
 
@@ -23,14 +23,43 @@ const fnCreateServer = require("/startup/remote-api/fnCreateServer.js");
 
 
 
-async function fnStartServer(){
+async function fnPrepareServer(){
     log(`[LOG] EasySamba Remote API startup procedure has started.`);
-
+    
     // load "remote-api.json"
-    log(`[LOG] loading '${CFG}/remote-api.json'...`);
-    let config = false;
+    const config = fnLoadConfig();
+    
+    // load private key and certificate for the HTTPS server
+    const { httpsKey, httpsCert } = fnLoadKeyCert();
+    
+    // check property "port"
+    fnCheckPort(config);
+    
+    // check property "cert-nego"
+    fnCheckCertNego(config);
+    
+    // check property "enabled-api"
+    fnCheckEnabledAPI(config);
+    
+    // start the HTTPS server
     try {
+        await fnCreateServer(httpsKey, httpsCert, config);
+    }
+    catch (error){
+        log(`[ERROR] it's not been possible to start HTTPS server.`);
+        assert(false);
+    }
+}
+
+
+
+function fnLoadConfig(){
+    try {
+        log(`[LOG] loading '${CFG}/remote-api.json'...`);
+        let config = undefined;
+        
         assert( fs.existsSync(`${CFG}/remote-api.json`) );
+        
         try {
             config = JSON.parse(fs.readFileSync(`${CFG}/remote-api.json`, "utf8"));
         }
@@ -38,24 +67,30 @@ async function fnStartServer(){
             config = {};
             log(`[WARNING] '${CFG}/remote-api.json' exists, but it is not a valid JSON file.`);
         }
+        
         if (fnHas(config, "token") !== true){
             log(`[WARNING] since '${CFG}/remote-api.json' doesn't have a 'token' property, a new token will be randomly-generated and will be written to file '${CFG}/remote-api.json'...`);
             config["token"] = ConfigGen.genRandomPassword(12);
             fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config));
         }
+        
         assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
         log(`[LOG] '${CFG}/remote-api.json' has been correctly loaded and token has been successfully validated.`);
+        
+        return config;
     }
     catch (error){
-        config = false;
         log(`[ERROR] it's not been possible to validate the token in '${CFG}/remote-api.json'.`);
+        assert(false);
     }
+}
 
-    // if "remote-api.json" could not be loaded, or it is not valid, abort
-    assert(config !== false);
 
+
+function fnLoadKeyCert(){
     // load private key and certificate for the HTTPS server
     //   if they don't exist, generate new ones
+    
     let httpsKey = undefined;
     let httpsCert = undefined;
     try {
@@ -86,7 +121,12 @@ async function fnStartServer(){
         }
     }
     
-    // check property "port"
+    return { httpsKey: httpsKey, httpsCert: httpsCert };
+}
+
+
+
+function fnCheckPort(config){
     try {
         assert( fnHas(config, "port") );
         assert( fnIsInteger(config["port"]) );
@@ -99,8 +139,11 @@ async function fnStartServer(){
             log(`[WARNING] it's been defined a custom port in '${CFG}/remote-api.json', but it will not be used, since it is not in the allowed range 1024-49151.`);
         }
     }
-    
-    // check property "cert-nego"
+}
+
+
+
+function fnCheckCertNego(config){
     try {
         assert( fnHas(config, "cert-nego") );
         assert( [true, false].includes(config["cert-nego"]) );
@@ -111,8 +154,11 @@ async function fnStartServer(){
     catch (error){
         config["cert-nego"] = true;
     }
-    
-    // check property "enabled-api"
+}
+
+
+
+function fnCheckEnabledAPI(config){
     try {
         assert( fnHas(config, "enabled-api") );
         assert( fnIsArray(config["enabled-api"]) || config["enabled-api"] === "*" );
@@ -128,16 +174,6 @@ async function fnStartServer(){
     catch (error){
         config["enabled-api"] = "*";
     }
-
-    // start the HTTPS server
-    try {
-        await fnCreateServer(httpsKey, httpsCert, config);
-    }
-    catch (error){
-        log(`[ERROR] it's not been possible to start HTTPS server.`);
-        throw error;
-    }
 }
-
 
 
