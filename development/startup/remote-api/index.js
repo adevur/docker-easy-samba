@@ -4,7 +4,7 @@
 // dependencies
 const log = require("/startup/functions/fnLog.js")("/share/config/remote-api.logs");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
-const fnStartServer = require("/startup/remote-api/fnStartServer.js");
+const fnPrepareServer = require("/startup/remote-api/fnPrepareServer.js");
 
 
 
@@ -23,7 +23,7 @@ fnMain().then(() => {
 async function fnMain(){
     // start the API server
     log("\n");
-    await fnStartServer();
+    await fnPrepareServer();
 }
 
 
