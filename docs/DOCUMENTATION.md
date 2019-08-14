@@ -2180,7 +2180,7 @@ console.log( config.shares.getAccess("s1") );
 // OUTPUT: { "u1": "rw", "u2": "rw", "u3": "r", "g1": "rw", "g2": "r" }
 // EXPLAIN:
 //   "u1" and "u2" have read and write permissions,
-//   "u3" has read-only permissions
+//   "u3" has read-only permissions,
 //   all members of "g1" have read and write permissions,
 //   all members of "g2" have read permissions, but not all members have write permissions
 
@@ -2491,7 +2491,7 @@ config.shares.setBaseRules(["ro:*"]);
 // this is the final configuration:
 console.log( config.saveToObject()["shares"] ); // [ { "name": "folder1", "path": "/share/folder1", "access": ["ro:*", "rw:user1"] } ]
 
-// if we want to disable fixed rules completely, we use:
+// if we want to disable base rules completely, we use:
 config.shares.setBaseRules(undefined);
 
 // next time we generate a configuration file, base rules aren't going to be applied anymore
