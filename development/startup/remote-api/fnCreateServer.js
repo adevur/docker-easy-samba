@@ -29,16 +29,10 @@ function fnCreateServer(httpsKey, httpsCert, config){
                         res.end(JSON.stringify(result), "utf8");
                     });
                 }
-                else if (req.url === "/cert-nego" && req.method === "GET"){
-                    if (config["cert-nego"] === true){
-                        const result = { "jsonrpc": "2.0", "result": fnGetCryptedCert(httpsCert, config["token"]), "error": null };
-                        res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify(result), "utf8");
-                    }
-                    else {
-                        res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:WRONG-REQUEST" }), "utf8");
-                    }
+                else if (req.url === "/cert-nego" && req.method === "GET" && config["cert-nego"] === true){
+                    const result = { "jsonrpc": "2.0", "result": fnGetCryptedCert(httpsCert, config["token"]), "error": null };
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify(result), "utf8");
                 }
                 else {
                     res.writeHead(200, { "Content-Type": "application/json" });
