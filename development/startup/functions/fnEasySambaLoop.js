@@ -164,7 +164,6 @@ async function fnEasySambaCycleProcess(vars){
     // check for changes
     let somethingChanged = false;
     let sambaCrashed = false;
-    let easysambaPaused = false;
     if (rawConfig !== false && rawConfig !== vars["previousConfig"]){
         somethingChanged = true;
     }
