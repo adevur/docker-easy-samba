@@ -1462,8 +1462,9 @@ const ConfigGen = class {
                     throw new Error("CANNOT-CONNECT");
                 }
                 
-                // get remote container's response and try to decrypt it
+                // get remote container's response and try to decrypt the hash
                 let decrypted = undefined;
+                let httpsCert = undefined;
                 try {
                     const options = {
                         method: "GET",
@@ -1475,12 +1476,17 @@ const ConfigGen = class {
                     result = JSON.parse(result);
                     assert( fnHas(result, ["jsonrpc", "result"]) );
                     assert( result["jsonrpc"] === "2.0" );
-                    assert( fnIsString(result["result"]) );
+                    assert( fnHas(result["result"], ["cert", "hash", "iv"]) );
+                    assert( [result.result.cert, result.result.hash, result.result.iv].every(fnIsString) );
                     assert( fnHas(result, "error") ? (result["error"] === null) : true );
                     
-                    const decipher = crypto.createDecipher("aes-256-ctr", token);
-                    decrypted = decipher.update(result["result"], "hex", "utf8");
-                    decrypted += decipher.final("utf8");
+                    const secret = crypto.createHash("sha256").update(token, "utf8").digest();
+                    const iv = Buffer.from(result["result"]["iv"], "hex");
+                    const decipher = crypto.createDecipheriv("aes-256-ctr", secret, iv);
+                    decrypted = decipher.update(result["result"]["hash"], "hex", "ascii");
+                    decrypted += decipher.final("ascii");
+                    
+                    httpsCert = result["result"]["cert"];
                 }
                 catch (error){
                     throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
@@ -1488,13 +1494,9 @@ const ConfigGen = class {
                 
                 // check if decryption has been successful
                 try {
-                    const parsed = JSON.parse(decrypted);
-                
-                    assert( fnHas(parsed, ["httpsCert", "certHash"]) );
-                    assert( [parsed["httpsCert"], parsed["certHash"]].every(fnIsString) );
-                    assert( parsed["certHash"].toUpperCase() === crypto.createHash("md5").update(parsed["httpsCert"], "ascii").digest("hex").toUpperCase() );
+                    assert( decrypted.toUpperCase() === crypto.createHash("sha256").update(httpsCert, "ascii").digest("hex").toUpperCase() );
                     
-                    return parsed["httpsCert"];
+                    return httpsCert;
                 }
                 catch (error){
                     throw new Error(`INVALID-TOKEN`);

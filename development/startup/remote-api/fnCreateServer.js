@@ -57,15 +57,16 @@ function fnCreateServer(httpsKey, httpsCert, config){
 
 
 function fnGetCryptedCert(httpsCert, token){
-    const certHash = crypto.createHash("md5").update(httpsCert, "ascii").digest("hex").toUpperCase();
-    const cipher = crypto.createCipher("aes-256-ctr", token);
+    const certHash = crypto.createHash("sha256").update(httpsCert, "ascii").digest("hex").toUpperCase();
     
-    const body = { httpsCert: httpsCert, certHash: certHash };
+    const secret = crypto.createHash("sha256").update(token, "utf8").digest();
+    const iv = Buffer.concat([crypto.randomBytes(14), Buffer.from([0, 0])]);
+    const cipher = crypto.createCipheriv("aes-256-ctr", secret, iv);
     
-    let crypted = cipher.update(JSON.stringify(body), "utf8", "hex").toUpperCase();
-    crypted += cipher.final("hex").toUpperCase();
+    let secureHash = cipher.update(certHash, "ascii", "hex").toUpperCase();
+    secureHash += cipher.final("hex").toUpperCase();
     
-    return crypted;
+    return { "cert": httpsCert, "hash": secureHash, "iv": iv.toString("hex").toUpperCase() };
 }
 
 
