@@ -1476,6 +1476,9 @@ const ConfigGen = class {
                     result = JSON.parse(result);
                     assert( fnHas(result, ["jsonrpc", "result"]) );
                     assert( result["jsonrpc"] === "2.0" );
+                    if (fnIsString(result["result"])){
+                        throw new Error("UNSAFE-CERT-NEGO-PROTOCOL");
+                    }
                     assert( fnHas(result["result"], ["cert", "hash", "iv"]) );
                     assert( [result.result.cert, result.result.hash, result.result.iv].every(fnIsString) );
                     assert( fnHas(result, "error") ? (result["error"] === null) : true );
@@ -1489,6 +1492,9 @@ const ConfigGen = class {
                     httpsCert = result["result"]["cert"];
                 }
                 catch (error){
+                    if (error.message === "UNSAFE-CERT-NEGO-PROTOCOL"){
+                        throw new Error(error.message);
+                    }
                     throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
                 }
                 
