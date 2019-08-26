@@ -2,11 +2,38 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current stable release: `1.18.0`
+### Current stable release: `1.18.1`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] [SECURITY] 1.18.1 (2019-08-26 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Version information inside an `easy-samba` container is now saved in JSON format (i.e. in file `/startup/version.json` instead of `/startup/version.txt`). This does not affect the currently documented methods to retrieve the version of an `easy-samba` container (e.g. using function `remote.getInfo()` of `ConfigGen.js` library).
+  
+    > COMMITS: FIX-1
+    
+  - Minor bugfixes.
+  
+    > COMMITS: FIX-2
+    
+  - Major code cleanup for `Remote API` and other minor code optimizations.
+  
+    > COMMITS: CC-1, CC-2, CC-3, CC-4
+
+- Security fixes:
+
+  - In `Remote API`, algorithm of certificate-negotiation feature has been changed in order to fix a security vulnerability. This security fix required to completely change the certificate-negotiation protocol: this means that, if you want to use cert-nego feature in `easy-samba` version `1.18.1`, you need `ConfigGen.js` library version `1.18.1` or newer; and, if you want to use cert-nego feature in `easy-samba` version `1.18.0` or older, you need `ConfigGen.js` library version `1.18.0` or older. Function `remote.certNego()` of `ConfigGen.js` will throw error `UNSAFE-CERT-NEGO-PROTOCOL` if you use it with an older container.
+  
+    > NOTE: older version of cert-nego protocol is considered unsafe, so it is strongly advisable not to use it anymore. If you are not able to update to `easy-samba` version `1.18.1` anytime soon, you should manually pass the remote container's certificate to function `ConfigGen.remote()`. Take a look at the `Documentation` for more info.
+    
+    > COMMITS: SEC-1, FIX-3
 
 ### [STABLE] [FEATURE] 1.18.0 (2019-08-08 UTC)
 - New features:

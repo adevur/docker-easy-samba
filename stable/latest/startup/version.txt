@@ -1,2 +1,0 @@
-BRANCH: stable
-VERSION: 1.18.0
