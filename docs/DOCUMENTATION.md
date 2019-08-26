@@ -1144,6 +1144,8 @@ This method can be used to manually retrieve the server's certificate of a remot
   - `"INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
   
   - `"CERT-NEGO-NOT-SUPPORTED"`: remote container doesn't support certificate-negotiation feature
+  
+  - `"UNSAFE-CERT-NEGO-PROTOCOL"`: remote container uses an old and unsafe version of certificate-negotiation protocol
 
 EXAMPLE:
 ```js
