@@ -4,6 +4,25 @@
 
 - [ESV-1](https://github.com/adevur/docker-easy-samba/blob/master/SECURITY.md#ESV-1)
 
+- [ESV-2](https://github.com/adevur/docker-easy-samba/blob/master/SECURITY.md#ESV-2)
+
+## ESV-2
+
+### Status: `FIXED` (in version `1.17.0`)
+### Affected versions: from `1.11.0` to `1.16.1`
+### Severity: `MODERATE`
+
+### Description
+In `easy-samba` versions `1.11.0`-`1.16.1`, `Remote API` implementation unsafely checks the token sent by a remote client.
+
+### Severity
+Severity is moderate, because an attacker may perform a timing attack in order to steal the secret token of `Remote API`. If the token gets stolen, the attacker may get access to confidential data, and may cause denial of service in several ways.
+
+No case of successful exploit is known.
+
+### Fixes and workarounds
+The only available fix is to update `easy-samba` to version `1.17.0` or newer.
+
 ## ESV-1
 
 ### Status: `FIXED` (in version `1.0.2`)
