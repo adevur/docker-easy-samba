@@ -1,4 +1,7 @@
-# ESV (EasySamba Vulnerabilities) Database
+# EasySamba Security Advisory Center
+This document contains useful information about `easy-samba` security and known vulnerabilities.
+
+An `easy-samba` security vulnerability is named `ESV-#` (where `#` is the counter, e.g. `ESV-1`).
 
 ## List of security vulnerabilities
 
@@ -30,6 +33,8 @@ No case of successful exploit is known.
 The only available fix is to update `easy-samba` to version `1.18.1` or newer.
 
 If you are not able to update `easy-samba` and/or remote client's `ConfigGen.js` library, you should stop using `certificate-negotiation` feature, by manually passing the container's certificate to `ConfigGen.remote()` function.
+
+> SEE ALSO: [changelog of `easy-samba` version `1.18.1`](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-security-1181-2019-08-26-utc)
 
 ## ESV-2
 
