@@ -14,6 +14,8 @@ This docker image provides an easy-to-setup SAMBA server, based on CentOS 7.
 
 - [News](https://github.com/adevur/docker-easy-samba/blob/master/NEWS.md)
 
+- [Security and known vulnerabilities](https://github.com/adevur/docker-easy-samba/blob/master/SECURITY.md)
+
 ### short description
 This SAMBA server takes a JSON configuration file as input and, based on that file, it sets up the container's environment. For example, here's what you can do:
 
