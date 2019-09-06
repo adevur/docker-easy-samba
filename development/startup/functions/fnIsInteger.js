@@ -17,5 +17,5 @@ module.exports = fnIsInteger;
 // PURPOSE: check that a given Javascript object is a valid integer
 // EXAMPLE: fnIsInteger(123) === true; fnIsInteger(NaN) === false
 function fnIsInteger(input){
-    return ( input !== undefined && input === parseInt(String(input), 10) && Number.isNaN(input) !== true );
+    return Number.isInteger(input);
 }
