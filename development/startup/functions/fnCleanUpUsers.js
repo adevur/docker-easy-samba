@@ -17,7 +17,10 @@ const fnIsString = require("/startup/functions/fnIsString.js");
 
 
 
-// TODO: brief description
+// FUNCTION: fnCleanUpUsers()
+// INPUT: N/A
+// OUTPUT: true in case of success, otherwise false
+// PURPOSE: deletes non-native users from the container
 function fnCleanUpUsers(){
     try {
         // retrieve the list of CentOS native users from file "/startup/native_users.json", created on first startup
@@ -25,7 +28,7 @@ function fnCleanUpUsers(){
         assert( fnIsArray(nativeUsers) && nativeUsers.every(fnIsString) );
 
         // get current users' list
-        const currentUsers = fnListUsers();
+        let currentUsers = fnListUsers();
         assert( nativeUsers.every((e) => { return currentUsers.includes(e); }) );
 
         // delete each user not included in 'nativeUsers', both from OS and from SAMBA
@@ -37,11 +40,12 @@ function fnCleanUpUsers(){
         });
 
         // check if there are still non-native users
-        const newCurrentUsers = fnListUsers();
-        const newCurrentSambaUsers = fnListSambaUsers();
-        if (newCurrentSambaUsers.length > 0 || newCurrentUsers.every((user) => { return nativeUsers.includes(user); }) !== true){
-            throw "ERROR";
-        }
+        currentUsers = fnListUsers();
+        const currentSambaUsers = fnListSambaUsers();
+        assert( currentSambaUsers.length === 0 );
+        assert(currentUsers.every((user) => {
+            return nativeUsers.includes(user);
+        }));
         
         return true;
     }
