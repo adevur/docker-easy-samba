@@ -120,7 +120,7 @@ const fnHas = (obj, keys) => {
 // fnIsInteger()
 //   checks if a given Javascript object "input" is a valid integer
 const fnIsInteger = (input) => {
-    return ( input !== undefined && input !== null && input === parseInt(String(input), 10) && Number.isNaN(input) !== true );
+    return Number.isInteger(input);
 };
 
 // fnIsFunction()
