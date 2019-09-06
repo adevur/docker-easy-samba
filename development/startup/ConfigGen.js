@@ -2053,6 +2053,7 @@ const ConfigGen = class {
         try {
             const result = JSON.stringify(this.saveToObject());
             assert( fnIsString(result) );
+            return result;
         }
         catch (error){
             throw new Error("CANNOT-SAVE-TO-JSON");
