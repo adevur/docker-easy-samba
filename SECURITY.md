@@ -11,6 +11,30 @@ An `easy-samba` security vulnerability is named `ESV-#` (where `#` is the counte
 
 - [ESV-3](https://github.com/adevur/docker-easy-samba/blob/master/SECURITY.md#ESV-3)
 
+- [ESV-4](https://github.com/adevur/docker-easy-samba/blob/master/SECURITY.md#ESV-4)
+
+## ESV-4
+
+### Status: `OPEN`
+### Affected versions: `ConfigGen.js`: from `1.7.0` to `1.18.1`, `easy-samba`: from `1.12.0` to `1.18.1`
+### Severity: `MODERATE`
+
+### Description
+Static function `ConfigGen.genRandomPassword()` of `ConfigGen.js` library has a security vulnerability, present since its debut in `ConfigGen.js` version `1.7.0`. The purpose of this function is to generate a random password of variable length.
+
+This function is used also in other methods of `ConfigGen.js` library (i.e. `config.users.add()` and `config.users.addArray()`).
+
+Moreover, `easy-samba` since version `1.12.0` makes use of `ConfigGen.genRandomPassword()` in `Remote API`, in order to generate a random token in case none is provided.
+
+No case of successful exploit is known.
+
+### Fixes and workarounds
+There's no fix at the moment (although one will be soon provided when `easy-samba` version `1.18.2` is released).
+
+As a workaround, don't use `ConfigGen.genRandomPassword()` until `easy-samba` version `1.18.2` comes out.
+
+> NOTE: `ConfigGen.genRandomPassword()` is used also in `config.users.add()` and `config.users.addArray()` when user's password is not provided. Also, `Remote API` uses this function when no token is provided in `remote-api.json`.
+
 ## ESV-3
 
 ### Status: `FIXED` (in version `1.18.1`)
