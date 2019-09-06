@@ -1008,7 +1008,7 @@ const ConfigGen = class {
             // config.shares.removeRules()
             // DEPRECATED
             removeRules: (sharename, rules) => {
-                console.log("[WARNING] 'config.shares.removeRules() is deprecated. Use 'config.shares.removeRuleAt()', instead.'");
+                console.log("[WARNING] 'config.shares.removeRules()' is deprecated. Use 'config.shares.removeRuleAt()', instead.");
 
                 if (fnIsString(sharename) !== true){
                     throw new Error("INVALID-INPUT");
