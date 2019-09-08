@@ -20,12 +20,10 @@ const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
 
-// global variables
-const METHODS = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba", "pause-easy-samba", "start-easy-samba"];
-
-
-
 function fnAPI(str, config){
+    // available API methods in this Remote API version
+    const METHODS = config["$METHODS"];
+    
     // validate input
     let input = undefined;
     try {
@@ -49,7 +47,7 @@ function fnAPI(str, config){
     }
     
     // validate method
-    if (METHODS.includes(method) !== true || (config["enabled-api"] !== "*" && config["enabled-api"].includes(method) !== true)){
+    if (config["enabled-api"].includes(method) !== true){
         return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:API-NOT-SUPPORTED`, "id": id };
     }
     
@@ -83,6 +81,9 @@ function fnAPI(str, config){
 
 
 function fnCallAPI(method, params, id, config){
+    // available API methods in this Remote API version
+    const METHODS = config["$METHODS"];
+    
     switch (method){
     
         // set-config
