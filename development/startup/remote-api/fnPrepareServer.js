@@ -77,6 +77,9 @@ function fnLoadConfig(){
         assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
         log(`[LOG] '${CFG}/remote-api.json' has been correctly loaded and token has been successfully validated.`);
         
+        // set global internal constant "$METHODS"
+        config["$METHODS"] = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba", "pause-easy-samba", "start-easy-samba"];
+        
         return config;
     }
     catch (error){
@@ -163,16 +166,17 @@ function fnCheckEnabledAPI(config){
         assert( fnHas(config, "enabled-api") );
         assert( fnIsArray(config["enabled-api"]) || config["enabled-api"] === "*" );
         assert( fnIsArray(config["enabled-api"]) ? config["enabled-api"].every(fnIsString) : true );
-        if (fnIsArray(config["enabled-api"]) && config["enabled-api"].length > 0){
+        config["enabled-api"] = (config["enabled-api"] === "*") ? config["$METHODS"] : config["enabled-api"].filter((e) => { return config["$METHODS"].includes(e); });
+        if (config["enabled-api"].length === 0){
+            log(`[WARNING] EasySamba Remote API will not enable any API methods.`);
+        }
+        else if (config["enabled-api"].length < config["$METHODS"].length){
             const text = config["enabled-api"].map((e) => { return `'${e}'`; }).join(", ");
             log(`[LOG] EasySamba Remote API will enable only these API methods: ${text}.`);
         }
-        else if (fnIsArray(config["enabled-api"]) && config["enabled-api"].length === 0){
-            log(`[WARNING] EasySamba Remote API will not enable any API methods.`);
-        }
     }
     catch (error){
-        config["enabled-api"] = "*";
+        config["enabled-api"] = config["$METHODS"];
     }
 }
 
