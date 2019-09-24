@@ -1884,85 +1884,53 @@ const ConfigGen = class {
             throw new Error("INVALID-INPUT");
         }
 
-        const TABLE = {};
-        TABLE["lcl"] = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
-        TABLE["ucl"] = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
-        TABLE["dig"] = ["0","1","2","3","4","5","6","7","8","9"];
-        TABLE["sym"] = ["","!","\"","#","$","%","&","'","(",")","*","+",",","-",".","/",":",";","<","=",">","?","@","[","\\","]","^","_","`","{","|","}","~"];
-
-        let result = Array.from({ length: len }, () => { return undefined; });
-        let lcl = 0;
-        let ucl = 0;
-        let dig = 0;
-        let sym = 0;
-        let missing = undefined;
-
-        while (result.includes(undefined)){
-            result = result.map((e) => {
-                if (e === undefined && missing === undefined){
-                    let c = crypto.randomBytes(1).readUInt8();
-                    c = (c % 95) + 32;
-                    c = String.fromCharCode(c);
-                    return c;
+        const randomNumber = (range) => {
+            const TEMP = 256 % range;
+            let result = undefined;
+            while (result === undefined){
+                const r = crypto.randomBytes(1).readUInt8(0);
+                if (r >= TEMP){
+                    result = r % range;
                 }
-                else if (e === undefined && missing !== undefined){
-                    let c = crypto.randomBytes(1).readUInt8();
-                    c = c % TABLE[missing].length;
-                    c = TABLE[missing][c];
-                    return c;
-                }
-                else {
-                    return e;
-                }
-            });
-
-            lcl = 0;
-            ucl = 0;
-            dig = 0;
-            sym = 0;
-            missing = undefined;
-
-            result.forEach((c) => {
-                lcl = (TABLE["lcl"].includes(c)) ? (lcl + 1) : lcl;
-                ucl = (TABLE["ucl"].includes(c)) ? (ucl + 1) : ucl;
-                dig = (TABLE["dig"].includes(c)) ? (dig + 1) : dig;
-            });
-            sym = result.length - lcl - ucl - dig;
-
-            missing = (lcl === 0) ? "lcl" : missing;
-            missing = (ucl === 0) ? "ucl" : missing;
-            missing = (dig === 0) ? "dig" : missing;
-            missing = (sym === 0) ? "sym" : missing;
-
-            if (missing !== undefined){
-                let running = true;
-                result = result.map((e) => {
-                    if (running === true && lcl > 1 && TABLE["lcl"].includes(e)){
-                        running = false;
-                        return undefined;
-                    }
-                    else if (running === true && ucl > 1 && TABLE["ucl"].includes(e)){
-                        running = false;
-                        return undefined;
-                    }
-                    else if (running === true && dig > 1 && TABLE["dig"].includes(e)){
-                        running = false;
-                        return undefined;
-                    }
-                    else if (running === true && sym > 1 && TABLE["sym"].includes(e)){
-                        running = false;
-                        return undefined;
-                    }
-                    else {
-                        return e;
-                    }
-                });
             }
+            return result;
+        };
+
+        const TABLE = [undefined, undefined, undefined, undefined];
+        TABLE[0] = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
+        TABLE[1] = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+        TABLE[2] = ["0","1","2","3","4","5","6","7","8","9"];
+        TABLE[3] = ["","!","\"","#","$","%","&","'","(",")","*","+",",","-",".","/",":",";","<","=",">","?","@","[","\\","]","^","_","`","{","|","}","~"];
+
+        // generate a random string of (len - 4) length
+        let result = [];
+        while (result.length < len - 4){
+            const r = randomNumber(95) + 32;
+            const c = String.fromCharCode(r);
+            result.push(c);
         }
-
-        result = result.join("");
-
-        return result;
+        
+        // insert 4 random chars of different kind inside the random string,
+        //   so that the final string will have at least 1 lowercase letter, 1 uppercase letter, 1 digit and 1 symbol
+        const kinds = [0, 1, 2, 3];
+        while (kinds.length > 0){
+            const r = randomNumber(kinds.length);
+            const t = TABLE[kinds[r]];
+            const r2 = randomNumber(t.length);
+            const c = t[r2];
+            
+            const i = randomNumber(result.length + 1);
+            if (i === result.length){
+                result.push(c);
+            }
+            else {
+                result.splice(i, 0, c);
+            }
+            
+            kinds.splice(r, 1);
+        }
+        
+        return result.join("");
     }
     
     // ConfigGen.getConfigPath()
