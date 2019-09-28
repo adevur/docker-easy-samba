@@ -15,7 +15,7 @@ An `easy-samba` security vulnerability is named `ESV-#` (where `#` is the counte
 
 ## ESV-4
 
-### Status: `OPEN`
+### Status: `FIXED` (in version `1.18.2`)
 ### Affected versions: `ConfigGen.js`: from `1.7.0` to `1.18.1`, `easy-samba`: from `1.12.0` to `1.18.1`
 ### Severity: `MODERATE`
 
@@ -26,14 +26,13 @@ This function is used also in other methods of `ConfigGen.js` library (i.e. `con
 
 Moreover, `easy-samba` since version `1.12.0` makes use of `ConfigGen.genRandomPassword()` in `Remote API`, in order to generate a random token in case none is provided.
 
+### Severity
+Severity is moderate, because passwords generated with `ConfigGen.genRandomPassword()` may follow a predictable pattern, so that an attacker would be able to predict some chars of the next random passwords. In practice, this is a very remote scenario.
+
 No case of successful exploit is known.
 
 ### Fixes and workarounds
-There's no fix at the moment (although one will be soon provided when `easy-samba` version `1.18.2` is released).
-
-As a workaround, don't use `ConfigGen.genRandomPassword()` until `easy-samba` version `1.18.2` comes out.
-
-> NOTE: `ConfigGen.genRandomPassword()` is used also in `config.users.add()` and `config.users.addArray()` when user's password is not provided. Also, `Remote API` uses this function when no token is provided in `remote-api.json`.
+The only available fix is to update `easy-samba` and `ConfigGen.js` library to version `1.18.2` or newer.
 
 ## ESV-3
 
