@@ -2,6 +2,17 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-09-28 UTC) development status update
+Development of version `2.x.x` of `easy-samba` has started. All the development of version `2.x.x` will be done in sub-directory `./development/branch-2.x.x`, while all the development of version `1.x.x` will be done in sub-directory `./development/branch-1.x.x`.
+
+> NOTE: you can build the development version of `easy-samba` with command `docker build --tag local/easy-samba:devel-2.x.x ./development/branch-2.x.x`.
+
+Some important news are:
+
+- New branch `2.x.x` is already based on CentOS 8. Since there's no official Docker image of CentOS 8 yet, unofficial image `adevur/centos-8:latest` will be used temporarily, until official image `centos:8` comes out.
+
+- New branch `2.x.x` should be compatible with new architectures as well (other than `x86_64`). At the moment, CentOS 8 is compatible with these architectures: `x86_64`, `ppc64le` and `aarch64`. `easy-samba`, instead, is only compatible with `x86_64` at the moment, but new architecures will be soon supported through tags like: `latest-aarch64`, `latest-ppc64le`, etc.
+
 ### (2019-09-28 UTC) easy-samba 1.18.2 released (with security fixes)
 Stable version 1.18.2 of `easy-samba` has been released.
 

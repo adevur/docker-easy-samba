@@ -1,5 +1,5 @@
 # easy-samba
-This docker image provides an easy-to-setup SAMBA server, based on CentOS 7.
+This docker image provides an easy-to-setup SAMBA server, based on CentOS 8.
 
 ### quick links
 - [Official GitHub repository `adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba)
@@ -44,8 +44,6 @@ Available tags:
 
 - Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
-- Latest development release: [`devel`](https://github.com/adevur/docker-easy-samba/blob/master/development/Dockerfile).
-
 > See also chapters [`Versioning`](https://github.com/adevur/docker-easy-samba/blob/master/README.md#versioning)
 and [`Branches`](https://github.com/adevur/docker-easy-samba/blob/master/README.md#branches) for more info.
 
@@ -61,13 +59,11 @@ Versions are in this format: `x.y.z`. Where:
 - `z` is a bugfix release, and when it gets updated it brings bug-fixes and security fixes; so you're not obliged to change your software after this update.
 
 ### branches
-There are three branches: `stable`, `long-term` and `development`. Where:
+There are two branches: `stable` and `long-term`. Where:
 
 - `stable` is the latest stable major release. It can be used in production, but it's more likely to have bugs since it brings new features more often.
 
 - `long-term` is the latest long-term release. It is based on a previous major release than the one in `stable` branch; it only gets bug-fixes and security fixes, since new features are more likely to be introduced in `stable` branch. You may want to use `long-term` in production, if you don't need latest features of `stable` branch.
-
-- `development` is the development branch based on current `stable` major release (or a future major release). It gets updated very often, and it can have several bugs since it has not been deeply tested yet. When a new feature has matured enough, it gets merged in `stable` branch. If a bug gets fixed, it gets merged both in `stable` and `long-term` branches.
 
 ### building
 - To build latest stable release, run:
@@ -78,11 +74,6 @@ There are three branches: `stable`, `long-term` and `development`. Where:
 - To build latest long-term release, run:
   ```sh
   docker build --tag local/easy-samba:lts ./long-term/latest
-  ```
-
-- To build latest development release, run:
-  ```sh
-  docker build --tag local/easy-samba:devel ./development
   ```
 
 - To build a specific release, run (for example):
