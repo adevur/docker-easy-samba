@@ -2,6 +2,13 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-09-28 UTC) easy-samba 1.18.2 released (with security fixes)
+Stable version 1.18.2 of `easy-samba` has been released.
+
+This version brings security fixes to `easy-samba`. It is advisable to update as soon as possible.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-security-1182-2019-09-28-utc) for changelog.
+
 ### (2019-08-26 UTC) easy-samba 1.18.1 released (with security fixes)
 Stable version 1.18.1 of `easy-samba` has been released.
 

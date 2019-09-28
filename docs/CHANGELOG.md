@@ -8,6 +8,31 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [STABLE] [SECURITY] 1.18.2 (2019-09-28 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Fixed a major bug in function `config.saveToJson()` of `ConfigGen.js` library.
+  
+    > COMMITS: FIX-5
+    
+  - Minor bugfixes.
+  
+    > COMMITS: FIX-4, FIX-6, CC-8
+    
+  - Several code cleanup.
+  
+    > COMMITS: CC-5, CC-6, CC-7, TYPO-1
+
+- Security fixes:
+
+  - Function `ConfigGen.genRandomPassword()` of `ConfigGen.js` library has been rewritten in order to fix a security vulnerability.
+    
+    > COMMITS: SEC-2
+
 ### [STABLE] [SECURITY] 1.18.1 (2019-08-26 UTC)
 - New features:
 
