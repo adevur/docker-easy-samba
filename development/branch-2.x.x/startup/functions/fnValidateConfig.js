@@ -35,23 +35,10 @@ function fnValidateConfig(config){
         return "MUST CONTAIN 'domain', 'users' AND 'shares' PROPERTIES";
     }
 
-    // check "guest" property
-    if (fnHas(config, "guest") && fnIsString(config["guest"])){
-        log(`[WARNING] 'guest' section of 'config.json' is not supported anymore. Use 'guest' property of shares, in order to create anonymous shared folders.`);
-        if (fnHas(config, "shares") && fnIsArray(config["shares"])){
-            config["shares"].push({ "name": "guest", "path": config["guest"], "access": [], "guest": "rw" });
-        }
-    }
-
     // check "version" property
     const validateConfigVersion = fnValidateConfigVersion(config);
     if (validateConfigVersion !== true){
         return validateConfigVersion;
-    }
-
-    // check "global" property
-    if (fnHas(config, "global")){
-        log(`[WARNING] 'global' section is deprecated and will be ignored.`);
     }
 
     // check "domain" property

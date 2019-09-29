@@ -27,26 +27,6 @@ function fnValidateConfigShares(shares, sharedb){
     if (fnIsArray(shares) !== true){
         return `'shares' MUST BE AN ARRAY`;
     }
-    
-    // retro-compatibility fix for shares that don't have "access" property
-    let deprecated = false;
-    shares.forEach((e) => {
-        if (fnHas(e, "access") !== true){
-            e["access"] = [];
-            deprecated = true;
-        }
-    });
-    if (deprecated){
-        log(`[WARNING] optional 'access' property for shares is deprecated. Add '"access": []' to shares that don't have access rules.`);
-    }
-    
-    // display a warning if one or more share names are more than 8 characters in length
-    deprecated = shares.some((e) => {
-        return (fnHas(e, "name") && fnIsString(e["name"])) ? (e["name"].length > 8) : false;
-    });
-    if (deprecated){
-        log(`[WARNING] share names that have a length greater than 8 characters are deprecated.`);
-    }
 
     // for each "share" in "shares" ...
     let error = "";
@@ -67,15 +47,16 @@ function fnValidateConfigShares(shares, sharedb){
             delete share["$soft-quota"];
         }
 
-        // "name" must be a unique alphanumeric name of minimum 1 char length
+        // "name" must be a unique alphanumeric name of minimum 1 char and maximum 8 chars length
         // "name" cannot be "global", "homes" or "printers"
         if (
             fnIsString(share["name"]) !== true
             || share["name"].length < 1
             || sharedb.names.map((e) => { return e.toLowerCase(); }).includes(share["name"].toLowerCase())
             || fnValidateString(share["name"], ["az", "AZ", "09"]) !== true
+            || share["name"].length > 8
         ){
-            error = `SHARED FOLDER NAME MUST BE A UNIQUE ALPHANUMERIC NON-EMPTY STRING`;
+            error = `SHARED FOLDER NAME MUST BE A UNIQUE ALPHANUMERIC NON-EMPTY STRING OF MAX 8 CHARS`;
             return false;
         }
 
@@ -91,9 +72,9 @@ function fnValidateConfigShares(shares, sharedb){
             return false;
         }
 
-        // "path" cannot be "/share/config.json", "/share/config", "/share/config.gen.js" or "/share/remote-api.json"
-        if (["/share/config", "/share/config.json", "/share/config.gen.js", "/share/remote-api.json"].includes(share["path"])){
-            error = `SHARED FOLDERS' PATH CANNOT BE EQUAL TO '/share/config', '/share/config.json', '/share/config.gen.js' OR '/share/remote-api.json'`;
+        // "path" cannot be "/share/config"
+        if (["/share/config"].includes(share["path"])){
+            error = `SHARED FOLDERS' PATH CANNOT BE EQUAL TO '/share/config'`;
             return false;
         }
 
