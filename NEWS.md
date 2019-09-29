@@ -2,6 +2,13 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-09-29 UTC) easy-samba 2.0.0 released (with new features)
+Unstable version 2.0.0 of `easy-samba` has been released.
+
+This version brings new features to `easy-samba`.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#unstable-feature-200-2019-09-29-utc) for changelog.
+
 ### (2019-09-28 UTC) development status update
 Development of version `2.x.x` of `easy-samba` has started. All the development of version `2.x.x` will be done in sub-directory `./development/branch-2.x.x`, while all the development of version `1.x.x` will be done in sub-directory `./development/branch-1.x.x`.
 

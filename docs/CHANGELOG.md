@@ -2,11 +2,28 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
+### Current unstable release: `2.0.0`
+
 ### Current stable release: `1.18.2`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [UNSTABLE] [FEATURE] 2.0.0 (2019-09-29 UTC)
+- New features:
+
+  - Container is now based on CentOS 8, instead of CentOS 7.
+  
+    > COMMITS: NEW-1
+
+- Bug fixes:
+
+  - N/A
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [SECURITY] 1.18.2 (2019-09-28 UTC)
 - New features:
