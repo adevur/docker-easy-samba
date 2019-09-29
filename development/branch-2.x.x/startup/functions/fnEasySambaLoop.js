@@ -174,7 +174,7 @@ async function fnEasySambaCycleProcess(vars){
     // update running configuration,
     //   in case it's first startup, something changed, or SAMBA crashed
     if (vars["previousConfig"] === undefined || somethingChanged || sambaCrashed){
-        log(`------ EASY-SAMBA CONFIGURATION PROCESS #${vars["counter"].toString()} ------`);
+        log(`------ EASY-SAMBA CONFIGURATION PROCESS #${vars["counter"]} ------`);
         let res = false;
         
         vars["shares"] = undefined;

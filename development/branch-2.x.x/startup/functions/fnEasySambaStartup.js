@@ -30,7 +30,6 @@ function fnEasySambaStartup(){
     log(`[LOG] you're using easy-samba version '${version.version}' from '${version.branch}' branch.`);
 
     // kill existing processes
-    fnKill("node /share/config.gen.js");
     fnKill("node /share/config/config.gen.js");
     fnKill("/usr/sbin/smbd --foreground --no-process-group");
     fnKill("/usr/sbin/nmbd --foreground --no-process-group");
@@ -59,7 +58,7 @@ function fnEasySambaStartup(){
     // get config dir
     const configdir = fnGetConfigDir();
     fnWriteFile("/startup/configdir.json", JSON.stringify(configdir));
-    log(`[LOG] easy-samba configuration files are located at "${configdir}".`);
+    log(`[LOG] easy-samba configuration files are located at '${configdir}'.`);
     
     log("------ EASY-SAMBA STARTUP COMPLETE ------\n");
 }
