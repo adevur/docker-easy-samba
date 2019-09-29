@@ -40,7 +40,9 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 ### tags
 Available tags:
 
-- Latest stable release (1.18.2): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
+- Latest unstable release (2.0.0): [`latest`, `unstable`](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile).
+
+- Latest stable release (1.18.2): [`stable`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
 
 - Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
@@ -59,16 +61,23 @@ Versions are in this format: `x.y.z`. Where:
 - `z` is a bugfix release, and when it gets updated it brings bug-fixes and security fixes; so you're not obliged to change your software after this update.
 
 ### branches
-There are two branches: `stable` and `long-term`. Where:
+There are three branches: `unstable`, `stable` and `long-term`. Where:
 
-- `stable` is the latest stable major release. It can be used in production, but it's more likely to have bugs since it brings new features more often.
+- `unstable` is the latest unstable release. It is not recommended for use in production, because it brings new features more often, and these features are not finalized: they could change in the future and, if you use them, you would be forced to change your software.
 
-- `long-term` is the latest long-term release. It is based on a previous major release than the one in `stable` branch; it only gets bug-fixes and security fixes, since new features are more likely to be introduced in `stable` branch. You may want to use `long-term` in production, if you don't need latest features of `stable` branch.
+- `stable` is the latest stable release. It can be used in production, because it brings new features less often, only when they're already finalized and stable.
+
+- `long-term` is the latest long-term release. It is based on a previous major release than the one in `stable` and `unstable` branches; it only gets bugfixes and security fixes, since new features are only introduced in `stable` and `unstable` branches. You may want to use `long-term` in production, if you don't need latest features of `stable` branch.
 
 ### building
+- To build latest unstable release, run:
+  ```sh
+  docker build --tag local/easy-samba:latest ./unstable/latest
+  ```
+
 - To build latest stable release, run:
   ```sh
-  docker build --tag local/easy-samba:latest ./stable/latest
+  docker build --tag local/easy-samba:stable ./stable/latest
   ```
 
 - To build latest long-term release, run:
