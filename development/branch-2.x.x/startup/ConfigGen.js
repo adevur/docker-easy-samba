@@ -8,8 +8,6 @@
     [static] ConfigGen.fromRemote()
     [static] ConfigGen.genRandomPassword()
 
-    [deprecated] [property] config.easysambaVersion
-
     config.saveToJson()
     config.saveToFile()
     config.saveToObject()
@@ -18,12 +16,7 @@
     config.on()
 
     config.domain()
-    [deprecated] config.guest()
-    [deprecated] config.unsetGuest()
     config.version()
-    [deprecated] config.unsetVersion()
-    [deprecated] config.global()
-    [deprecated] config.unsetGlobal()
 
     config.users.add()
     config.users.addArray()
@@ -50,13 +43,11 @@
     config.shares.setAccess()
     config.shares.addRules()
     config.shares.addRuleAt()
-    [deprecated] config.shares.removeRules()
     config.shares.removeRuleAt()
     config.shares.removeAllRules()
     config.shares.setPath()
     config.shares.setGuest()
     config.shares.setFixedRules()
-    [deprecated] config.shares.unsetFixedRules()
     config.shares.setBaseRules()
     config.shares.setSoftQuota()
 
@@ -64,10 +55,8 @@
     remote.getConfig()
     remote.setConfig()
     remote.getInfo()
-    [deprecated] remote.hello()
     remote.isReachable()
     remote.isTokenValid()
-    [deprecated] remote.getLogs()
     remote.getRemoteLogs()
     remote.getAvailableAPI()
     remote.getConfigHash()
@@ -221,10 +210,6 @@ const ConfigGen = class {
     // this is the constructor
     //   it doesn't accept any parameters
     constructor(){
-        // in order to know which ConfigGen.js version we're using
-        // DEPRECATED
-        this.easysambaVersion = globalVersion;
-
         // internal variables used by an instance of ConfigGen
         this["$domain"] = "WORKGROUP";
         this["$version"] = undefined;
@@ -639,8 +624,7 @@ const ConfigGen = class {
                 if (args.length === 3){
                     sharename = args[0];
                     path = args[1];
-                    access = (fnIsArray(args[2])) ? args[2] : [];
-                    guest = (fnIsString(args[2])) ? args[2] : "no";
+                    access = args[2];
                 }
                 else if (args.length === 4){
                     sharename = args[0];
@@ -1005,38 +989,6 @@ const ConfigGen = class {
                 return this;
             },
 
-            // config.shares.removeRules()
-            // DEPRECATED
-            removeRules: (sharename, rules) => {
-                console.log("[WARNING] 'config.shares.removeRules()' is deprecated. Use 'config.shares.removeRuleAt()', instead.");
-
-                if (fnIsString(sharename) !== true){
-                    throw new Error("INVALID-INPUT");
-                }
-
-                if (fnIsArray(rules) !== true || rules.every(fnIsString) !== true){
-                    throw new Error("INVALID-INPUT");
-                }
-
-                const index = this.shares.get().indexOf(sharename);
-                if (index < 0){
-                    throw new Error("NOT-FOUND");
-                }
-
-                let indices = rules.map((e) => {
-                    const i = this.shares.get(sharename)["access"].indexOf(e);
-                    return (i < 0) ? undefined : i;
-                }).filter((e) => {
-                    return (e !== undefined);
-                });
-
-                indices = fnRemoveDuplicates(indices);
-
-                this.shares.removeRuleAt(sharename, indices);
-
-                return this;
-            },
-
             // config.shares.removeAllRules()
             removeAllRules: (...args) => {
                 let sharename = undefined;
@@ -1192,14 +1144,6 @@ const ConfigGen = class {
                 this["$fixedrules"]["shares"] = (shares === undefined) ? undefined : fnCopy(shares);
                 this["$fixedrules"]["rules"] = (rules === undefined) ? [] : fnCopy(rules);
 
-                return this;
-            },
-
-            // config.shares.unsetFixedRules()
-            // DEPRECATED
-            unsetFixedRules: () => {
-                console.log(`[WARNING] 'config.shares.unsetFixedRules()' is deprecated. Use 'config.shares.setFixedRules(undefined)'.`);
-                this.shares.setFixedRules(undefined);
                 return this;
             },
 
@@ -1374,39 +1318,7 @@ const ConfigGen = class {
     }
 
     // ConfigGen.fromRemote()
-    static async fromRemote(...args){
-        let remote = undefined;
-        let url = undefined;
-        let token = undefined;
-        let ca = undefined;
-
-        if (args.length === 1){
-            remote = args[0];
-        }
-        else if (args.length === 2){
-            url = args[0];
-            token = args[1];
-        }
-        else if (args.length === 3){
-            url = args[0];
-            token = args[1];
-            ca = args[2];
-        }
-        else {
-            throw new Error("INVALID-INPUT");
-        }
-
-        try {
-            if (remote === undefined){
-                assert( fnIsString(url) && fnIsString(token) );
-                const u = new URL(url);
-                remote = this.remote(u.hostname, parseInt(u.port, 10), token, ca);
-            }
-        }
-        catch (error){
-            throw new Error("INVALID-INPUT");
-        }
-
+    static async fromRemote(remote){
         let res = undefined;
         try {
             res = await remote.getConfig();
@@ -1658,22 +1570,6 @@ const ConfigGen = class {
                     throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
             }
-
-            // remote.hello()
-            // DEPRECATED
-            async hello(){
-                console.log(`[WARNING] 'remote.hello()' is deprecated. Use 'remote.isReachable()' and 'remote.isTokenValid()'.`);
-            
-                const { res, err } = await this.cmd("hello");
-                try {
-                    assert( err === false );
-                    assert( res === "world" );
-                    return "world";
-                }
-                catch (error){
-                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
-                }
-            }
             
             // remote.isReachable()
             async isReachable(){
@@ -1708,23 +1604,6 @@ const ConfigGen = class {
                 }
                 else {
                     throw new Error(err);
-                }
-            }
-            
-            // remote.getLogs()
-            // DEPRECATED
-            async getLogs(){
-                console.log(`[WARNING] 'remote.getLogs()' is deprecated. Use 'remote.getRemoteLogs()'.`);
-            
-                const { res, err } = await this.cmd("get-logs");
-                try {
-                    assert( err === false );
-                    assert( fnHas(res, "easy-samba-logs") );
-                    assert( fnIsString(res["easy-samba-logs"]) );
-                    return res["easy-samba-logs"];
-                }
-                catch (error){
-                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
                 }
             }
             
@@ -2029,46 +1908,7 @@ const ConfigGen = class {
     }
 
     // config.saveToRemote()
-    async saveToRemote(...args){
-        let remote = undefined;
-        let url = undefined;
-        let token = undefined;
-        let ca = undefined;
-        let options = {};
-
-        if (args.length === 1){
-            remote = args[0];
-        }
-        else if (args.length === 2){
-            if (fnIsString(args[0]) && fnIsString(args[1])){
-                url = args[0];
-                token = args[1];
-            }
-            else {
-                remote = args[0];
-                options = args[1];
-            }
-        }
-        else if (args.length === 3){
-            url = args[0];
-            token = args[1];
-            ca = args[2];
-        }
-        else {
-            throw new Error("INVALID-INPUT");
-        }
-
-        try {
-            if (remote === undefined){
-                assert( fnIsString(url) && fnIsString(token) );
-                const u = new URL(url);
-                remote = this.constructor.remote(u.hostname, parseInt(u.port, 10), token, ca);
-            }
-        }
-        catch (error){
-            throw new Error("INVALID-INPUT");
-        }
-        
+    async saveToRemote(remote, options = {}){
         let configjson = undefined;
         try {
             configjson = this.saveToJson();
@@ -2131,43 +1971,6 @@ const ConfigGen = class {
         throw new Error("INVALID-INPUT");
     }
 
-    // config.guest()
-    // DEPRECATED
-    guest(input = undefined){
-        if (arguments.length < 1){
-            console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
-            return (this.shares.get().includes("guest")) ? this.shares.get("guest")["path"] : undefined;
-        }
-
-        if (fnIsString(input)){
-            console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
-            if (this.shares.get().includes("guest")){
-                this.shares.setPath("guest", input);
-            }
-            else {
-                this.shares.add("guest", input, [], "rw");
-            }
-            return this;
-        }
-        else if (input === false){
-            this.unsetGuest();
-            return this;
-        }
-
-        throw new Error("INVALID-INPUT");
-    }
-
-    // config.unsetGuest()
-    // DEPRECATED
-    unsetGuest(){
-        console.log(`[WARNING] 'config.guest()' and 'config.unsetGuest()' are deprecated.`);
-
-        if (this.shares.get().includes("guest")){
-            this.shares.remove("guest");
-        }
-        return this;
-    }
-
     // config.version()
     version(input = undefined){
         if (arguments.length < 1){
@@ -2180,38 +1983,6 @@ const ConfigGen = class {
         }
 
         throw new Error("INVALID-INPUT");
-    }
-
-    // config.unsetVersion()
-    // DEPRECATED
-    unsetVersion(){
-        console.log(`[WARNING] 'config.unsetVersion()' is deprecated. Use 'config.version(undefined)'.`);
-        this.version(undefined);
-        return this;
-    }
-
-    // config.global()
-    // DEPRECATED
-    global(input = undefined){
-        console.log(`[WARNING] 'config.global()' and 'config.unsetGlobal()' are deprecated.`);
-    
-        if (arguments.length < 1){
-            return this["$global"];
-        }
-
-        if (input === undefined || (fnIsArray(input) && input.every(fnIsString))){
-            this["$global"] = (input === undefined) ? undefined : fnCopy(input);
-            return this;
-        }
-
-        throw new Error("INVALID-INPUT");
-    }
-
-    // config.unsetGlobal()
-    // DEPRECATED
-    unsetGlobal(){
-        this.global(undefined);
-        return this;
     }
 };
 
