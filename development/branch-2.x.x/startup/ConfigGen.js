@@ -1824,7 +1824,7 @@ const ConfigGen = class {
             return path;
         }
         catch (error){
-            return "/share";
+            return "/share/config";
         }
     }
 
