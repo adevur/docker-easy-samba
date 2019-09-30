@@ -2,45 +2,45 @@
 # easy-samba documentation
 `adevur/easy-samba`'s documentation is divided into these sections:
 
-> NOTE: this Documentation is for `easy-samba` version `2.x.x`. If you're looking for Documentation for `easy-samba` version `1.x.x`, [click here](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md).
+> NOTE: this Documentation is for `easy-samba` version `1.x.x`. If you're looking for Documentation for `easy-samba` version `2.x.x`, [click here](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md).
 
-- [`config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson): it describes in detail the structure of `easy-samba`'s configuration file,
+- [`config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configjson): it describes in detail the structure of `easy-samba`'s configuration file,
 and all the things you can do with it.
 
-- [`config.gen.js`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenjs): it describes in detail how to write a dynamic configuration script in Javascript, that is used to generate `config.json` files in an automated and dynamic way.
+- [`config.gen.js`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgenjs): it describes in detail how to write a dynamic configuration script in Javascript, that is used to generate `config.json` files in an automated and dynamic way.
 
-- [`ConfigGen.js library`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library): it describes in detail how to use `ConfigGen.js` Javascript library, whose purpose is to generate `config.json` files. It is usually used in `config.gen.js` scripts.
+- [`ConfigGen.js library`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#ConfigGenjs-library): it describes in detail how to use `ConfigGen.js` Javascript library, whose purpose is to generate `config.json` files. It is usually used in `config.gen.js` scripts.
 
-- [`EasySamba Remote API`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#easysamba-remote-api): it describes in detail how to enable `EasySamba Remote API` and how to use it to manage an `easy-samba` container from a remote client via network.
+- [`EasySamba Remote API`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#easysamba-remote-api): it describes in detail how to enable `EasySamba Remote API` and how to use it to manage an `easy-samba` container from a remote client via network.
 
-- [`docker options`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options): it describes what parameters you can pass to `docker run`.
+- [`docker options`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#docker-options): it describes what parameters you can pass to `docker run`.
 
-- [`networking`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking): it describes how you can set up networking, in order to connect to `easy-samba`'s containers
+- [`networking`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#networking): it describes how you can set up networking, in order to connect to `easy-samba`'s containers
 from a SAMBA client.
 
-- [`advanced use`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#advanced-use): it shows some tricks to improve `easy-samba` use (e.g. registering `easy-samba` as a `systemd` service, automatizing updates, ...).
+- [`advanced use`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#advanced-use): it shows some tricks to improve `easy-samba` use (e.g. registering `easy-samba` as a `systemd` service, automatizing updates, ...).
 
-- [`understanding logs`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#understanding-logs): it describes how you can retrieve logs for `easy-samba`, and how to read them.
+- [`understanding logs`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#understanding-logs): it describes how you can retrieve logs for `easy-samba`, and how to read them.
 
-- [`how easy-samba works`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#how-easy-samba-works): it describes the inner mechanics of `easy-samba`, and how it works in detail.
+- [`how easy-samba works`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#how-easy-samba-works): it describes the inner mechanics of `easy-samba`, and how it works in detail.
 
-- [`current limitations`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#current-limitations): it describes what are the current limitations of `easy-samba`.
+- [`current limitations`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#current-limitations): it describes what are the current limitations of `easy-samba`.
 
 ## config.json
 Here we talk about the structure of the configuration file of `easy-samba` (i.e. `config.json`), and what you can do with it.
 This chapter is divided into these sections:
 
-- [general structure of the file](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-the-file)
+- [general structure of the file](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#general-structure-of-the-file)
 
-- [`version` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#version-section)
+- [`version` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#version-section)
 
-- [`domain` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#domain-section)
+- [`domain` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#domain-section)
 
-- [`users` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section)
+- [`users` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#users-section)
 
-- [`groups` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#groups-section)
+- [`groups` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#groups-section)
 
-- [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)
+- [`shares` section](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#shares-section)
 
 ### general structure of the file
 `config.json` is a file in JSON format. It is an object with these properties: `version` (optional), `domain`, `users`, `groups` (optional),
@@ -52,7 +52,7 @@ use the current `config.json` file.
 
 For example, if you use features that have only been introduced in `easy-samba` version `1.1.x`, you could add
 `"version": "1.1"` into your `config.json`, so that if this config file is used in `easy-samba` version `1.0.x`, `easy-samba` will inform the user with
-this log: `[ERROR] easy-samba configuration syntax is not correct: THIS CONFIGURATION FILE REQUIRES A VERSION OF EASY-SAMBA COMPATIBLE WITH '1.1'`.
+this log: `[ERROR] easy-samba configuration syntax is not correct: THIS CONFIGURATION FILE USES FEATURES THAT REQUIRE EASY-SAMBA VERSION '1.1' OR NEWER`.
 
 You are not obliged to add `version` property into your `config.json` file in order to use latest features of `easy-samba`.
 
@@ -202,12 +202,12 @@ config.saveToFile("/share/config/config.json");
 
 `ConfigGen.js` is a stand-alone one-file library, which has several methods and features that helps generating `config.json` files. Although it can be found already inside an `easy-samba` container, it can be downloaded and used outside of `easy-samba` (e.g. for testing purposes).
 
-Full documentation of `ConfigGen.js` can be found in [`ConfigGen.js library` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
+Full documentation of `ConfigGen.js` can be found in [`ConfigGen.js library` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#ConfigGenjs-library).
 
 > NOTE: `config.gen.js` files should be kept as minimal as possible, avoiding using too many external dependencies. Moreover, remember that the only purpose of a `config.gen.js` script is writing a `/share/config/config.json` file.
 
 ## `ConfigGen.js` library
-This is a library written in Javascript, that one can use to generate `config.json` files using a Javascript script. It is usually used in `config.gen.js` files, so it is recommended to first read [`config.gen.js` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
+This is a library written in Javascript, that one can use to generate `config.json` files using a Javascript script. It is usually used in `config.gen.js` files, so it is recommended to first read [`config.gen.js` section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#ConfigGenjs-library).
 
 This library is located inside an `easy-samba` container at path `/startup/ConfigGen.js`. But, since it is a stand-alone one-file library, it can be downloaded and used also locally.
 
@@ -242,133 +242,133 @@ This is a list of all available methods of `ConfigGen.js` library:
 
 - static methods and properties:
 
-    - [`ConfigGen.version` static property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenversion-static-property)
+    - [`ConfigGen.version` static property](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgenversion-static-property)
 
-    - [`ConfigGen.fromJson()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromjson-static-method)
+    - [`ConfigGen.fromJson()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgenfromjson-static-method)
 
-    - [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromobject-static-method)
+    - [`ConfigGen.fromObject()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgenfromobject-static-method)
 
-    - [`ConfigGen.fromFile()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromfile-static-method)
+    - [`ConfigGen.fromFile()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgenfromfile-static-method)
 
-    - [`ConfigGen.fromRemote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenfromremote-static-method)
+    - [`ConfigGen.fromRemote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgenfromremote-static-method)
 
-    - [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengenrandompassword-static-method)
+    - [`ConfigGen.genRandomPassword()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgengenrandompassword-static-method)
 
-    - [`ConfigGen.remote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgenremote-static-method)
+    - [`ConfigGen.remote()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgenremote-static-method)
     
-    - [`ConfigGen.getConfigPath()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgengetconfigpath-static-method)
+    - [`ConfigGen.getConfigPath()` static method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgengetconfigpath-static-method)
 
 - `remote` namespace methods:
 
-    - [`remote.setConfig()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotesetconfig-method)
+    - [`remote.setConfig()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotesetconfig-method)
 
-    - [`remote.getConfig()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfig-method)
+    - [`remote.getConfig()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotegetconfig-method)
 
-    - [`remote.getInfo()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetinfo-method)
+    - [`remote.getInfo()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotegetinfo-method)
 
-    - [`remote.isReachable()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remoteisreachable-method)
+    - [`remote.isReachable()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remoteisreachable-method)
     
-    - [`remote.isTokenValid()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remoteistokenvalid-method)
+    - [`remote.isTokenValid()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remoteistokenvalid-method)
     
-    - [`remote.getRemoteLogs()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetremotelogs-method)
+    - [`remote.getRemoteLogs()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotegetremotelogs-method)
     
-    - [`remote.getAvailableAPI()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetavailableapi-method)
+    - [`remote.getAvailableAPI()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotegetavailableapi-method)
     
-    - [`remote.getConfigHash()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfighash-method)
+    - [`remote.getConfigHash()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotegetconfighash-method)
     
-    - [`remote.getConfigPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfigpath-method)
+    - [`remote.getConfigPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotegetconfigpath-method)
     
-    - [`remote.changeRemoteToken()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotechangeremotetoken-method)
+    - [`remote.changeRemoteToken()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotechangeremotetoken-method)
     
-    - [`remote.stopEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotestopeasysamba-method)
+    - [`remote.stopEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotestopeasysamba-method)
     
-    - [`remote.pauseEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotepauseeasysamba-method)
+    - [`remote.pauseEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotepauseeasysamba-method)
     
-    - [`remote.startEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotestarteasysamba-method)
+    - [`remote.startEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotestarteasysamba-method)
     
-    - [`remote.certNego()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotecertnego-method)
+    - [`remote.certNego()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#remotecertnego-method)
 
 - `config` namespace methods:
 
-    - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configdomain-method)
+    - [`config.domain()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configdomain-method)
 
-    - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configversion-method)
+    - [`config.version()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configversion-method)
 
-    - [`config.on()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configon-method)
+    - [`config.on()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configon-method)
 
-    - [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetojson-method)
+    - [`config.saveToJson()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsavetojson-method)
 
-    - [`config.saveToObject()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoobject-method)
+    - [`config.saveToObject()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsavetoobject-method)
 
-    - [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetofile-method)
+    - [`config.saveToFile()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsavetofile-method)
 
-    - [`config.saveToRemote()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsavetoremote-method)
+    - [`config.saveToRemote()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsavetoremote-method)
 
     - `config.users` namespace methods:
 
-        - [`config.users.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersadd-method)
+        - [`config.users.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configusersadd-method)
 
-        - [`config.users.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersaddarray-method)
+        - [`config.users.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configusersaddarray-method)
 
-        - [`config.users.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersremove-method)
+        - [`config.users.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configusersremove-method)
 
-        - [`config.users.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersget-method)
+        - [`config.users.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configusersget-method)
 
-        - [`config.users.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configusersgetall-method)
+        - [`config.users.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configusersgetall-method)
 
-        - [`config.users.setPassword()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configuserssetpassword-method)
+        - [`config.users.setPassword()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configuserssetpassword-method)
 
     - `config.groups` namespace methods:
 
-        - [`config.groups.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsadd-method)
+        - [`config.groups.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsadd-method)
 
-        - [`config.groups.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddarray-method)
+        - [`config.groups.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsaddarray-method)
 
-        - [`config.groups.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremove-method)
+        - [`config.groups.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsremove-method)
 
-        - [`config.groups.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsget-method)
+        - [`config.groups.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsget-method)
 
-        - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetall-method)
+        - [`config.groups.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsgetall-method)
         
-        - [`config.groups.getMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsgetMembers-method)
+        - [`config.groups.getMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsgetMembers-method)
 
-        - [`config.groups.addMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsaddmembers-method)
+        - [`config.groups.addMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsaddmembers-method)
 
-        - [`config.groups.removeMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configgroupsremovemembers-method)
+        - [`config.groups.removeMembers()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configgroupsremovemembers-method)
 
     - `config.shares` namespace methods:
 
-        - [`config.shares.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesadd-method)
+        - [`config.shares.add()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesadd-method)
 
-        - [`config.shares.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddarray-method)
+        - [`config.shares.addArray()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesaddarray-method)
 
-        - [`config.shares.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremove-method)
+        - [`config.shares.remove()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesremove-method)
 
-        - [`config.shares.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesget-method)
+        - [`config.shares.get()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesget-method)
 
-        - [`config.shares.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetall-method)
+        - [`config.shares.getAll()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesgetall-method)
         
-        - [`config.shares.getAccess()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesgetAccess-method)
+        - [`config.shares.getAccess()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesgetAccess-method)
         
-        - [`config.shares.setAccess()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetAccess-method)
+        - [`config.shares.setAccess()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharessetAccess-method)
 
-        - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddrules-method)
+        - [`config.shares.addRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesaddrules-method)
 
-        - [`config.shares.addRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesaddruleat-method)
+        - [`config.shares.addRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesaddruleat-method)
 
-        - [`config.shares.removeRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveruleat-method)
+        - [`config.shares.removeRuleAt()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesremoveruleat-method)
 
-        - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharesremoveallrules-method)
+        - [`config.shares.removeAllRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharesremoveallrules-method)
 
-        - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetpath-method)
+        - [`config.shares.setPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharessetpath-method)
 
-        - [`config.shares.setGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetguest-method)
+        - [`config.shares.setGuest()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharessetguest-method)
 
-        - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetfixedrules-method)
+        - [`config.shares.setFixedRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharessetfixedrules-method)
 
-        - [`config.shares.setBaseRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetbaserules-method)
+        - [`config.shares.setBaseRules()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharessetbaserules-method)
         
-        - [`config.shares.setSoftQuota()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configsharessetsoftquota-method)
+        - [`config.shares.setSoftQuota()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configsharessetsoftquota-method)
 
 ### `ConfigGen.version` static property
 This is a static property of `ConfigGen`. It is a string, and its purpose is to inform the user about which `easy-samba` version this `ConfigGen.js` library comes from.
@@ -557,7 +557,7 @@ config.saveToFile(`${path}/config.json`);
 ### `ConfigGen.remote()` static method
 This static method can be used to create a new object of type `remote`; the latter can be used to interact with a remote `easy-samba` container using `EasySamba Remote API`.
 
-All the methods available for `remote` objects are listed as "`remote` namespace methods" in the [`ConfigGen.js` library section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
+All the methods available for `remote` objects are listed as "`remote` namespace methods" in the [`ConfigGen.js` library section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#ConfigGenjs-library).
 
 - ARGUMENTS: `hostname`, `port`, `token` and `ca` (optional)
 
@@ -2531,9 +2531,9 @@ console.log( config.shares.get("folder1")["soft-quota"] ); // undefined
 ## advanced use
 This chapter will give you a couple of advices to better manage and use `easy-samba`. This chapter is divided into these sections:
 
-- [`writing a systemd unit`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#writing-a-systemd-unit)
+- [`writing a systemd unit`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#writing-a-systemd-unit)
 
-- [`automatizing easy-samba updates`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#automatizing-easy-samba-updates)
+- [`automatizing easy-samba updates`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#automatizing-easy-samba-updates)
 
 ### writing a systemd unit
 It is important to register `easy-samba` as a service in your Linux system. This way, you'll be able to better control
@@ -2639,7 +2639,7 @@ docker logs samba
 > Where `samba` is the container's name or ID.
 
 > NOTE: in case of errors, the container will stop. If you used the parameter `--rm` in the `docker run` command (when
-you first [started the container](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#docker-options)), docker will remove the container after it stops, so you won't be able to retrieve logs about the error. In order to keep the container saved even after it stops, don't use parameter `--rm` in `docker run` command. This way, you will be able to use `docker logs samba` in case an error occurred and the container stopped.
+you first [started the container](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#docker-options)), docker will remove the container after it stops, so you won't be able to retrieve logs about the error. In order to keep the container saved even after it stops, don't use parameter `--rm` in `docker run` command. This way, you will be able to use `docker logs samba` in case an error occurred and the container stopped.
 
 ### list of logs
 This is the list of possible logs, when no error occurs:
@@ -2663,10 +2663,10 @@ and ACLs of `/share` have been successfully set, so that `/share` and all its ch
 `root`.
 
 - `[LOG] users have been correctly created.`: this log informs the user that all the users that you configured in
-[`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section) have been correctly added to container's OS and to container's SAMBA server.
+[`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#users-section) have been correctly added to container's OS and to container's SAMBA server.
 
 - `[LOG] shares have been correctly created.`: this log informs the user that all the shared folders that you
-configured in [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section) have been correctly created (in case they didn't exist), and all
+configured in [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#shares-section) have been correctly created (in case they didn't exist), and all
 the filesystem permissions and ACLs have been correctly set to them.
 
 - `[LOG] '/etc/samba/smb.conf' has been correctly generated and written.`: this log informs the user that the SAMBA
@@ -2679,7 +2679,7 @@ This process is necessary for the SAMBA server to function properly.
 This process is necessary for the SAMBA server to function properly.
 
 - `[LOG] SAMBA server is now ready.`: this log informs the user that `easy-samba` completed its configuration without
-errors, so you can now [connect to the container using a SAMBA client](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#networking).
+errors, so you can now [connect to the container using a SAMBA client](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#networking).
 
 - `[LOG] generating '/share/config.json' using script '/share/config.gen.js'...`: this log informs the user that `/share/config.json` configuration file is missing, but `/share/config.gen.js` script has been found, so the latter will be used to generate the missing `config.json` file. This log has been added in `easy-samba` version `1.3.0`.
 
@@ -2700,7 +2700,7 @@ file `/share/config.json` doesn't exist or it is not a valid JSON file.
 - `[ERROR] '/share/config.json' syntax is not correct: ...`: this error occurs when `config.json` contains syntax or
 content errors (e.g. `guest` section is missing, one of the usernames is not a valid username, ...). This log also
 gives you detailed information about what is the error that's been found.
-See also [`config.json` section of this `Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#configjson)
+See also [`config.json` section of this `Documentation`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#configjson)
 in order to better understand the reported error.
 
 - `[ERROR] permissions of '/share' could not be reset.`: this error occurs mostly if the underlying OS or the underlying
@@ -2710,12 +2710,12 @@ filesystem that you're using on your computer don't support POSIX ACLs.
 filesystem that you're using on your computer don't support POSIX ACLs.
 
 - `[ERROR] users could not be created: ...`: this error occurs if `easy-samba` has not been able to add the users
-(that you specified in [`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#users-section))
+(that you specified in [`users` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#users-section))
 in the container's OS and in the SAMBA server.
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 - `[ERROR] shares could not be created: ...`: this error occurs if `easy-samba` has not been able to create
-the shared folders (that you specified in the [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section)).
+the shared folders (that you specified in the [`shares` section of `config.json`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#shares-section)).
 If you get this error, you should probably open an issue in the GitHub repository [`adevur/docker-easy-samba`](https://github.com/adevur/docker-easy-samba).
 
 - `[ERROR] '/etc/samba/smb.conf' could not be generated or written.`: this error occurs mostly if `easy-samba` has
@@ -2738,9 +2738,9 @@ If you get this error, you should probably open an issue in the GitHub repositor
 
 This chapter describes in detail what `easy-samba` does inside its container in order to setup the SAMBA server. This chapter is divided into these sections:
 
-- [general structure of `easy-samba`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#general-structure-of-easy-samba)
+- [general structure of `easy-samba`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#general-structure-of-easy-samba)
 
-- [main script `/startup/index.js`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#main-script-startupindexjs)
+- [main script `/startup/index.js`](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#main-script-startupindexjs)
 
 ### general structure of `easy-samba`
 As you can see from the [`Dockerfile`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile), `easy-samba` docker image:
@@ -2766,7 +2766,7 @@ Here's what it does:
 
     This phase is very important, since the rest of this script will just assume that every single parameter of `config.json` is valid and has no conflicts with other parameters (because the configuration file has already been validated during this phase).
 
-    Also, during this phase, `easy-samba` will evaluate the access rules defined in the `shares` property (see also [`shares` property of `config.json` in this Doumentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#shares-section) in order to understand how access rules get evaluated).
+    Also, during this phase, `easy-samba` will evaluate the access rules defined in the `shares` property (see also [`shares` property of `config.json` in this Doumentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.V1.md#shares-section) in order to understand how access rules get evaluated).
 
 - The script will clear all filesystem permissions of `/share` using these commands:
     ```sh
