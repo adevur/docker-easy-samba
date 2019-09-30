@@ -213,7 +213,6 @@ const ConfigGen = class {
         // internal variables used by an instance of ConfigGen
         this["$domain"] = "WORKGROUP";
         this["$version"] = undefined;
-        this["$global"] = undefined;
         this["$users"] = [];
         this["$groups"] = [];
         this["$shares"] = [];
@@ -1261,24 +1260,12 @@ const ConfigGen = class {
                 result.version(input["version"]);
             }
 
-            if (fnHas(input, "global")){
-                result.global(input["global"]);
-            }
-
             if (fnHas(input, "users") && fnIsArray(input["users"])){
                 result.users.addArray(input["users"]);
             }
 
             if (fnHas(input, "groups") && fnIsArray(input["groups"])){
-                const groups = fnCopy(input["groups"]);
-                groups.forEach((group) => {
-                    if (fnHas(group, "users") && fnHas(group, "members") !== true && fnIsArray(group["users"]) && group["users"].every(fnIsString)){
-                        const backup = fnCopy(group["users"]);
-                        delete group["users"];
-                        group["members"] = backup;
-                    }
-                });
-                result.groups.addArray(groups);
+                result.groups.addArray(input["groups"]);
             }
 
             if (fnHas(input, "shares") && fnIsArray(input["shares"])){
@@ -1851,10 +1838,6 @@ const ConfigGen = class {
 
         if (fnIsString(this["$version"])){
             result["version"] = this["$version"];
-        }
-
-        if (fnIsArray(this["$global"]) && this["$global"].length > 0){
-            result["global"] = this["$global"];
         }
 
         result["users"] = this["$users"];
