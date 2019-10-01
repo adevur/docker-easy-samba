@@ -41,7 +41,7 @@ function fnCreateServer(httpsKey, httpsCert, config){
                         res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CERT-NEGO:INVALID-INPUT" }), "utf8");
                     }
                     else {
-                        const result = { "jsonrpc": "2.0", "result": fnGetCryptedCert(httpsCert, config["token"], salt), "error": null };
+                        const result = { "jsonrpc": "2.0", "result": fnGetHashedCert(httpsCert, config["token"], salt), "error": null };
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify(result), "utf8");
                     }
@@ -68,17 +68,9 @@ function fnCreateServer(httpsKey, httpsCert, config){
 
 
 
-function fnGetCryptedCert(httpsCert, token, salt){
-    const certHash = crypto.createHash("sha256").update(httpsCert, "ascii").digest("hex").toUpperCase();
-    
-    const secret = crypto.createHash("sha256").update(token + salt, "utf8").digest();
-    const iv = Buffer.concat([crypto.randomBytes(14), Buffer.from([0, 0])]);
-    const cipher = crypto.createCipheriv("aes-256-ctr", secret, iv);
-    
-    let secureHash = cipher.update(certHash, "ascii", "hex").toUpperCase();
-    secureHash += cipher.final("hex").toUpperCase();
-    
-    return { "cert": httpsCert, "hash": secureHash, "iv": iv.toString("hex").toUpperCase() };
+function fnGetHashedCert(httpsCert, token, salt){
+    const certHash = crypto.createHash("sha512").update(`${httpsCert}:${token}:${salt}`, "utf8").digest("hex").toUpperCase();
+    return { "cert": httpsCert, "hash": certHash };
 }
 
 

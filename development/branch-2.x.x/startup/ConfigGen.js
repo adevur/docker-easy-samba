@@ -1366,8 +1366,8 @@ const ConfigGen = class {
                     throw new Error("CANNOT-CONNECT");
                 }
                 
-                // get remote container's response and try to decrypt the hash
-                let decrypted = undefined;
+                // get remote container's response and check that response is valid
+                let certHash = undefined;
                 let httpsCert = undefined;
                 try {
                     const options = {
@@ -1380,26 +1380,20 @@ const ConfigGen = class {
                     result = JSON.parse(result);
                     assert( fnHas(result, ["jsonrpc", "result"]) );
                     assert( result["jsonrpc"] === "2.0" );
-                    assert( fnHas(result["result"], ["cert", "hash", "iv"]) );
-                    assert( [result.result.cert, result.result.hash, result.result.iv].every(fnIsString) );
+                    assert( fnHas(result["result"], ["cert", "hash"]) );
+                    assert( [result.result.cert, result.result.hash].every(fnIsString) );
                     assert( fnHas(result, "error") ? (result["error"] === null) : true );
                     
-                    const secret = crypto.createHash("sha256").update(token + salt, "utf8").digest();
-                    const iv = Buffer.from(result["result"]["iv"], "hex");
-                    const decipher = crypto.createDecipheriv("aes-256-ctr", secret, iv);
-                    decrypted = decipher.update(result["result"]["hash"], "hex", "ascii");
-                    decrypted += decipher.final("ascii");
-                    
                     httpsCert = result["result"]["cert"];
+                    certHash = result["result"]["hash"];
                 }
                 catch (error){
                     throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
                 }
                 
-                // check if decryption has been successful
+                // check if remote certificate is authentic
                 try {
-                    assert( decrypted.toUpperCase() === crypto.createHash("sha256").update(httpsCert, "ascii").digest("hex").toUpperCase() );
-                    
+                    assert( certHash.toUpperCase() === crypto.createHash("sha512").update(`${httpsCert}:${token}:${salt}`, "utf8").digest("hex").toUpperCase() );
                     return httpsCert;
                 }
                 catch (error){
