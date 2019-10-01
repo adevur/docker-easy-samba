@@ -40,7 +40,7 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 ### tags
 Available tags:
 
-- Latest unstable release (2.0.1): [`latest`, `unstable`](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile).
+- Latest unstable release (2.1.0): [`latest`, `unstable`](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile).
 
 - Latest stable release (1.18.2): [`stable`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
 
