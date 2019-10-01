@@ -110,6 +110,10 @@ const fnIsString = (input) => {
 // fnHas()
 //   checks if a given Javascript object "obj" has one or more specified properties
 const fnHas = (obj, keys) => {
+    if (obj === undefined || obj === null){
+        return false;
+    }
+
     const has = (obj, key) => { return Object.prototype.hasOwnProperty.call(obj, key); };
 
     const temp = (fnIsArray(keys)) ? keys : [keys];
@@ -126,7 +130,7 @@ const fnIsInteger = (input) => {
 // fnIsFunction()
 //   checks if a given Javascript object "obj" is a valid Javascript function
 const fnIsFunction = (obj) => {
-    return (obj && {}.toString.call(obj) === "[object Function]");
+    return (obj === undefined || obj === null) ? false : (obj && {}.toString.call(obj) === "[object Function]");
 };
 
 // fnCopy()

@@ -18,6 +18,10 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 // PURPOSE: check that a given javascript object has some properties
 // EXAMPLE: const myvar = {hello: "world"}; fnHas(myvar, "hello") === true; fnHas(myvar, ["hello", "bye"]) === false
 function fnHas(obj, keys){
+    if (obj === undefined || obj === null){
+        return false;
+    }
+
     const has = (obj, key) => { return Object.prototype.hasOwnProperty.call(obj, key); };
 
     const temp = (fnIsArray(keys)) ? keys : [keys];
