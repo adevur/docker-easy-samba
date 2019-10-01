@@ -1450,6 +1450,83 @@ const ConfigGen = class {
             
             // remote.certNego()
             async certNego(){
+                try {
+                    return await this.certNegoV3();
+                }
+                catch (error){
+                    if (error.message === "CERT-NEGO-NOT-SUPPORTED"){
+                        try {
+                            return await this.certNegoV2();
+                        }
+                        catch (error){
+                            throw new Error(error.message);
+                        }
+                    }
+                    else {
+                        throw new Error(error.message);
+                    }
+                }
+            }
+            
+            async certNegoV3(){
+                const thisUrl = new URL(this.url);
+                const salt = crypto.randomBytes(5).toString("hex").toUpperCase();
+                const urlStr = require("url").format({
+                    protocol: "https",
+                    hostname: thisUrl.hostname,
+                    port: thisUrl.port,
+                    pathname: "/cert-nego-v3",
+                    query: {
+                        salt: salt
+                    }
+                });
+                const token = this.token;
+                
+                // check if remote container is reachable
+                try {
+                    const tempRemote = ConfigGen.remote(thisUrl.hostname, parseInt(thisUrl.port, 10), token, "unsafe");
+                    assert( (await tempRemote.isReachable()) === true );
+                }
+                catch (error){
+                    throw new Error("CANNOT-CONNECT");
+                }
+                
+                // get remote container's response and check that response is valid
+                let certHash = undefined;
+                let httpsCert = undefined;
+                try {
+                    const options = {
+                        method: "GET",
+                        rejectUnauthorized: false,
+                        requestCert: true
+                    };
+                    
+                    let result = await fnRequestHTTPS(urlStr, options);
+                    result = JSON.parse(result);
+                    assert( fnHas(result, ["jsonrpc", "result"]) );
+                    assert( result["jsonrpc"] === "2.0" );
+                    assert( fnHas(result["result"], ["cert", "hash"]) );
+                    assert( [result.result.cert, result.result.hash].every(fnIsString) );
+                    assert( fnHas(result, "error") ? (result["error"] === null) : true );
+                    
+                    httpsCert = result["result"]["cert"];
+                    certHash = result["result"]["hash"];
+                }
+                catch (error){
+                    throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
+                }
+                
+                // check if remote certificate is authentic
+                try {
+                    assert( certHash.toUpperCase() === crypto.createHash("sha512").update(`${httpsCert}:${token}:${salt}`, "utf8").digest("hex").toUpperCase() );
+                    return httpsCert;
+                }
+                catch (error){
+                    throw new Error(`INVALID-TOKEN`);
+                }
+            }
+            
+            async certNegoV2(){
                 const thisUrl = new URL(this.url);
                 let url = new URL("https://localhost:9595/cert-nego");
                 url.hostname = thisUrl.hostname;
