@@ -10,6 +10,27 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [UNSTABLE] [FEATURE] 2.1.0 (2019-10-01 UTC)
+- New features:
+
+  - In `Remote API`, old `certificate-negotiation` protocol (`cert-nego-v2`) has been replaced by new protocol `cert-nego-v3`. In order to use `cert-nego` feature with `easy-samba` version `2.1.0`, you need a `ConfigGen.js` library compatible with `cert-nego-v3` (i.e. `ConfigGen.js` version `2.1.0`, at the moment).
+  
+    > COMMITS: NEW-2
+
+- Bug fixes:
+
+  - Minor bugfixes.
+  
+    > COMMITS: FIX-8
+    
+  - Some code cleanup.
+  
+    > COMMITS: CC-14
+
+- Security fixes:
+
+  - N/A
+
 ### [UNSTABLE] 2.0.1 (2019-09-30 UTC)
 - New features:
 
