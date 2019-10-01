@@ -76,6 +76,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 const assert = require("assert");
 const https = require("https");
+const url = require("url");
 
 // global variables
 const globalVersion = "2.0";
@@ -169,12 +170,12 @@ const fnRemoveDuplicates = (input) => {
 
 // fnRequestHTTPS()
 //   makes an HTTPS request and returns a Promise
-const fnRequestHTTPS = (url, options, data = undefined) => {
+const fnRequestHTTPS = (urlStr, options, data = undefined) => {
     return new Promise((resolve, reject) => {
         let result = [];
 
         try {
-            const req = https.request(url, options, (res) => {
+            const req = https.request(urlStr, options, (res) => {
                 res.on("data", (chunk) => {
                     result.push(chunk);
                 });
@@ -1329,14 +1330,13 @@ const ConfigGen = class {
         const c = class {
             constructor(hostname, port, token, ca = undefined){
                 assert( fnIsString(hostname) );
-                assert( fnIsInteger(port) );
+                assert( fnIsInteger(port) && port > 0 );
                 assert( fnIsString(token) );
                 assert( ca === undefined || fnIsString(ca) );
 
-                this.url = new URL("https://localhost:9595/api");
-                this.url.hostname = hostname;
-                this.url.port = port;
-                this.url = this.url.toString();
+                this["$url"] = url.parse("https://localhost:9595/api", true);
+                this["$url"].hostname = hostname;
+                this["$url"].port = port.toString();
                 this.token = token;
                 this.ca = ca;
 
@@ -1345,16 +1345,21 @@ const ConfigGen = class {
             
             // remote.certNego()
             async certNego(){
-                const thisUrl = new URL(this.url);
-                let url = new URL("https://localhost:9595/cert-nego");
-                url.hostname = thisUrl.hostname;
-                url.port = thisUrl.port;
-                url = url.toString();
+                const salt = crypto.randomBytes(5).toString("hex").toUpperCase();
+                const urlStr = url.format({
+                    protocol: "https",
+                    hostname: this["$url"].hostname,
+                    port: this["$url"].port,
+                    pathname: "/cert-nego-v3",
+                    query: {
+                        salt: salt
+                    }
+                });
                 const token = this.token;
                 
                 // check if remote container is reachable
                 try {
-                    const tempRemote = ConfigGen.remote(thisUrl.hostname, parseInt(thisUrl.port, 10), token, "unsafe");
+                    const tempRemote = ConfigGen.remote(this["$url"].hostname, parseInt(this["$url"].port, 10), token, "unsafe");
                     assert( (await tempRemote.isReachable()) === true );
                 }
                 catch (error){
@@ -1371,18 +1376,15 @@ const ConfigGen = class {
                         requestCert: true
                     };
                     
-                    let result = await fnRequestHTTPS(url, options);
+                    let result = await fnRequestHTTPS(urlStr, options);
                     result = JSON.parse(result);
                     assert( fnHas(result, ["jsonrpc", "result"]) );
                     assert( result["jsonrpc"] === "2.0" );
-                    if (fnIsString(result["result"])){
-                        throw new Error("UNSAFE-CERT-NEGO-PROTOCOL");
-                    }
                     assert( fnHas(result["result"], ["cert", "hash", "iv"]) );
                     assert( [result.result.cert, result.result.hash, result.result.iv].every(fnIsString) );
                     assert( fnHas(result, "error") ? (result["error"] === null) : true );
                     
-                    const secret = crypto.createHash("sha256").update(token, "utf8").digest();
+                    const secret = crypto.createHash("sha256").update(token + salt, "utf8").digest();
                     const iv = Buffer.from(result["result"]["iv"], "hex");
                     const decipher = crypto.createDecipheriv("aes-256-ctr", secret, iv);
                     decrypted = decipher.update(result["result"]["hash"], "hex", "ascii");
@@ -1391,9 +1393,6 @@ const ConfigGen = class {
                     httpsCert = result["result"]["cert"];
                 }
                 catch (error){
-                    if (error.message === "UNSAFE-CERT-NEGO-PROTOCOL"){
-                        throw new Error(error.message);
-                    }
                     throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
                 }
                 
@@ -1409,7 +1408,7 @@ const ConfigGen = class {
             }
             
             async cmd(method, other = {}, tk = undefined){
-                const url = this.url;
+                const urlStr = url.format(this["$url"]);
                 const token = (tk === undefined) ? this.token : tk;
                 let ca = this.ca;
                 
@@ -1468,7 +1467,7 @@ const ConfigGen = class {
                 
                 let result = undefined;
                 try {
-                    result = await fnRequestHTTPS(url, options, data);
+                    result = await fnRequestHTTPS(urlStr, options, data);
                 }
                 catch (error){
                     return { res: undefined, err: "CANNOT-CONNECT" };
