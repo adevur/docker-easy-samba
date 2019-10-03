@@ -40,9 +40,9 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 ### tags
 Available tags:
 
-- Latest unstable release (2.2.0): [`latest`, `unstable`, `latest-amd64`, `unstable-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.amd64) and [`latest-arm64v8`, `unstable-arm64v8` (for arm64v8)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.arm64v8).
+- Latest unstable release (2.2.0): `latest` (for all supported architectures), [`latest-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.amd64), and [`latest-arm64v8` (for arm64v8)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.arm64v8).
 
-- Latest stable release (1.18.2): [`stable`, `stable-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile.amd64).
+- Latest stable release (1.18.2): `stable` (for all supported architectures), and [`stable-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile.amd64).
 
 - Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
