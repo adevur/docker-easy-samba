@@ -79,7 +79,7 @@ const https = require("https");
 const url = require("url");
 
 // global variables
-const globalVersion = "2.1";
+const globalVersion = "2.2";
 
 
 

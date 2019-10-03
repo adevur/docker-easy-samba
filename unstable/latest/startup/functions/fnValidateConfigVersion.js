@@ -32,7 +32,7 @@ function fnValidateConfigVersion(config){
         return `'version' PROPERTY MUST BE A STRING`;
     }
 
-    if (["1.18", "2.0", "2.1"].includes(version) !== true){
+    if (["1.18", "2.0", "2.1", "2.2"].includes(version) !== true){
         return `THIS CONFIGURATION FILE REQUIRES A VERSION OF EASY-SAMBA COMPATIBLE WITH '${version}'`;
     }
 
