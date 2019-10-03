@@ -40,9 +40,9 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 ### tags
 Available tags:
 
-- Latest unstable release (2.2.0): [`latest`, `unstable`](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile).
+- Latest unstable release (2.2.0): [`latest`, `unstable`, `latest-amd64`, `unstable-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.amd64) and [`latest-arm64v8`, `unstable-arm64v8` (for arm64v8)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.arm64v8).
 
-- Latest stable release (1.18.2): [`stable`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
+- Latest stable release (1.18.2): [`stable`, `stable-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile.amd64).
 
 - Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
@@ -72,22 +72,22 @@ There are three branches: `unstable`, `stable` and `long-term`. Where:
 ### building
 - To build latest unstable release, run:
   ```sh
-  docker build --tag local/easy-samba:latest ./unstable/latest
+  # for AMD64 arch
+  docker build --tag local/easy-samba:latest-amd64 --file ./unstable/latest/Dockerfile.amd64 ./unstable/latest
+  # for ARM64v8 arch
+  docker build --tag local/easy-samba:latest-arm64v8 --file ./unstable/latest/Dockerfile.arm64v8 ./unstable/latest
   ```
 
 - To build latest stable release, run:
   ```sh
-  docker build --tag local/easy-samba:stable ./stable/latest
-  ```
-
-- To build latest long-term release, run:
-  ```sh
-  docker build --tag local/easy-samba:lts ./long-term/latest
+  # for AMD64 arch
+  docker build --tag local/easy-samba:stable-amd64 --file ./stable/latest/Dockerfile.amd64 ./stable/latest
   ```
 
 - To build a specific release, run (for example):
   ```sh
-  docker build --tag local/easy-samba:1.0.0 ./stable/1.0.0
+  # NOTE: in versions previous to 2.2.0 and 1.19.0, Dockerfile was named 'Dockerfile' and not 'Dockerfile.amd64'
+  docker build --tag local/easy-samba:2.2.0-amd64 --file ./unstable/2.2.0/Dockerfile.amd64 ./unstable/2.2.0
   ```
 
 ### usage
