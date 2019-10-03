@@ -10,6 +10,23 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [UNSTABLE] [FEATURE] 2.2.0 (2019-10-03 UTC)
+- New features:
+
+  - New architecture available for `easy-samba`: `arm64v8` (a.k.a. `aarch64`). In order to use `easy-samba` under an ARM64 operating system, use tag `latest-arm64v8` (or `unstable-arm64v8`) instead of `latest` (or `unstable`). Architecture `arm64v8` is only available for `easy-samba` version `2.x.x`: when this version of `easy-samba` will make it to the `stable` branch (for now it's only `unstable`), also tag `stable-arm64v8` will be available.
+  
+    > COMMITS: NEW-3
+
+- Bug fixes:
+
+  - Minor improvements to `Dockerfile`. Now there are two `Dockerfile`s: `Dockerfile.amd64` and `Dockerfile.arm64v8`.
+  
+    > COMMITS: FIX-9
+
+- Security fixes:
+
+  - N/A
+
 ### [UNSTABLE] [FEATURE] 2.1.0 (2019-10-01 UTC)
 - New features:
 
