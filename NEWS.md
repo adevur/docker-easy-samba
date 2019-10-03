@@ -2,6 +2,21 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-10-03 UTC) development status update
+Today `easy-samba` version `2.2.0` has been released, that brings support for `arm64v8` architecture. Tags are now organized this way:
+
+- Tag `latest` works both for `amd64` and `arm64v8` architectures. When you pull `adevur/easy-samba:latest`, Docker will automatically download tag `latest-amd64` or tag `latest-arm64v8`, according to your architecture.
+
+- Tag `latest-amd64` works only for `amd64` architecture.
+
+- Tag `latest-arm64v8` works only for `arm64v8` architecture.
+
+- Tag `unstable` has been dropped, since it was just an alias for `latest`.
+
+- Tags `stable` and `stable-amd64` are the same tag, at the moment. This is because `stable` branch (i.e. `1.x.x`, at the moment) only supports `amd64` architecture. In the future, when `easy-samba` version `2.x.x` will make it to the `stable` branch, tag `stable-arm64v8` will be added, and tag `stable` will work both for `amd64` and `arm64v8` architectures (just like `latest` tag).
+
+Work is in progress for porting `easy-samba` to `ppc64le` architecture. Other architectures (e.g. `arm32v7`) are planned, but there's no ETA.
+
 ### (2019-10-03 UTC) easy-samba 2.2.0 released (with new features)
 Unstable version 2.2.0 of `easy-samba` has been released.
 
