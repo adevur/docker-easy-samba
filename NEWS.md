@@ -2,6 +2,18 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-10-04 UTC) easy-samba 1.19.0 released (with new features)
+Stable version 1.19.0 of `easy-samba` has been released.
+
+This version brings new features to `easy-samba`.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1190-2019-10-04-utc) for changelog.
+
+### (2019-10-04 UTC) easy-samba 2.2.1 released
+Unstable version 2.2.1 of `easy-samba` has been released.
+
+Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#unstable-221-2019-10-04-utc) for changelog.
+
 ### (2019-10-03 UTC) development status update
 Today `easy-samba` version `2.2.0` has been released, that brings support for `arm64v8` architecture. Tags are now organized this way:
 

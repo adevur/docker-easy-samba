@@ -10,6 +10,42 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [STABLE] [FEATURE] 1.19.0 (2019-10-04 UTC)
+- New features:
+
+  - In `Remote API`, new protocol `cert-nego-v3` has been added. `ConfigGen.js` library now supports both old `cert-nego-v2` and new `cert-nego-v3` protocols: if `remote.certNego()` fails to use `cert-nego-v3`, it will use automatically `cert-nego-v2`.
+  
+    > COMMITS: NEW-2 (for branch 1.x.x)
+
+- Bug fixes:
+
+  - Minor bugfixes.
+  
+    > COMMITS: FIX-8 (for branch 1.x.x)
+    
+  - Improved `Dockerfile`.
+  
+    > COMMITS: FIX-9 (for branch 1.x.x), TYPO-3 (for branch 1.x.x), FIX-10 (for branch 1.x.x)
+
+- Security fixes:
+
+  - N/A
+
+### [UNSTABLE] 2.2.1 (2019-10-04 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - Files `Dockerfile.amd64` and `Dockerfile.arm64v8` have been unified in a single `Dockerfile`.
+  
+    > COMMITS: TYPO-3, FIX-10
+
+- Security fixes:
+
+  - N/A
+
 ### [UNSTABLE] [FEATURE] 2.2.0 (2019-10-03 UTC)
 - New features:
 
