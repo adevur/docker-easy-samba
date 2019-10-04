@@ -1,6 +1,6 @@
 
 
-FROM docker.io/amd64/centos:7
+FROM docker.io/centos:7
 
 LABEL org.label-schema.schema-version = "1.0" \
     org.label-schema.name = "easy-samba" \
