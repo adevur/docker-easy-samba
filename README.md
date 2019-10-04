@@ -40,7 +40,7 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 ### tags
 Available tags:
 
-- Latest unstable release (2.2.0): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile).
+- Latest unstable release (2.2.1): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile).
 
   > NOTE: `latest` tag works both for `amd64` and `arm64v8` architectures; however, you can also use tags `latest-amd64` and `latest-arm64v8` if you need to download a specific architecture.
 

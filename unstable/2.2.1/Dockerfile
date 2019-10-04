@@ -1,12 +1,12 @@
 
 
-FROM docker.io/centos:8
+FROM docker.io/adevur/centos-8:latest
 
 LABEL org.label-schema.schema-version = "1.0" \
     org.label-schema.name = "easy-samba" \
     org.label-schema.description = "SAMBA server based on CentOS 8, easy to set up." \
     org.label-schema.license = "MIT" \
-    org.label-schema.version = "2.2.0" \
+    org.label-schema.version = "2.2.1" \
     org.label-schema.url = "https://hub.docker.com/r/adevur/easy-samba" \
     org.label-schema.vcs-url = "https://github.com/adevur/docker-easy-samba" \
     maintainer = "adevur (madavurro@protonmail.com)"
