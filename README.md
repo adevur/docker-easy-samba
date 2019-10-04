@@ -40,9 +40,13 @@ This SAMBA server takes a JSON configuration file as input and, based on that fi
 ### tags
 Available tags:
 
-- Latest unstable release (2.2.0): `latest` (for all supported architectures), [`latest-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.amd64), and [`latest-arm64v8` (for arm64v8)](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile.arm64v8).
+- Latest unstable release (2.2.0): [`latest`](https://github.com/adevur/docker-easy-samba/blob/master/unstable/latest/Dockerfile).
 
-- Latest stable release (1.18.2): `stable` (for all supported architectures), and [`stable-amd64` (for amd64)](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile.amd64).
+  > NOTE: `latest` tag works both for `amd64` and `arm64v8` architectures; however, you can also use tags `latest-amd64` and `latest-arm64v8` if you need to download a specific architecture.
+
+- Latest stable release (1.18.2): [`stable`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
+
+  > NOTE: at the moment, stable branch (i.e. `easy-samba` version `1.x.x`) only supports `amd64` architecture. Tag `stable-amd64` is also available as an alias for `stable`.
 
 - Latest long-term release (none at the moment): `lts`. This tag cannot be used yet since there is no long-term release at the moment.
 
@@ -72,22 +76,17 @@ There are three branches: `unstable`, `stable` and `long-term`. Where:
 ### building
 - To build latest unstable release, run:
   ```sh
-  # for AMD64 arch
-  docker build --tag local/easy-samba:latest-amd64 --file ./unstable/latest/Dockerfile.amd64 ./unstable/latest
-  # for ARM64v8 arch
-  docker build --tag local/easy-samba:latest-arm64v8 --file ./unstable/latest/Dockerfile.arm64v8 ./unstable/latest
+  docker build --tag local/easy-samba:latest ./unstable/latest
   ```
 
 - To build latest stable release, run:
   ```sh
-  # for AMD64 arch
-  docker build --tag local/easy-samba:stable-amd64 --file ./stable/latest/Dockerfile.amd64 ./stable/latest
+  docker build --tag local/easy-samba:stable ./stable/latest
   ```
 
 - To build a specific release, run (for example):
   ```sh
-  # NOTE: in versions previous to 2.2.0 and 1.19.0, Dockerfile was named 'Dockerfile' and not 'Dockerfile.amd64'
-  docker build --tag local/easy-samba:2.2.0-amd64 --file ./unstable/2.2.0/Dockerfile.amd64 ./unstable/2.2.0
+  docker build --tag local/easy-samba:1.0.0 ./stable/1.0.0
   ```
 
 ### usage
