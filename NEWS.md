@@ -2,6 +2,15 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-10-05) support for `ppc64le` architecture and future features
+- New architecture `ppc64le` is now supported by `easy-samba` version `2.x.x`. It can be downloaded normally with command `docker pull adevur/easy-samba:latest` on `ppc64le` devices. Alternatively, it can be downloaded explicitly, by pulling tag `latest-ppc64le` instead of generic `latest` tag.
+
+- Support for `i386` (i.e. `32-bit x86`) architecture is under consideration. Docker and many Linux distributions have dropped support for `i386` architecture already, although many people still use `i386` devices for several reasons.
+
+  > NOTE: although Docker doesn't support `i386` devices anymore, one of Docker's alternatives, `podman`, still supports `i386` architecture on several distributions (including Ubuntu versions 16.04, 18.04 and 19.04). `podman` can be used to run `easy-samba` containers in the same way as Docker (e.g. using command `podman run ...` instead of `docker run ...`).
+  
+- New feature `EasySamba Cluster API` is under development. This new API will let you configure several `easy-samba` containers so that they can work together (for example, in load-balance mode or in fault-tolerance mode).
+
 ### (2019-10-04 UTC) easy-samba 1.19.0 released (with new features)
 Stable version 1.19.0 of `easy-samba` has been released.
 
