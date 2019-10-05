@@ -2,7 +2,7 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
-### (2019-10-05) support for `ppc64le` architecture and future features
+### (2019-10-05 UTC) support for `ppc64le` architecture and future features
 - New architecture `ppc64le` is now supported by `easy-samba` version `2.x.x`. It can be downloaded normally with command `docker pull adevur/easy-samba:latest` on `ppc64le` devices. Alternatively, it can be downloaded explicitly, by pulling tag `latest-ppc64le` instead of generic `latest` tag.
 
 - Support for `i386` (i.e. `32-bit x86`) architecture is under consideration. Docker and many Linux distributions have dropped support for `i386` architecture already, although many people still use `i386` devices for several reasons.
