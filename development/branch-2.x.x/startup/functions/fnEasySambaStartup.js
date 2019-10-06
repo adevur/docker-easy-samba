@@ -35,9 +35,6 @@ function fnEasySambaStartup(){
     fnKill("/usr/sbin/nmbd --foreground --no-process-group");
     fnKill("node /startup/remote-api/index.js");
 
-    // delete "/startup/remote-api.started"
-    fnDeleteFile("/startup/remote-api.started");
-
     // delete "/startup/easy-samba.running"
     fnDeleteFile("/startup/easy-samba.running");
     

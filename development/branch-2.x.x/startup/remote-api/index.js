@@ -9,11 +9,9 @@ const fnPrepareServer = require("/startup/remote-api/fnPrepareServer.js");
 
 
 fnMain().then(() => {
-    fnDeleteFile("/startup/remote-api.started");
     log("[ERROR] EasySamba Remote API crashed.");
     process.exit(1);
 }).catch((error) => {
-    fnDeleteFile("/startup/remote-api.started");
     log("[ERROR] EasySamba Remote API crashed.");
     process.exit(1);
 });

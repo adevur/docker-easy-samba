@@ -55,7 +55,6 @@ function fnCreateServer(httpsKey, httpsCert, config){
                     reject(new Error("ERROR"));
                 }
                 else {
-                    fnWriteFile("/startup/remote-api.started");
                     log(`[LOG] HTTPS server successfully started and listening on port ${server.address().port}.`);
                 }
             });

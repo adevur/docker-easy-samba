@@ -8,6 +8,7 @@ module.exports = fnLoadConfig;
 
 // dependencies
 const fs = require("fs");
+const fnIsRunning = require("/startup/functions/fnIsRunning.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -29,7 +30,7 @@ function fnLoadConfig(){
     }
     // otherwise, try to read from "remote-api.config.json",
     //   in case "config.gen.js" is missing and Remote API is running
-    else if (fs.existsSync(`${CFG}/config.gen.js`) !== true && fs.existsSync("/startup/remote-api.started")) {
+    else if (fs.existsSync(`${CFG}/config.gen.js`) !== true && fnIsRunning("node /startup/remote-api/index.js")) {
         try {
             const raw = fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8");
             const parsed = JSON.parse(raw);
