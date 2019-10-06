@@ -29,7 +29,7 @@ async function fnStartRemoteAPI(){
                 fnKill("node /startup/remote-api/index.js");
                 fnDeleteFile("/startup/remote-api.started");
                 fnSpawn("node", ["/startup/remote-api/index.js"]);
-                await fnSleep(2000);
+                await fnSleep(5000);
                 if (fs.existsSync("/startup/remote-api.started")){
                     log(`[LOG] EasySamba Remote API started successfully.\n`);
                 }
