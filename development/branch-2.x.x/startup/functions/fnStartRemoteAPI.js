@@ -28,6 +28,7 @@ async function fnStartRemoteAPI(){
                 log(`[LOG] EasySamba Remote API is enabled and is starting...`);
                 fnSpawn("node", ["/startup/remote-api/index.js"]);
                 await fnSleep(2000);
+                log("");
             }
         }
         catch (error){
