@@ -159,7 +159,7 @@ async function fnEasySambaCycleProcess(vars){
     }
 
     // load configuration
-    const { config, rawConfig } = fnLoadConfig();
+    const { config, rawConfig, sourceConfig } = fnLoadConfig();
 
     // check for changes
     let somethingChanged = false;
@@ -188,6 +188,7 @@ async function fnEasySambaCycleProcess(vars){
             res = false;
         }
         else if (vars["previousConfig"] === undefined && config !== false){
+            log(`[LOG] easy-samba configuration has been retrieved from file '${sourceConfig}'.`);
             res = await fnUpdateConfig(config);
             vars["previousConfig"] = rawConfig;
         }
@@ -195,6 +196,7 @@ async function fnEasySambaCycleProcess(vars){
             res = await fnUpdateConfig(JSON.parse(vars["previousConfig"]));
         }
         else if (vars["previousConfig"] !== undefined && config !== false){
+            log(`[LOG] easy-samba configuration has been retrieved from file '${sourceConfig}'.`);
             res = await fnUpdateConfig(config);
             vars["previousConfig"] = rawConfig;
         }

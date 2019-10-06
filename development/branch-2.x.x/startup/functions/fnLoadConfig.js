@@ -22,10 +22,10 @@ function fnLoadConfig(){
         try {
             const raw = fs.readFileSync(`${CFG}/config.json`, "utf8");
             const parsed = JSON.parse(raw);
-            return { config: parsed, rawConfig: raw };
+            return { config: parsed, rawConfig: raw, sourceConfig: `${CFG}/config.json` };
         }
         catch (error){
-            return { config: false, rawConfig: false };
+            return { config: false, rawConfig: false, sourceConfig: false };
         }
     }
     // otherwise, try to read from "remote-api.config.json",
@@ -34,14 +34,14 @@ function fnLoadConfig(){
         try {
             const raw = fs.readFileSync(`${CFG}/remote-api.config.json`, "utf8");
             const parsed = JSON.parse(raw);
-            return { config: parsed, rawConfig: raw };
+            return { config: parsed, rawConfig: raw, sourceConfig: `${CFG}/remote-api.config.json` };
         }
         catch (error){
-            return { config: false, rawConfig: false };
+            return { config: false, rawConfig: false, sourceConfig: false };
         }
     }
 
-    return { config: false, rawConfig: false };
+    return { config: false, rawConfig: false, sourceConfig: false };
 }
 
 
