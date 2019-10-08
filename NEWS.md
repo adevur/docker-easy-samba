@@ -11,18 +11,6 @@ Stay updated on `easy-samba` development.
   
 - New feature `EasySamba Cluster API` is under development. This new API will let you configure several `easy-samba` containers so that they can work together (for example, in load-balance mode or in fault-tolerance mode).
 
-### (2019-10-04 UTC) easy-samba 1.19.0 released (with new features)
-Stable version 1.19.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1190-2019-10-04-utc) for changelog.
-
-### (2019-10-04 UTC) easy-samba 2.2.1 released
-Unstable version 2.2.1 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#unstable-221-2019-10-04-utc) for changelog.
-
 ### (2019-10-03 UTC) development status update
 Today `easy-samba` version `2.2.0` has been released, that brings support for `arm64v8` architecture. Tags are now organized this way:
 
@@ -38,32 +26,6 @@ Today `easy-samba` version `2.2.0` has been released, that brings support for `a
 
 Work is in progress for porting `easy-samba` to `ppc64le` architecture. Other architectures (e.g. `arm32v7`) are planned, but there's no ETA.
 
-### (2019-10-03 UTC) easy-samba 2.2.0 released (with new features)
-Unstable version 2.2.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#unstable-feature-220-2019-10-03-utc) for changelog.
-
-### (2019-10-01 UTC) easy-samba 2.1.0 released (with new features)
-Unstable version 2.1.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#unstable-feature-210-2019-10-01-utc) for changelog.
-
-### (2019-09-30 UTC) easy-samba 2.0.1 released
-Unstable version 2.0.1 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#unstable-201-2019-09-30-utc) for changelog.
-
-### (2019-09-29 UTC) easy-samba 2.0.0 released (with new features)
-Unstable version 2.0.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#unstable-feature-200-2019-09-29-utc) for changelog.
-
 ### (2019-09-28 UTC) development status update
 Development of version `2.x.x` of `easy-samba` has started. All the development of version `2.x.x` will be done in sub-directory `./development/branch-2.x.x`, while all the development of version `1.x.x` will be done in sub-directory `./development/branch-1.x.x`.
 
@@ -74,20 +36,6 @@ Some important news are:
 - New branch `2.x.x` is already based on CentOS 8. Since there's no official Docker image of CentOS 8 yet, unofficial image [`adevur/centos-8:latest`](https://hub.docker.com/r/adevur/centos-8) will be used temporarily, until official image `centos:8` comes out.
 
 - New branch `2.x.x` should be compatible with new architectures as well (other than `x86_64`). At the moment, CentOS 8 is compatible with these architectures: `x86_64`, `ppc64le` and `aarch64`. `easy-samba`, instead, is only compatible with `x86_64` at the moment, but new architectures will be soon supported through tags like: `latest-aarch64`, `latest-ppc64le`, etc.
-
-### (2019-09-28 UTC) easy-samba 1.18.2 released (with security fixes)
-Stable version 1.18.2 of `easy-samba` has been released.
-
-This version brings security fixes to `easy-samba`. It is advisable to update as soon as possible.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-security-1182-2019-09-28-utc) for changelog.
-
-### (2019-08-26 UTC) easy-samba 1.18.1 released (with security fixes)
-Stable version 1.18.1 of `easy-samba` has been released.
-
-This version brings security fixes to `easy-samba`. It is advisable to update as soon as possible.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-security-1181-2019-08-26-utc) for changelog.
 
 ### (2019-08-08 UTC) development status update
 - Latest releases of `easy-samba` have brought many important features and improvements. Here's a short list:
@@ -124,7 +72,7 @@ Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGE
   
     - `DOCS`: documentation files have changed (e.g. `README.md`, `docs/DOCUMENTATION.md`, `docs/CHANGELOG.md`)
     
-    - `REL`: new version of `easy-samba` has been released
+    - `REL`: new version of `easy-samba` has been released (e.g. `REL-STABLE-1.0.0`)
     
     - `CC`: code cleanup (i.e. changes that don't alter code behavior, but makes it more clear or correct)
     
@@ -138,135 +86,8 @@ Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGE
     
     - `NEW`: feature implementation (i.e. changes that add new functionalities to code)
 
-### (2019-08-08 UTC) easy-samba 1.18.0 released (with new features)
-Stable version 1.18.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1180-2019-08-08-utc) for changelog.
-
-### (2019-08-06 UTC) easy-samba 1.17.1 released
-Stable version 1.17.1 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-1171-2019-08-06-utc) for changelog.
-
-### (2019-08-06 UTC) easy-samba 1.17.0 released (with new features and security fixes)
-Stable version 1.17.0 of `easy-samba` has been released.
-
-This version brings new features and security fixes to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-security-1170-2019-08-06-utc) for changelog.
-
-### (2019-07-31 UTC) easy-samba 1.16.1 released
-Stable version 1.16.1 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-1161-2019-07-31-utc) for changelog.
-
-### (2019-07-30 UTC) easy-samba 1.16.0 released (with new features)
-Stable version 1.16.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1160-2019-07-30-utc) for changelog.
-
-### (2019-07-25 UTC) easy-samba 1.15.0 released (with new features)
-Stable version 1.15.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1150-2019-07-25-utc) for changelog.
-
-### (2019-07-22 UTC) easy-samba 1.14.0 released (with new features)
-Stable version 1.14.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1140-2019-07-22-utc) for changelog.
-
-### (2019-07-10 UTC) easy-samba 1.13.0 released (with new features)
-Stable version 1.13.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1130-2019-07-10-utc) for changelog.
-
-### (2019-07-09 UTC) easy-samba 1.12.0 released (with new features)
-Stable version 1.12.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1120-2019-07-09-utc) for changelog.
-
-### (2019-07-03 UTC) easy-samba 1.11.1 released
-Stable version 1.11.1 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-1111-2019-07-03-utc) for changelog.
-
-### (2019-07-02 UTC) easy-samba 1.11.0 released (with new features)
-Stable version 1.11.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1110-2019-07-02-utc) for changelog.
-
 ### (2019-06-30 UTC) upcoming feature `EasySamba Remote API`
 A new feature is under development, called `EasySamba Remote API`. It is an HTTPS-based API that will let you change `easy-samba`'s configuration through a remote API.
-
-### (2019-06-25 UTC) easy-samba 1.10.0 released (with new features)
-Stable version 1.10.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-1100-2019-06-25-utc) for changelog.
-
-### (2019-06-14 UTC) easy-samba 1.9.0 released (with new features)
-Stable version 1.9.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-190-2019-06-14-utc) for changelog.
-
-### (2019-06-11 UTC) easy-samba 1.8.0 released (with new features)
-Stable version 1.8.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-180-2019-06-11-utc) for changelog.
-
-### (2019-06-10 UTC) easy-samba 1.7.0 released (with new features)
-Stable version 1.7.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-170-2019-06-10-utc) for changelog.
-
-### (2019-06-07 UTC) easy-samba 1.6.1 released
-Stable version 1.6.1 of `easy-samba` has been released.
-
-This version fixes a major bug.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-161-2019-06-07-utc) for changelog.
-
-### (2019-06-03 UTC) easy-samba 1.6.0 released (with new features)
-Stable version 1.6.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-160-2019-06-03-utc) for changelog.
-
-### (2019-06-02 UTC) easy-samba 1.5.0 released (with new features and breaking changes)
-Stable version 1.5.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`, and it also breaks compatibility with older versions of `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-150-2019-06-02-utc) for changelog.
-
-### (2019-05-31 UTC) easy-samba 1.4.0 released (with new features)
-Stable version 1.4.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-140-2019-05-31-utc) for changelog.
 
 ### (2019-05-31 UTC) roadmap update
 New improvements are coming to `easy-samba` (probably in future version `1.5.0`):
@@ -286,13 +107,6 @@ In the next days, new improvements will be made to `ConfigGen.js` API, as well a
 
 - You'll also have the option to edit the `config.json` file through an always-running `config.gen.js` script: at the moment, `config.gen.js` script must terminate after it generated the new `config.json` file. In the future, your `config.gen.js` script will have also the possibility to never terminate, and constantly update the `config.json` file; and `easy-samba` will then constantly update its running configuration automatically.
 
-### (2019-05-30 UTC) easy-samba 1.3.0 released (with new features)
-Stable version 1.3.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-130-2019-05-30-utc) for changelog.
-
 ### (2019-05-29 UTC) upcoming feature `ConfigGen`
 An upcoming feature will be soon implemented (not sure in which future version of `easy-samba`), called `ConfigGen`.
 
@@ -304,13 +118,6 @@ More info will be released in the next days.
 A list of planned features that are coming to `easy-samba` version 1.3:
 
 - In the `groups` section of `config.json`, at the moment one can only specify usernames to be included in a group (e.g. `"groups": [{ "name": "group1", "users": ["user1", "user2", "user3"] }]`). In version 1.3 of `easy-samba`, it will be possible to also specify groups to be included in the group (e.g. `{ "name": "group2", "users": ["group1", "user4"] }` means that `group2` contains all the users in `group1` plus `user4`).
-
-### (2019-05-16 UTC) easy-samba 1.2.0 released (with new features)
-Stable version 1.2.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-120-2019-05-16-utc) for changelog.
 
 ### (2019-05-12 UTC) roadmap for next versions of easy-samba
 A list of improvements that are coming to `easy-samba` 1.2:
@@ -328,13 +135,6 @@ Planned improvements for `easy-samba` 2.0:
 
 - Since `easy-samba` version 1.x.x is going to be a long-term branch, some code cleanup has to be finished before the release of version 2.0. Also, documentation has to be finished, because there are still some missing chapters.
 
-### (2019-04-27 UTC) easy-samba 1.1.0 released (with new features)
-Stable version 1.1.0 of `easy-samba` has been released.
-
-This version brings new features to `easy-samba`.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-feature-110-2019-04-27-utc) for changelog.
-
 ### (2019-04-24 UTC) preview of easy-samba 1.1
 Stable version 1.1.0 of `easy-samba` will soon be released.
 This version will bring a couple of new features to `access` property of shared folders:
@@ -348,31 +148,3 @@ When you place it before a username, a group name or wildcard `*`, it just means
 the shared folder. For example: `["rw:group1", "ro:user1", "no:user2"]` means that all members of group `group1` have read
 and write permissions on the shared folder, except for `user1`, which has read-only permissions, and for `user2`, which has no access at all.
 
-### (2019-04-24 UTC) easy-samba 1.0.4 released
-Stable version 1.0.4 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-104-2019-04-24-utc) for changelog.
-
-### (2019-04-21 UTC) easy-samba 1.0.3 released
-Happy Easter!
-
-Stable version 1.0.3 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-103-2019-04-21-utc) for changelog.
-
-### (2019-04-18 UTC) easy-samba 1.0.2 released (with security fixes)
-Stable version 1.0.2 of `easy-samba` has been released.
-
-This version brings security fixes, so it is advisable to update as soon as possible.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-security-102-2019-04-18-utc) for changelog.
-
-### (2019-04-15 UTC) easy-samba 1.0.1 released
-Stable version 1.0.1 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-101-2019-04-15-utc) for changelog.
-
-### (2019-04-14 UTC) easy-samba 1.0.0 released
-Stable version 1.0.0 of `easy-samba` has been released.
-
-Click [here](https://github.com/adevur/docker-easy-samba/blob/master/docs/CHANGELOG.md#stable-100-2019-04-14-utc) for changelog.
