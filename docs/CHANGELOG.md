@@ -4,11 +4,32 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ### Current unstable release: `2.2.1`
 
-### Current stable release: `1.19.0`
+### Current stable release: `1.19.1`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [STABLE] 1.19.1 (2019-10-08 UTC)
+- New features:
+
+  - N/A
+
+- Bug fixes:
+
+  - `Remote API` startup procedure used to fail on particularly-slow devices that require more than 2 seconds to start `Remote API` server. Now, `Remote API` startup procedure will fail only if `Remote API` server requires more than 5 seconds to start up.
+  
+    > COMMITS: FIX-11
+    
+    > REFERENCE: [ISSUE #2](https://github.com/adevur/docker-easy-samba/issues/2)
+    
+  - When no custom port is defined in `remote-api.json`, `Remote API` uncorrectly reports it as an invalid custom port.
+  
+    > COMMITS: FIX-13 (for branch 1.x.x)
+
+- Security fixes:
+
+  - N/A
 
 ### [STABLE] [FEATURE] 1.19.0 (2019-10-04 UTC)
 - New features:

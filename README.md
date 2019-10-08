@@ -44,7 +44,7 @@ Available tags:
 
   > NOTE: `latest` tag works for `amd64`, `arm64v8` and `ppc64le` architectures; however, you can also use tags `latest-amd64`, `latest-arm64v8` and `latest-ppc64le`, if you need to download a specific architecture.
 
-- Latest stable release (1.19.0): [`stable`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
+- Latest stable release (1.19.1): [`stable`](https://github.com/adevur/docker-easy-samba/blob/master/stable/latest/Dockerfile).
 
   > NOTE: at the moment, stable branch (i.e. `easy-samba` version `1.x.x`) only supports `amd64` architecture. Tag `stable-amd64` is also available as an alias for `stable`.
 
