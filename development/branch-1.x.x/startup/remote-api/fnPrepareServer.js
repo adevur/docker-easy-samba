@@ -130,6 +130,11 @@ function fnLoadKeyCert(){
 
 
 function fnCheckPort(config){
+    if (fnHas(config, "port") !== true){
+        config["port"] = 9595;
+        return;
+    }
+
     try {
         assert( fnHas(config, "port") );
         assert( fnIsInteger(config["port"]) );
@@ -137,10 +142,7 @@ function fnCheckPort(config){
         log(`[LOG] EasySamba Remote API will listen to custom port ${config["port"]}.`);
     }
     catch (error){
-        config["port"] = 9595;
-        if (fnHas(config, "port")){
-            log(`[WARNING] it's been defined a custom port in '${CFG}/remote-api.json', but it will not be used, since it is not in the allowed range 1024-49151.`);
-        }
+        log(`[WARNING] it's been defined a custom port in '${CFG}/remote-api.json', but it will not be used, since it is not in the allowed range 1024-49151.`);
     }
 }
 
