@@ -29,6 +29,15 @@ async function fnPrepareServer(){
     // load "remote-api.json"
     const config = fnLoadConfig();
     
+    // check property "version"
+    fnCheckVersion(config);
+    
+    // check property "token"
+    fnCheckToken(config);
+    
+    // check property "users"
+    fnCheckUsers(config);
+    
     // load private key and certificate for the HTTPS server
     const { httpsKey, httpsCert } = fnLoadKeyCert();
     
@@ -53,6 +62,25 @@ async function fnPrepareServer(){
 
 
 
+function fnUpdateConfigFile(path, config, properties){
+    let temp = undefined;
+    
+    try {
+        temp = JSON.parse( fs.readFileSync(path, "utf8") );
+    }
+    catch (error){
+        temp = {};
+    }
+    
+    properties.forEach((e) => {
+        temp[e] = config[e];
+    });
+    
+    fnWriteFile(path, JSON.stringify(temp));
+}
+
+
+
 function fnLoadConfig(){
     try {
         log(`[LOG] loading '${CFG}/remote-api.json'...`);
@@ -64,26 +92,90 @@ function fnLoadConfig(){
             config = JSON.parse(fs.readFileSync(`${CFG}/remote-api.json`, "utf8"));
         }
         catch (error){
-            config = {};
+            config = { "version": "2" };
             log(`[WARNING] '${CFG}/remote-api.json' exists, but it is not a valid JSON file.`);
         }
-        
-        if (fnHas(config, "token") !== true){
-            log(`[WARNING] since '${CFG}/remote-api.json' doesn't have a 'token' property, a new token will be randomly-generated and will be written to file '${CFG}/remote-api.json'...`);
-            config["token"] = ConfigGen.genRandomPassword(12);
-            fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(config));
-        }
-        
-        assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
-        log(`[LOG] '${CFG}/remote-api.json' has been correctly loaded and token has been successfully validated.`);
-        
-        // set global internal constant "$METHODS"
-        config["$METHODS"] = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba", "pause-easy-samba", "start-easy-samba"];
         
         return config;
     }
     catch (error){
+        log(`[ERROR] it's not been possible to validate configuration file '${CFG}/remote-api.json'.`);
+        assert(false);
+    }
+}
+
+
+
+function fnCheckVersion(config){
+    const METHODSv1 = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba", "pause-easy-samba", "start-easy-samba"];
+    const METHODSv2 = [];
+
+    if (fnHas(config, "version")){
+        try {
+            assert( ["1", "2"].includes(config["version"]) );
+        }
+        catch (error){
+            log(`[WARNING] 'version' property of '${CFG}/remote-api.json' is not valid.`);
+            config["version"] = "1";
+        }
+    }
+    else {
+        config["version"] = "1";
+    }
+    
+    config["$METHODS"] = (config["version"] === "1") ? METHODSv1 : METHODSv2;
+}
+
+
+
+function fnCheckToken(config){
+    if (config["version"] !== "1"){
+        return;
+    }
+
+    try {
+        if (fnHas(config, "token") !== true){
+            log(`[WARNING] since '${CFG}/remote-api.json' doesn't have a 'token' property, a new token will be randomly-generated and will be written to file '${CFG}/remote-api.json'...`);
+            config["token"] = ConfigGen.genRandomPassword(12);
+            fnUpdateConfigFile(`${CFG}/remote-api.json`, config, ["version", "token"]);
+        }
+        
+        assert( fnHas(config, "token") && fnIsString(config["token"]) && config["token"].length > 0 );
+        log(`[LOG] token has been successfully validated.`);
+    }
+    catch (error){
         log(`[ERROR] it's not been possible to validate the token in '${CFG}/remote-api.json'.`);
+        assert(false);
+    }
+}
+
+
+
+function fnCheckUsers(config){
+    if (config["version"] !== "2"){
+        return;
+    }
+    
+    try {
+        if (fnHas(config, "users") !== true){
+            log(`[WARNING] since '${CFG}/remote-api.json' doesn't have a 'users' property, a new user 'admin' with a random password will be generated and written to file '${CFG}/remote-api.json'...`);
+            config["users"] = [{ "name": "admin", "password": ConfigGen.genRandomPassword(12) }];
+            fnUpdateConfigFile(`${CFG}/remote-api.json`, config, ["version", "users"]);
+        }
+        
+        assert( fnIsArray(config["users"]) );
+        const names = [];
+        assert(config["users"].every((e) => {
+            const result = fnHas(e, ["name", "password"]) && [e.name, e.password].every(fnIsString) && e.password.length > 0 && e.name.length > 0 && names.includes(e.name) !== true;
+            names.push(e.name);
+            e["enabled-api"] = config["$METHODS"];
+            return result;
+        }));
+        
+        log(`[LOG] 'users' property has been correctly validated.`);
+    }
+    catch (error){
+        log(`[ERROR] it's not been possible to validate 'users' property of '${CFG}/remote-api.json'.`);
         assert(false);
     }
 }
@@ -157,11 +249,19 @@ function fnCheckCertNego(config){
     catch (error){
         config["cert-nego"] = true;
     }
+    
+    if (config["cert-nego"]){
+        log(`[LOG] EasySamba Remote API will enable certificate-negotiation feature.`);
+    }
 }
 
 
 
 function fnCheckEnabledAPI(config){
+    if (config["version"] !== "1"){
+        return;
+    }
+
     try {
         assert( fnHas(config, "enabled-api") );
         assert( fnIsArray(config["enabled-api"]) || config["enabled-api"] === "*" );
