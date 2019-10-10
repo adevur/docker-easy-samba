@@ -268,17 +268,21 @@ This is a list of all available methods of `ConfigGen.js` library:
 
     - [`remote.isReachable()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remoteisreachable-method)
     
-    - [`remote.isTokenValid()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remoteistokenvalid-method)
+    - [`remote.isAuthValid()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remoteisauthvalid-method)
     
     - [`remote.getRemoteLogs()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetremotelogs-method)
     
     - [`remote.getAvailableAPI()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetavailableapi-method)
     
+    - [`remote.getEnabledAPI()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetenabledapi-method)
+    
     - [`remote.getConfigHash()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfighash-method)
     
     - [`remote.getConfigPath()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotegetconfigpath-method)
     
-    - [`remote.changeRemoteToken()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotechangeremotetoken-method)
+    - [`remote.changeMyPassword()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotechangemypassword-method)
+    
+    - [`remote.changeOtherPassword()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotechangeotherpassword-method)
     
     - [`remote.stopEasySamba()` method](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#remotestopeasysamba-method)
     
@@ -474,13 +478,13 @@ The configuration is retrieved from a remote `easy-samba` container using `EasyS
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:GET-CONFIG:CANNOT-READ"`: remote container is not able to read file `remote-api.config.json` for unknown reasons
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -492,7 +496,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve remote config
     let config = undefined;
@@ -559,13 +563,15 @@ This static method can be used to create a new object of type `remote`; the latt
 
 All the methods available for `remote` objects are listed as "`remote` namespace methods" in the [`ConfigGen.js` library section of this Documentation](https://github.com/adevur/docker-easy-samba/blob/master/docs/DOCUMENTATION.md#ConfigGenjs-library).
 
-- ARGUMENTS: `hostname`, `port`, `token` and `ca` (optional)
+> NOTE: this function only supports protocol `EasySamba Remote API V2` (introduced in `easy-samba` version `2.3.0`).
+
+- ARGUMENTS: `hostname`, `port`, `auth` and `ca` (optional)
 
   - PARAMETER `hostname`: a string that contains the hostname of the remote container (e.g. `"localhost"`, `"192.168.1.2"`, `"www.example.com"`, ...)
 
   - PARAMETER `port`: an integer that represents the port, which the remote container's `Remote API` is listening to (by default, it's `9595`)
 
-  - PARAMETER `token`: a string that contains the secret token used to authenticate on the remote container
+  - PARAMETER `auth`: an object that looks like this: `{ "username": "admin", "password": "123456" }`, where properties `username` and `password` are your credentials in the `Remote API` configuration
 
   - PARAMETER `ca`: a string that contains the certificate used by the remote container for the HTTPS protocol (i.e. in case the remote container's certificate is self-signed or custom); this parameter can be set to `"unsafe"` if you don't want to verify the remote certificate (i.e. in case you're just debugging or testing); if this parameter is equal to `"global"`, certificate will be verified against a list of known certificates (i.e. in case the remote container's certificate is signed by a recognized global certification authority); if this parameter is missing or it's equal to `undefined`, remote container's certificate will be automatically retrieved via certificate negotiation feature of `Remote API` (i.e. using `remote.certNego()`)
 
@@ -579,7 +585,7 @@ EXAMPLE:
 ```js
 const ConfigGen = require("./ConfigGen.js");
 
-const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
 remote.getInfo().then((result) => {
     console.log(`Remote container localhost is using easy-samba version ${result.version}`);
@@ -588,18 +594,18 @@ remote.getInfo().then((result) => {
 
 // about "ca" parameter:
     // the simplest thing you can do is letting ConfigGen retrieve automatically remote container's certificate through negotiation
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // if the remote container has a self-signed certificate, you can pass it to this function
     //  NOTE: the self-signed certificate is located into the remote container at path "/share/config/remote-api.cert" (so you can copy it to all the clients)
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", require("fs").readFileSync("/path/to/remote-api.cert", "ascii"));
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" }, require("fs").readFileSync("/path/to/remote-api.cert", "ascii"));
 
     // if the remote container has a certificate that's been signed by a global-recognized Certification Authority, you can pass "global" as certificate
-    const remote = ConfigGen.remote("www.example.com", 9595, "my-secret-token", "global");
+    const remote = ConfigGen.remote("www.example.com", 9595, { "username": "admin", "password": "123456" }, "global");
 
     // if you don't care about security (e.g. you're just testing), you can also disable certificate verification process, passing "unsafe" as certificate
     //   SUGGESTION: use this only for testing and only if certificate negotiation is not available on the remote container
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token", "unsafe");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" }, "unsafe");
 ```
 
 ### `remote.setConfig()` method
@@ -621,13 +627,13 @@ This method can be used to set the configuration of a remote container using `Ea
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:SET-CONFIG:INVALID-HASH"`: in case configuration has changed
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -639,7 +645,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve remote config
     let configjson = undefined;
@@ -685,13 +691,13 @@ This method can be used to get the configuration of a remote container using `Ea
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:GET-CONFIG:CANNOT-READ"`: remote container is not able to read file `remote-api.config.json` for unknown reasons
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-config` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -703,7 +709,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
     
     // let's retrieve remote config
     let configjson = undefined;
@@ -743,13 +749,13 @@ This method can be used to get some information about a remote container using `
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:GET-INFO:ERROR"`: remote container is not able to retrieve info from remote container
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-info` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-info` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -761,7 +767,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve remote information
     try {
@@ -794,13 +800,13 @@ This method can be used to get the path where configuration files are located in
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:GET-INFO:ERROR"`: remote container is not able to retrieve info from remote container
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-info` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-info` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
   
@@ -814,7 +820,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve remote information
     try {
@@ -836,7 +842,7 @@ async function myAsyncFunction(){
 ```
 
 ### `remote.isReachable()` method
-This method can be used to test connectivity towards a remote container using `EasySamba Remote API`. This method returns `false` in case the remote container is not reachable: URL, port or certificate are not correct, or remote container is not running, or `Remote API` is not running. This function doesn't check if provided `token` is valid (see function `remote.isTokenValid()` for that purpose).
+This method can be used to test connectivity towards a remote container using `EasySamba Remote API`. This method returns `false` in case the remote container is not reachable: URL, port or certificate are not correct, or remote container is not running, or `Remote API` is not running. This function doesn't check if provided credentials valid (see function `remote.isAuthValid()` for that purpose).
 
 > NOTE: this function is async and returns a Promise.
 
@@ -859,7 +865,7 @@ testRemote();
 async function testRemote(){
     try {
         // remote container connection object
-        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+        const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
         if ((await remote.isReachable()) === true){
             console.log("Connection was successful.");
@@ -874,14 +880,14 @@ async function testRemote(){
 }
 ```
 
-### `remote.isTokenValid()` method
-This method can be used to check if a token is valid for connecting to a remote container via `EasySamba Remote API`. By default, the token that this function checks is the one that you passed to `ConfigGen.remote()`, but you can pass a custom token to check as a parameter.
+### `remote.isAuthValid()` method
+This method can be used to check if credentials are valid for connecting to a remote container via `EasySamba Remote API`. By default, the credentials that this function checks are the one that you passed to `ConfigGen.remote()`, but you can pass custom credentials to check as a parameter.
 
 > NOTE: this function is async and returns a Promise.
 
-- ARGUMENTS: `customToken` (optional)
+- ARGUMENTS: `customAuth` (optional)
 
-  - PARAMETER `customToken`: it is a non-empty string that contains the token to validate against the remote container; if this parameter is missing, this function will validate the token that you passed to `ConfigGen.remote()`
+  - PARAMETER `customAuth`: it is an object that contains the credentials to validate against the remote container (e.g. `{ "username": "admin", "password": "123456" }`); if this parameter is missing, this function will validate the credentials that you passed to `ConfigGen.remote()`
 
 - OUTPUT: it returns a Promise that resolves to `true` or `false`
 
@@ -897,25 +903,25 @@ EXAMPLE:
 ```js
 const ConfigGen = require("./ConfigGen.js");
 
-testToken();
+testCreds();
 
-async function testToken(){
+async function testCreds(){
     try {
         // remote container connection object
-        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+        const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
-        if ((await remote.isTokenValid()) === true){
-            console.log("Token 'my-secret-token' is valid.");
+        if ((await remote.isAuthValid()) === true){
+            console.log("Credentials 'admin' and '123456' are valid.");
         }
         else {
-            console.log("Token 'my-secret-token' is not valid.");
+            console.log("Credentials 'admin' and '123456' are not valid.");
         }
         
-        if ((await remote.isTokenValid("token2")) === true){
-            console.log("Token 'token2' is valid.");
+        if ((await remote.isAuthValid({ "username": "admin2", "password": "123" })) === true){
+            console.log("Credentials 'admin2' and '123' are valid.");
         }
         else {
-            console.log("Token 'token2' is not valid.");
+            console.log("Credentials 'admin2' and '123' are not valid.");
         }
     }
     catch (error){
@@ -937,13 +943,13 @@ This method can be used to get `easy-samba` and `Remote API` logs of a remote co
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:GET-LOGS:CANNOT-READ"`: remote container is not able to read files `/share/config/easy-samba.logs` or `/share/config/remote-api.logs` for unknown reasons
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-logs` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-logs` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -955,7 +961,7 @@ printLogs();
 
 async function printLogs(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve remote logs
     try {
@@ -987,11 +993,11 @@ This method can be used to get the list of supported `Remote API` methods of an 
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-available-api` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `get-available-api` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -1003,7 +1009,7 @@ printAvailableAPI();
 
 async function printAvailableAPI(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve supported api
     try {
@@ -1042,7 +1048,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve remote config
     let configjson = undefined;
@@ -1075,14 +1081,14 @@ async function myAsyncFunction(){
 }
 ```
 
-### `remote.changeRemoteToken()` method
-This method can be used to modify the secret token on a remote container, using `EasySamba Remote API`. This function also updates the token stored in the current `remote` object, so that when you use `remote` functions, they will use updated token. This function will also update file `/share/config/remote-api.json` inside the remote container.
+### `remote.changeMyPassword()` method
+This method can be used to modify your own `Remote API` password on a remote container, using `EasySamba Remote API`. This function also updates the credentials stored in the current `remote` object, so that when you use `remote` functions, they will use updated credentials. This function will also update file `/share/config/remote-api.json` inside the remote container.
 
 > NOTE: this function is async and returns a Promise.
 
-- ARGUMENTS: `newToken`
+- ARGUMENTS: `newPassword`
 
-  - PARAMETER `newToken`: it is a non-empty string that contains the new token to permanently set in the remote container for future use
+  - PARAMETER `newPassword`: it is a non-empty string that contains the new password to permanently set in the remote container for future use
 
 - OUTPUT: it returns a Promise that resolves to `true` or `false`
 
@@ -1094,9 +1100,9 @@ This method can be used to modify the secret token on a remote container, using 
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `change-token` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `change-my-password` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -1104,25 +1110,83 @@ EXAMPLE:
 ```js
 const ConfigGen = require("./ConfigGen.js");
 
-changeToken();
+changeMyPassword();
 
-async function changeToken(){
+async function changeMyPassword(){
     try {
         // remote container connection object
-        const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+        const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
-        console.log("Token 'my-secret-token' is valid? " + (await remote.isTokenValid())); // Token 'my-secret-token' is valid? true
+        console.log("Password '123456' is valid? " + (await remote.isAuthValid())); // Password '123456' is valid? true
         
-        if (await remote.changeRemoteToken("new-token")){
-            console.log("Token changed successfully.");
+        if (await remote.changeMyPassword("123")){
+            console.log("Password changed successfully.");
         }
         else {
             console.log("ERROR");
         }
         
-        console.log("Token 'new-token' is valid? " + (await remote.isTokenValid())); // Token 'new-token' is valid? true
+        console.log("Password '123' is valid? " + (await remote.isAuthValid())); // Password '123' is valid? true
         
-        console.log("Token 'my-secret-token' is valid? " + (await remote.isTokenValid("my-secret-token"))); // Token 'my-secret-token' is valid? false
+        console.log("Password '123456' is valid? " + (await remote.isAuthValid({ "username": "admin", "password": "123456" }))); // Password '123456' is valid? false
+    }
+    catch (error){
+        throw new Error("Unhandled error: " + error.message);
+    }
+}
+```
+
+### `remote.changeOtherPassword()` method
+This method can be used to modify the password of another `Remote API` user on a remote container, using `EasySamba Remote API`. This function will also update file `/share/config/remote-api.json` inside the remote container.
+
+> NOTE: this function is async and returns a Promise.
+
+- ARGUMENTS: `username` and `newPassword`
+
+  - PARAMETER `username`: it is a string that contains the username whose password must be changed
+
+  - PARAMETER `newPassword`: it is a non-empty string that contains the new password to permanently set in the remote container
+
+- OUTPUT: it returns a Promise that resolves to `true` or `false`
+
+- ERRORS: this is the list of possible error messages that can be thrown by this function:
+
+  - `"INVALID-INPUT"`: one or more parameters you provided to this function are not valid
+  
+  - `"REMOTE-API:CHANGE-OTHER-PASSWORD:INVALID-USERNAME"`: the username you passed to the function doesn't exist in the remote container's `Remote API` configuration
+
+  - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
+  
+  - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
+  
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
+  
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `change-other-password` API, or your user is not allowed to use it
+  
+  - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
+
+EXAMPLE:
+```js
+const ConfigGen = require("./ConfigGen.js");
+
+changeMyPassword();
+
+async function changeMyPassword(){
+    try {
+        // remote container connection object
+        const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
+
+        console.log("Does user 'admin2' have password '123'? " + (await remote.isAuthValid({ "username": "admin2", "password": "123" }))); // Does user 'admin2' have password '123'? true
+        
+        if (await remote.changeOtherPassword("admin2", "444")){
+            console.log("Password changed successfully.");
+        }
+        else {
+            console.log("ERROR");
+        }
+        
+        console.log("Does user 'admin2' have password '123'? " + (await remote.isAuthValid({ "username": "admin2", "password": "123" }))); // Does user 'admin2' have password '123'? false
+        console.log("Does user 'admin2' have password '444'? " + (await remote.isAuthValid({ "username": "admin2", "password": "444" }))); // Does user 'admin2' have password '444'? true
     }
     catch (error){
         throw new Error("Unhandled error: " + error.message);
@@ -1133,7 +1197,9 @@ async function changeToken(){
 ### `remote.certNego()` method
 This method can be used to manually retrieve the server's certificate of a remote container, using certificate-negotiation feature of `EasySamba Remote API`.
 
-> NOTE: this function is async and returns a Promise.
+> NOTE: this function only supports protocol `cert-nego-v4` (introduced in `easy-samba` version `2.3.0`).
+
+> NOTE 2: this function is async and returns a Promise.
 
 - ARGUMENTS: N/A
 
@@ -1143,7 +1209,7 @@ This method can be used to manually retrieve the server's certificate of a remot
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL or port) are not correct
 
-  - `"INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"CERT-NEGO-NOT-SUPPORTED"`: remote container doesn't support certificate-negotiation feature
 
@@ -1155,7 +1221,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's retrieve remote container's certificate
     try {
@@ -1163,8 +1229,8 @@ async function myAsyncFunction(){
         console.log(cert); // ----- BEGIN CERTIFICATE -----........
     }
     catch (error){
-        if (error.message === "INVALID-TOKEN"){
-            console.log("Token you passed to 'ConfigGen.remote()' is not correct.");
+        if (error.message === "INVALID-CREDS"){
+            console.log("Credentials you passed to 'ConfigGen.remote()' are not correct.");
         }
         else if (error.message === "CERT-NEGO-NOT-SUPPORTED"){
             console.log("Remote container doesn't support certificate-negotiation.");
@@ -1197,11 +1263,11 @@ This method can be used to stop a remote container using `EasySamba Remote API`.
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `stop-easy-samba` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `stop-easy-samba` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -1213,7 +1279,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's try to stop easy-samba
     try {
@@ -1253,11 +1319,11 @@ This method can be used to pause the status of a remote container using `EasySam
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `pause-easy-samba` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `pause-easy-samba` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -1269,7 +1335,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's try to pause easy-samba
     try {
@@ -1318,11 +1384,11 @@ This method can be used to unpause the status of a remote container using `EasyS
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `start-easy-samba` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `start-easy-samba` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -1334,7 +1400,7 @@ myAsyncFunction();
 
 async function myAsyncFunction(){
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's try to pause easy-samba
     try {
@@ -1588,13 +1654,13 @@ The configuration is sent to a remote `easy-samba` container using `EasySamba Re
 
   - `"CANNOT-CONNECT"`: remote container is not running, `Remote API` is not running, or parameters you gave (i.e. URL, port, certificate) are not correct
 
-  - `"REMOTE-API:INVALID-TOKEN"`: token of `remote` is not the same token used in remote container
+  - `"REMOTE-API:INVALID-CREDS"`: credentials of `remote` are not correct
   
   - `"REMOTE-API:SET-CONFIG:INVALID-HASH"`: in case configuration has changed
   
   - `"REMOTE-API:CANNOT-RESPOND"`: remote container is not able to respond to your API request for unknown reasons
   
-  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API
+  - `"REMOTE-API:API-NOT-SUPPORTED"`: remote container doesn't support `set-config` API, or your user is not allowed to use it
   
   - `"INVALID-RESPONSE"`: remote container's response is invalid for unknown reasons
 
@@ -1611,7 +1677,7 @@ async function myAsyncFunction(){
     config.users.add("user1");
 
     // remote container connection object
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
 
     // let's save local config to remote container
     try {
@@ -1626,7 +1692,7 @@ async function myAsyncFunction(){
     // another scenario
     
     
-    const remote = ConfigGen.remote("localhost", 9595, "my-secret-token");
+    const remote = ConfigGen.remote("localhost", 9595, { "username": "admin", "password": "123456" });
     
     // let's retrieve remote config
     let config = undefined;
