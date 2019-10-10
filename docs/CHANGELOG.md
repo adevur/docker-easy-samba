@@ -10,6 +10,68 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
+### [STABLE] [FEATURE] 2.3.0 (2019-10-10 UTC)
+- New features:
+
+  - `EasySamba Remote API V1` has been replaced by `Remote API V2`, and `cert-nego-v3` protocol has been replaced by `cert-nego-v4`. `Remote API V2` introduces multi-user support inside `Remote API` (and you can choose which APIs each user is allowed to use). Moreover, `ConfigGen.js` library has been updated in order to support the new APIs: function `ConfigGen.remote()` has changed; functions `remote.changeMyPassword()`, `remote.changeOtherPassword()`, `remote.isAuthValid()` and `remote.getEnabledAPI()` have been added; and functions `remote.changeRemoteToken()` and `remote.isTokenValid()` have been removed. Here's an example of how a `remote-api.json` file looks now:
+  
+    ```json
+    {
+        "version": "2",
+        "port": 9595,
+        "cert-nego": true,
+        "users": [
+            { "name": "admin", "password": "123456", "enabled-api": "*" },
+            { "name": "admin2", "password": "123", "enabled-api": ["hello", "change-my-password", "get-config"] }
+        ]
+    }
+    ```
+    
+    > COMMITS: NEW-6, NEW-7, NEW-9, NEW-10, NEW-11
+    
+  - `easy-samba` and `Remote API` logs now are not saved at paths `/share/config/easy-samba.logs` and `/share/config/remote-api.logs` anymore; they will be saved at paths `/share/logs/easy-samba.logs` and `/share/logs/remote-api.logs`. This simplifies the scenario in case one wants to save logs into an external partition. Here's an example of how to save logs into another partition:
+  
+    ```sh
+    # in this example, we assume that '/mnt/disk2' is the location where the partition is mounted
+    #   also, we assume that '/easy-samba/share' is the location that will be mounted as '/share' inside easy-samba container
+    
+    # let's create a folder called 'easy-samba-logs' inside the external partition
+    mkdir /mnt/disk2/easy-samba-logs
+    chown root:root /mnt/disk2/easy-samba-logs
+    chmod 660 /mnt/disk2/easy-samba-logs
+    
+    # let's make a symbolic link that connects '/mnt/disk2/easy-samba-logs' to '/easy-samba/share/logs'
+    ln -s /mnt/disk2/easy-samba-logs /easy-samba/share/logs
+    
+    # now we can create empty files 'easy-samba.logs' and 'remote-api.logs', so that easy-samba will save its logs to disk
+    touch /easy-samba/share/logs/easy-samba.logs
+    touch /easy-samba/share/logs/remote-api.logs
+    
+    # finally, we can start our easy-samba container the usual way
+    ```
+    
+    > COMMITS: NEW-8
+
+  - Minor improvements.
+  
+    > COMMITS: NEW-4
+
+- Bug fixes:
+
+  - `Remote API` startup procedure used to fail on particularly-slow devices that require more than 2 seconds to start `Remote API` server. Now, there's not time limit anymore.
+  
+    > COMMITS: FIX-12, TYPO-4
+    
+    > REFERENCE: [ISSUE #2](https://github.com/adevur/docker-easy-samba/issues/2)
+    
+  - When no custom port is defined in `remote-api.json`, `Remote API` uncorrectly reports it as an invalid custom port.
+  
+    > COMMITS: FIX-13
+
+- Security fixes:
+
+  - N/A
+
 ### [STABLE] 1.19.1 (2019-10-08 UTC)
 - New features:
 
