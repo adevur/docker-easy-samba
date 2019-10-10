@@ -2,7 +2,7 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current unstable release: `2.2.1`
+### Current unstable release: `2.3.0`
 
 ### Current stable release: `1.19.1`
 
