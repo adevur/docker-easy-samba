@@ -33,15 +33,16 @@ function fnCreateServer(httpsKey, httpsCert, config){
                         res.end(JSON.stringify(result), "utf8");
                     });
                 }
-                else if (parsedUrl.pathname === "/cert-nego-v3" && req.method === "GET" && config["cert-nego"] === true){
+                else if (parsedUrl.pathname === "/cert-nego-v4" && req.method === "GET" && config["cert-nego"] === true){
                     const query = parsedUrl.query;
                     const salt = (fnHas(query, "salt") && fnIsString(query["salt"]) && query["salt"].length === 10) ? query["salt"] : undefined;
-                    if (salt === undefined){
+                    const username = (fnHas(query, "username") && fnIsString(query["username"]) && query["username"].length > 0) ? query["username"] : undefined;
+                    if (salt === undefined || username === undefined){
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CERT-NEGO:INVALID-INPUT" }), "utf8");
                     }
                     else {
-                        const result = { "jsonrpc": "2.0", "result": fnGetHashedCert(httpsCert, config["token"], salt), "error": null };
+                        const result = { "jsonrpc": "2.0", "result": fnGetHashedCert(httpsCert, config, salt, username), "error": null };
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify(result), "utf8");
                     }
@@ -67,9 +68,30 @@ function fnCreateServer(httpsKey, httpsCert, config){
 
 
 
-function fnGetHashedCert(httpsCert, token, salt){
-    const certHash = crypto.createHash("sha512").update(`${httpsCert}:${token}:${salt}`, "utf8").digest("hex").toUpperCase();
-    return { "cert": httpsCert, "hash": certHash };
+function fnGetHashedCert(httpsCert, config, salt, username){
+    let userID = undefined;
+    
+    try {
+        for (i = 0; i < config["users"].length; i++){
+            const e = config["users"][i];
+            if (e["name"] === username){
+                userID = i;
+            }
+        }
+    }
+    catch (error){
+        userID = undefined;
+    }
+    
+    const userPassword = (userID === undefined) ? crypto.randomBytes(6).toString("hex") : config["users"][userID]["password"];
+    
+    const httpsCertHashed = crypto.createHash("sha256").update(httpsCert, "utf8").digest("hex").toUpperCase();
+    const usernameHashed = crypto.createHash("sha256").update(username, "utf8").digest("hex").toUpperCase();
+    const userPasswordHashed = crypto.createHash("sha256").update(userPassword, "utf8").digest("hex").toUpperCase();
+    const saltHashed = crypto.createHash("sha256").update(salt, "utf8").digest("hex").toUpperCase();
+
+    const finalHash = crypto.createHash("sha512").update(`${httpsCertHashed}:${usernameHashed}:${userPasswordHashed}:${saltHashed}`, "utf8").digest("hex").toUpperCase();
+    return { "cert": httpsCert, "hash": finalHash };
 }
 
 
