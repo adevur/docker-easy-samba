@@ -58,7 +58,7 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 - Bug fixes:
 
-  - `Remote API` startup procedure used to fail on particularly-slow devices that require more than 2 seconds to start `Remote API` server. Now, there's not time limit anymore.
+  - `Remote API` startup procedure used to fail on particularly-slow devices that require more than 2 seconds to start `Remote API` server. Now, there's no time limit anymore.
   
     > COMMITS: FIX-12, TYPO-4
     
