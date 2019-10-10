@@ -2,6 +2,21 @@
 # easy-samba news
 Stay updated on `easy-samba` development.
 
+### (2019-10-10 UTC) EasySamba Remote API V2, Cluster API roadmap, and SAMBA authentication future improvements
+`EasySamba Remote API V2` will replace `Remote API V1` in `easy-samba` version `2.3.0`. Also, `ConfigGen.js` library version `2.3.0` will only support `Remote API V2`. Some of the improvements:
+
+- Multi-user support: now, you can create multiple users in `remote-api.json`, and you can choose which APIs each user can use.
+
+- `cert-nego-v4` protocol will replace `cert-nego-v3` protocol in `Remote API V2`, because the former supports multi-user authentication. Protocol `cert-nego-v3` will remain in `Remote API V1` (i.e. in `easy-samba` version `1.x.x`).
+
+About `EasySamba Cluster API`:
+
+- Work is in progress implementing a first version of `Cluster API`, which will support `fault-tolerance` mode using some storage replication software (at the moment, the candidates are `lsyncd` and `GlusterFS`). In particular, `lsyncd` is a solution that would not require `--privilege` or `--cap-add SYS_ADMIN` flags in Docker, which is much better, from a security point of view.
+
+About future improvements in SAMBA authentication:
+
+- Work is in progress implementing alternative ways to authenticate SAMBA users. In particular, using PAM and/or Active Directory.
+
 ### (2019-10-05 UTC) support for `ppc64le` architecture and future features
 - New architecture `ppc64le` is now supported by `easy-samba` version `2.x.x`. It can be downloaded normally with command `docker pull adevur/easy-samba:latest` on `ppc64le` devices. Alternatively, it can be downloaded explicitly, by pulling tag `latest-ppc64le` instead of generic `latest` tag.
 
