@@ -101,7 +101,7 @@ function fnLoadConfig(){
 
 
 function fnCheckVersion(config){
-    const METHODS = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "change-token", "stop-easy-samba", "pause-easy-samba", "start-easy-samba"];
+    const METHODS = ["set-config", "get-config", "get-info", "hello", "get-logs", "get-available-api", "get-enabled-api", "change-my-password", "change-other-password", "stop-easy-samba", "pause-easy-samba", "start-easy-samba"];
     
     if (fnHas(config, "version") !== true){
         config["version"] = "2";
@@ -121,23 +121,28 @@ function fnCheckUsers(config){
     try {
         if (fnHas(config, "users") !== true){
             log(`[WARNING] since '${CFG}/remote-api.json' doesn't have a 'users' property, a new user 'admin' with a random password will be generated and written to file '${CFG}/remote-api.json'...`);
-            config["users"] = [{ "name": "admin", "password": ConfigGen.genRandomPassword(12) }];
+            config["users"] = [{ "name": "admin", "password": ConfigGen.genRandomPassword(12), "enabled-api": "*" }];
             fnUpdateConfigFile(`${CFG}/remote-api.json`, config, ["version", "users"]);
         }
         
         assert( fnIsArray(config["users"]) );
         const names = [];
         assert(config["users"].every((e) => {
-            const result = fnHas(e, ["name", "password"]) && [e.name, e.password].every(fnIsString) && e.password.length > 0 && e.name.length > 0 && names.includes(e.name) !== true;
-            names.push(e.name);
-            e["enabled-api"] = config["$METHODS"];
+            let result = fnHas(e, ["name", "password"]) && [e.name, e.password].every(fnIsString) && e.password.length > 0 && e.name.length > 0 && names.includes(e.name) !== true;
+            if (fnHas(e, "enabled-api") !== true || e["enabled-api"] === "*"){
+                e["enabled-api"] = config["$METHODS"];
+            }
+            result = result && e["enabled-api"].every((f) => { return config["$METHODS"].includes(f); });
+            if (result){
+                names.push(e.name);
+            }
             return result;
         }));
         
         log(`[LOG] 'users' property has been correctly validated.`);
     }
     catch (error){
-        log(`[ERROR] it's not been possible to validate 'users' property of '${CFG}/remote-api.json'.`);
+        log(`[ERROR] 'users' property of '${CFG}/remote-api.json' is not valid.`);
         assert(false);
     }
 }

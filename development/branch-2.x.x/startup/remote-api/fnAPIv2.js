@@ -41,13 +41,27 @@ function fnAPIv2(str, config){
     const params = input["params"];
     const method = input["method"];
     
-    // validate token
-    if (fnHas(params, "token") !== true || fnIsString(params["token"]) !== true || fnSecureStringCompare(params["token"], config["token"]) !== true){
-        return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-TOKEN`, "id": id };
+    // validate creds
+    try {
+        assert( fnHas(params, "auth") );
+        assert( fnHas(params["auth"], ["username", "password"]) );
+        assert( [params["auth"]["username"], params["auth"]["password"]].every(fnIsString) );
+        
+        let correctPassword = false;
+        config["users"].forEach((e) => {
+            correctPassword = (e["name"] === params["auth"]["username"] && fnSecureStringCompare(params["auth"]["password"], e["password"])) ? true : correctPassword;
+        });
+        
+        assert( correctPassword );
+    }
+    catch (error){
+        return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-CREDS`, "id": id };
     }
     
+    const userID = fnGetUserID(config, params["auth"]["username"]);
+    
     // validate method
-    if (config["enabled-api"].includes(method) !== true){
+    if (config["users"][userID]["enabled-api"].includes(method) !== true){
         return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:API-NOT-SUPPORTED`, "id": id };
     }
     
@@ -58,9 +72,14 @@ function fnAPIv2(str, config){
         assert( (method === "set-config") ? fnIsString(params["config.json"]) : true );
         assert( (method === "set-config" && fnHas(params, "hash")) ? fnIsString(params["hash"]) : true );
         
-        // validate params of "change-token"
-        assert( (method === "change-token") ? fnHas(params, "new-token") : true );
-        assert( (method === "change-token") ? (fnIsString(params["new-token"]) && params["new-token"].length > 0) : true );
+        // validate params of "change-my-password"
+        assert( (method === "change-my-password") ? fnHas(params, "new-password") : true );
+        assert( (method === "change-my-password") ? (fnIsString(params["new-password"]) && params["new-password"].length > 0) : true );
+        
+        // validate params of "change-other-password"
+        assert( (method === "change-other-password") ? fnHas(params, ["username", "new-password"]) : true );
+        assert( (method === "change-other-password") ? (fnIsString(params["new-password"]) && params["new-password"].length > 0) : true );
+        assert( (method === "change-other-password") ? (fnIsString(params["username"]) && params["username"].length > 0) : true );
         
         // validate params of "stop-easy-samba"
         assert( (method === "stop-easy-samba" && fnHas(params, "message")) ? fnIsString(params["message"]) : true );
@@ -83,6 +102,8 @@ function fnAPIv2(str, config){
 function fnCallAPI(method, params, id, config){
     // available API methods in this Remote API version
     const METHODS = config["$METHODS"];
+    
+    const userID = fnGetUserID(config, params["auth"]["username"]);
     
     switch (method){
     
@@ -152,29 +173,69 @@ function fnCallAPI(method, params, id, config){
             return { "jsonrpc": "2.0", "result": { "available-api": METHODS }, "error": null, "id": id };
             break;
             
-        // change-token
-        case "change-token":
-            const backup = config["token"];
+        // get-enabled-api
+        case "get-enabled-api":
+            return { "jsonrpc": "2.0", "result": { "enabled-api": config["users"][userID]["enabled-api"] }, "error": null, "id": id };
+            break;
+            
+        // change-my-password
+        case "change-my-password":
+            const backup = config["users"][userID]["password"];
             try {
-                config["token"] = params["new-token"];
+                config["users"][userID]["password"] = params["new-password"];
                 assert( fs.existsSync(`${CFG}/remote-api.json`) );
                 const fileConfig = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
-                fileConfig["token"] = params["new-token"];
+                assert( fileConfig["users"][userID]["name"] === params["auth"]["username"] );
+                fileConfig["users"][userID]["password"] = params["new-password"];
                 assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(fileConfig)) );
                 return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
             }
             catch (error){
                 try {
-                    config["token"] = backup;
+                    config["users"][userID]["password"] = backup;
                     assert( fs.existsSync(`${CFG}/remote-api.json`) );
                     const fileConfig = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
-                    fileConfig["token"] = backup;
+                    assert( fileConfig["users"][userID]["name"] === params["auth"]["username"] );
+                    fileConfig["users"][userID]["password"] = backup;
                     assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(fileConfig)) );
                 }
                 catch (error){
                     // do nothing
                 }
-                return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-TOKEN:ERROR", "id": id };
+                return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-MY-PASSWORD:ERROR", "id": id };
+            }
+            break;
+            
+        // change-other-password
+        case "change-other-password":
+            const otherID = fnGetUserID(config, params["username"]);
+            if (otherID === undefined){
+                return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-OTHER-PASSWORD:INVALID-USERNAME", "id": id };
+            }
+            
+            const backup = config["users"][otherID]["password"];
+            try {
+                config["users"][otherID]["password"] = params["new-password"];
+                assert( fs.existsSync(`${CFG}/remote-api.json`) );
+                const fileConfig = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
+                assert( fileConfig["users"][otherID]["name"] === params["username"] );
+                fileConfig["users"][otherID]["password"] = params["new-password"];
+                assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(fileConfig)) );
+                return { "jsonrpc": "2.0", "result": "SUCCESS", "error": null, "id": id };
+            }
+            catch (error){
+                try {
+                    config["users"][otherID]["password"] = backup;
+                    assert( fs.existsSync(`${CFG}/remote-api.json`) );
+                    const fileConfig = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
+                    assert( fileConfig["users"][otherID]["name"] === params["username"] );
+                    fileConfig["users"][otherID]["password"] = backup;
+                    assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(fileConfig)) );
+                }
+                catch (error){
+                    // do nothing
+                }
+                return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-OTHER-PASSWORD:ERROR", "id": id };
             }
             break;
             
@@ -215,6 +276,33 @@ function fnCallAPI(method, params, id, config){
     
     return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:CANNOT-RESPOND`, "id": id };
 }
+
+
+
+function fnGetUserID(config, username){
+    let result = undefined;
+    
+    try {
+        for (i = 0; i < config["users"].length; i++){
+            const e = config["users"][i];
+            if (e["name"] === username){
+                result = i;
+            }
+        }
+    }
+    catch (error){
+        result = undefined;
+    }
+    
+    return result;
+}
+
+
+
+
+
+
+
 
 
 
