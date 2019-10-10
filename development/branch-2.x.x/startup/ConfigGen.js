@@ -56,12 +56,14 @@
     remote.setConfig()
     remote.getInfo()
     remote.isReachable()
-    remote.isTokenValid()
+    remote.isAuthValid()
     remote.getRemoteLogs()
     remote.getAvailableAPI()
+    remote.getEnabledAPI()
     remote.getConfigHash()
     remote.getConfigPath()
-    remote.changeRemoteToken()
+    remote.changeMyPassword()
+    remote.changeOtherPassword()
     remote.stopEasySamba()
     remote.pauseEasySamba()
     remote.startEasySamba()
@@ -1330,40 +1332,44 @@ const ConfigGen = class {
     }
 
     // ConfigGen.remote()
-    static remote(hostname, port, token, ca = undefined){
+    // SUPPORTED PROTOCOLS: Remote API V2
+    static remote(hostname, port, auth, ca = undefined){
         const c = class {
-            constructor(hostname, port, token, ca = undefined){
+            constructor(hostname, port, auth, ca = undefined){
                 assert( fnIsString(hostname) );
                 assert( fnIsInteger(port) && port > 0 );
-                assert( fnIsString(token) );
+                assert( fnHas(auth, ["username", "password"]) );
+                assert( [auth["username"], auth["password"]].every(fnIsString) );
                 assert( ca === undefined || fnIsString(ca) );
 
-                this["$url"] = url.parse("https://localhost:9595/api", true);
+                this["$url"] = url.parse("https://localhost:9595/api-v2", true);
                 this["$url"].hostname = hostname;
                 this["$url"].port = port.toString();
-                this.token = token;
+                this.auth = fnCopy(auth);
                 this.ca = ca;
 
                 return this;
             }
             
             // remote.certNego()
+            // SUPPORTED PROTOCOLS: cert-nego-v4
             async certNego(){
                 const salt = crypto.randomBytes(5).toString("hex").toUpperCase();
                 const urlStr = url.format({
                     protocol: "https",
                     hostname: this["$url"].hostname,
                     port: this["$url"].port,
-                    pathname: "/cert-nego-v3",
+                    pathname: "/cert-nego-v4",
                     query: {
-                        salt: salt
+                        salt: salt,
+                        username: this.auth.username
                     }
                 });
-                const token = this.token;
+                const auth = this.auth;
                 
                 // check if remote container is reachable
                 try {
-                    const tempRemote = ConfigGen.remote(this["$url"].hostname, parseInt(this["$url"].port, 10), token, "unsafe");
+                    const tempRemote = ConfigGen.remote(this["$url"].hostname, parseInt(this["$url"].port, 10), auth, "unsafe");
                     assert( (await tempRemote.isReachable()) === true );
                 }
                 catch (error){
@@ -1371,7 +1377,7 @@ const ConfigGen = class {
                 }
                 
                 // get remote container's response and check that response is valid
-                let certHash = undefined;
+                let finalHash = undefined;
                 let httpsCert = undefined;
                 try {
                     const options = {
@@ -1389,7 +1395,7 @@ const ConfigGen = class {
                     assert( fnHas(result, "error") ? (result["error"] === null) : true );
                     
                     httpsCert = result["result"]["cert"];
-                    certHash = result["result"]["hash"];
+                    finalHash = result["result"]["hash"];
                 }
                 catch (error){
                     throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
@@ -1397,17 +1403,22 @@ const ConfigGen = class {
                 
                 // check if remote certificate is authentic
                 try {
-                    assert( certHash.toUpperCase() === crypto.createHash("sha512").update(`${httpsCert}:${token}:${salt}`, "utf8").digest("hex").toUpperCase() );
+                    const httpsCertHashed = crypto.createHash("sha256").update(httpsCert, "utf8").digest("hex").toUpperCase();
+                    const usernameHashed = crypto.createHash("sha256").update(auth.username, "utf8").digest("hex").toUpperCase();
+                    const userPasswordHashed = crypto.createHash("sha256").update(auth.password, "utf8").digest("hex").toUpperCase();
+                    const saltHashed = crypto.createHash("sha256").update(salt, "utf8").digest("hex").toUpperCase();
+                    
+                    assert( finalHash.toUpperCase() === crypto.createHash("sha512").update(`${httpsCertHashed}:${usernameHashed}:${userPasswordHashed}:${saltHashed}`, "utf8").digest("hex").toUpperCase() );
                     return httpsCert;
                 }
                 catch (error){
-                    throw new Error(`INVALID-TOKEN`);
+                    throw new Error(`INVALID-CREDS`);
                 }
             }
             
-            async cmd(method, other = {}, tk = undefined){
+            async cmd(method, other = {}, customAuth = undefined){
                 const urlStr = url.format(this["$url"]);
-                const token = (tk === undefined) ? this.token : tk;
+                const auth = (customAuth === undefined) ? this.auth : customAuth;
                 let ca = this.ca;
                 
                 if (ca === undefined){
@@ -1419,8 +1430,8 @@ const ConfigGen = class {
                         if (error.message === "CANNOT-CONNECT"){
                             return { res: undefined, err: "CANNOT-CONNECT" };
                         }
-                        else if (error.message === "INVALID-TOKEN"){
-                            return { res: undefined, err: "REMOTE-API:INVALID-TOKEN" };
+                        else if (error.message === "INVALID-CREDS"){
+                            return { res: undefined, err: "REMOTE-API:INVALID-CREDS" };
                         }
                         else {
                             ca = "global";
@@ -1430,15 +1441,18 @@ const ConfigGen = class {
                 }
                 
                 const id = crypto.randomBytes(16).toString("hex").toUpperCase();
-                const body = { "token": token };
+                const body = { "auth": auth };
                 if (fnHas(other, "config.json")){
                     body["config.json"] = other["config.json"];
                 }
                 if (fnHas(other, "hash")){
                     body["hash"] = other["hash"];
                 }
-                if (fnHas(other, "new-token")){
-                    body["new-token"] = other["new-token"];
+                if (fnHas(other, "new-password")){
+                    body["new-password"] = other["new-password"];
+                }
+                if (fnHas(other, "username")){
+                    body["username"] = other["username"];
                 }
                 if (fnHas(other, "message")){
                     body["message"] = other["message"];
@@ -1557,9 +1571,9 @@ const ConfigGen = class {
             
             // remote.isReachable()
             async isReachable(){
-                const { res, err } = await this.cmd("hello", {}, "");
+                const { res, err } = await this.cmd("hello", {}, { username: "", password: "" });
                 
-                if (err === "REMOTE-API:INVALID-TOKEN" || err === "REMOTE-API:API-NOT-SUPPORTED" || res === "world"){
+                if (err === "REMOTE-API:INVALID-CREDS" || err === "REMOTE-API:API-NOT-SUPPORTED" || res === "world"){
                     return true;
                 }
                 else if (err === "CANNOT-CONNECT"){
@@ -1570,20 +1584,20 @@ const ConfigGen = class {
                 }
             }
             
-            // remote.isTokenValid()
-            async isTokenValid(customToken = undefined){
-                if (customToken !== undefined){
-                    if (fnIsString(customToken) !== true || customToken.length < 1){
+            // remote.isAuthValid()
+            async isAuthValid(customAuth = undefined){
+                if (customAuth !== undefined){
+                    if (fnHas(customAuth, ["username", "password"]) !== true || [customAuth.username, customAuth.password].every(fnIsString) !== true || customAuth.username.length < 1 || customAuth.password.length < 1){
                         return false;
                     }
                 }
             
-                const { res, err } = await this.cmd("hello", {}, customToken);
+                const { res, err } = await this.cmd("hello", {}, customAuth);
                 
                 if (res === "world" || err === "REMOTE-API:API-NOT-SUPPORTED"){
                     return true;
                 }
-                else if (err === "REMOTE-API:INVALID-TOKEN"){
+                else if (err === "REMOTE-API:INVALID-CREDS"){
                     return false;
                 }
                 else {
@@ -1621,6 +1635,21 @@ const ConfigGen = class {
                 }
             }
             
+            // remote.getEnabledAPI()
+            async getEnabledAPI(){
+                const { res, err } = await this.cmd("get-enabled-api");
+                try {
+                    assert( err === false );
+                    assert( fnHas(res, "enabled-api") );
+                    assert( fnIsArray(res["enabled-api"]) );
+                    assert( res["enabled-api"].every(fnIsString) );
+                    return res["enabled-api"];
+                }
+                catch (error){
+                    throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                }
+            }
+            
             // remote.getConfigPath()
             async getConfigPath(){
                 const { res, err } = await this.cmd("get-info");
@@ -1640,25 +1669,55 @@ const ConfigGen = class {
                 }
             }
             
-            // remote.changeRemoteToken()
-            async changeRemoteToken(newToken){
+            // remote.changeMyPassword()
+            async changeMyPassword(newPassword){
                 try {
-                    assert( fnIsString(newToken) );
-                    assert( newToken.length > 0 );
+                    assert( fnIsString(newPassword) );
+                    assert( newPassword.length > 0 );
                 }
                 catch (error){
                     throw new Error("INVALID-INPUT");
                 }
             
-                const { res, err } = await this.cmd("change-token", { "new-token": newToken });
+                const { res, err } = await this.cmd("change-my-password", { "new-password": newPassword });
                 try {
                     assert( err === false );
                     assert( res === "SUCCESS" );
-                    this.token = newToken;
+                    this.auth.password = newPassword;
                     return true;
                 }
                 catch (error){
-                    if (err === "REMOTE-API:CHANGE-TOKEN:ERROR"){
+                    if (err === "REMOTE-API:CHANGE-MY-PASSWORD:ERROR"){
+                        return false;
+                    }
+                    else {
+                        throw new Error((err !== false) ? err : "INVALID-RESPONSE");
+                    }
+                }
+            }
+            
+            // remote.changeOtherPassword()
+            async changeOtherPassword(username, newPassword){
+                try {
+                    assert( [username, newPassword].every(fnIsString) );
+                    assert( username.length > 0 );
+                    assert( newPassword.length > 0 );
+                }
+                catch (error){
+                    throw new Error("INVALID-INPUT");
+                }
+            
+                const { res, err } = await this.cmd("change-other-password", { "username": username, "new-password": newPassword });
+                try {
+                    assert( err === false );
+                    assert( res === "SUCCESS" );
+                    if (this.auth.username === username){
+                        this.auth.password = newPassword;
+                    }
+                    return true;
+                }
+                catch (error){
+                    if (err === "REMOTE-API:CHANGE-OTHER-PASSWORD:ERROR"){
                         return false;
                     }
                     else {
@@ -1731,7 +1790,7 @@ const ConfigGen = class {
 
         let ret = undefined;
         try {
-            ret = new c(hostname, port, token, ca);
+            ret = new c(hostname, port, auth, ca);
         }
         catch (error){
             throw new Error("INVALID-INPUT");

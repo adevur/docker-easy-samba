@@ -213,7 +213,7 @@ function fnCallAPI(method, params, id, config){
                 return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-OTHER-PASSWORD:INVALID-USERNAME", "id": id };
             }
             
-            const backup = config["users"][otherID]["password"];
+            const backup2 = config["users"][otherID]["password"];
             try {
                 config["users"][otherID]["password"] = params["new-password"];
                 assert( fs.existsSync(`${CFG}/remote-api.json`) );
@@ -225,11 +225,11 @@ function fnCallAPI(method, params, id, config){
             }
             catch (error){
                 try {
-                    config["users"][otherID]["password"] = backup;
+                    config["users"][otherID]["password"] = backup2;
                     assert( fs.existsSync(`${CFG}/remote-api.json`) );
                     const fileConfig = JSON.parse( fs.readFileSync(`${CFG}/remote-api.json`, "utf8") );
                     assert( fileConfig["users"][otherID]["name"] === params["username"] );
-                    fileConfig["users"][otherID]["password"] = backup;
+                    fileConfig["users"][otherID]["password"] = backup2;
                     assert( fnWriteFile(`${CFG}/remote-api.json`, JSON.stringify(fileConfig)) );
                 }
                 catch (error){
