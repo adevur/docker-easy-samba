@@ -12,7 +12,6 @@ const crypto = require("crypto");
 const url = require("url");
 const log = require("/startup/functions/fnLog.js")("/share/config/remote-api.logs");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
-const fnAPI = require("/startup/remote-api/fnAPI.js");
 const fnAPIv2 = require("/startup/remote-api/fnAPIv2.js");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
@@ -25,16 +24,7 @@ function fnCreateServer(httpsKey, httpsCert, config){
             log(`[LOG] starting HTTPS server...`);
             const server = https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
                 const parsedUrl = url.parse(req.url, true);
-                if (parsedUrl.pathname === "/api" && req.method === "POST" && config["version"] === "1"){
-                    const body = [];
-                    req.on("data", (chunk) => { body.push(chunk); });
-                    req.on("end", () => {
-                        const result = fnAPI(Buffer.concat(body).toString(), config);
-                        res.writeHead(200, { "Content-Type": "application/json" });
-                        res.end(JSON.stringify(result), "utf8");
-                    });
-                }
-                else if (parsedUrl.pathname === "/api-v2" && req.method === "POST" && config["version"] === "2"){
+                if (parsedUrl.pathname === "/api-v2" && req.method === "POST" && config["version"] === "2"){
                     const body = [];
                     req.on("data", (chunk) => { body.push(chunk); });
                     req.on("end", () => {
