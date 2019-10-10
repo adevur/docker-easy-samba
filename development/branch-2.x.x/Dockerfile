@@ -11,9 +11,7 @@ LABEL org.label-schema.schema-version = "1.0" \
     org.label-schema.vcs-url = "https://github.com/adevur/docker-easy-samba" \
     maintainer = "adevur (madavurro@protonmail.com)"
 
-RUN sed -i 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-PowerTools.repo \
-  && curl -sL https://download.gluster.org/pub/gluster/glusterfs/LATEST/RHEL/glusterfs-rhel8.repo > /etc/yum.repos.d/glusterfs-rhel8.repo \
-  && yum clean all -y \
+RUN yum clean all -y \
   && yum update -y \
   && yum install -y \
     samba \
@@ -22,7 +20,6 @@ RUN sed -i 's/enabled=0/enabled=1/g' /etc/yum.repos.d/CentOS-PowerTools.repo \
     openssl \
     psmisc \
     procps-ng \
-    glusterfs-server \
   && yum module install -y nodejs \
   && yum autoremove -y \
   && yum clean all -y
