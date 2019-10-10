@@ -9,7 +9,7 @@ module.exports = fnEasySambaLoop;
 // dependencies
 const fs = require("fs");
 const assert = require("assert");
-const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
+const log = require("/startup/functions/fnLog.js")("/share/logs/easy-samba.logs");
 const fnIsRunning = require("/startup/functions/fnIsRunning.js");
 const fnSleep = require("/startup/functions/fnSleep.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");

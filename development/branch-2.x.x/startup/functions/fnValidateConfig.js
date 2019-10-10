@@ -7,7 +7,6 @@ module.exports = fnValidateConfig;
 
 
 // dependencies
-const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnValidateConfigVersion = require("/startup/functions/fnValidateConfigVersion.js");
 const fnValidateConfigUsers = require("/startup/functions/fnValidateConfigUsers.js");
 const fnValidateConfigGroups = require("/startup/functions/fnValidateConfigGroups.js");

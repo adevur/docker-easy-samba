@@ -137,8 +137,8 @@ function fnCallAPI(method, params, id, config){
         // get-logs
         case "get-logs":
             try {
-                const esLogs = (CFG === "/share/config" && fs.existsSync("/share/config/easy-samba.logs")) ? fs.readFileSync("/share/config/easy-samba.logs", "utf8") : "";
-                const raLogs = (CFG === "/share/config" && fs.existsSync("/share/config/remote-api.logs")) ? fs.readFileSync("/share/config/remote-api.logs", "utf8") : "";
+                const esLogs = (fs.existsSync("/share/logs/easy-samba.logs")) ? fs.readFileSync("/share/logs/easy-samba.logs", "utf8") : "";
+                const raLogs = (fs.existsSync("/share/logs/remote-api.logs")) ? fs.readFileSync("/share/logs/remote-api.logs", "utf8") : "";
                 assert( fnIsString(esLogs) && fnIsString(raLogs) );
                 return { "jsonrpc": "2.0", "result": { "easy-samba-logs": esLogs, "remote-api-logs": raLogs }, "error": null, "id": id };
             }

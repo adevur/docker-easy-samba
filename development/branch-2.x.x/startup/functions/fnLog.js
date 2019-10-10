@@ -25,7 +25,6 @@ function fnLog(path){
                 
                 process.stdout.write(color + msg + "\x1b[0m" + "\n");
                 
-                assert( CFG === "/share/config" );
                 assert( fs.existsSync(path) );
                 
                 const date = new Date();

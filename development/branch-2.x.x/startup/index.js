@@ -2,7 +2,7 @@
 
 
 // dependencies
-const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
+const log = require("/startup/functions/fnLog.js")("/share/logs/easy-samba.logs");
 const fnEasySambaStartup = require("/startup/functions/fnEasySambaStartup.js");
 const fnEasySambaLoop = require("/startup/functions/fnEasySambaLoop.js");
 const fnKill = require("/startup/functions/fnKill.js");

@@ -8,7 +8,6 @@ module.exports = fnValidateConfigShares;
 
 // dependencies
 const fs = require("fs");
-const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsValidPath = require("/startup/functions/fnIsValidPath.js");
@@ -72,9 +71,9 @@ function fnValidateConfigShares(shares, sharedb){
             return false;
         }
 
-        // "path" cannot be "/share/config"
-        if (["/share/config"].includes(share["path"])){
-            error = `SHARED FOLDERS' PATH CANNOT BE EQUAL TO '/share/config'`;
+        // "path" cannot be "/share/config" or "/share/logs"
+        if (["/share/config", "/share/logs"].includes(share["path"])){
+            error = `SHARED FOLDERS' PATH CANNOT BE EQUAL TO '/share/config' OR TO '/share/logs'`;
             return false;
         }
 

@@ -2,7 +2,7 @@
 
 
 // dependencies
-const log = require("/startup/functions/fnLog.js")("/share/config/remote-api.logs");
+const log = require("/startup/functions/fnLog.js")("/share/logs/remote-api.logs");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnPrepareServer = require("/startup/remote-api/fnPrepareServer.js");
 

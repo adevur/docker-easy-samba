@@ -8,7 +8,7 @@ module.exports = fnEasySambaStartup;
 
 // dependencies
 const fs = require("fs");
-const log = require("/startup/functions/fnLog.js")("/share/config/easy-samba.logs");
+const log = require("/startup/functions/fnLog.js")("/share/logs/easy-samba.logs");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
