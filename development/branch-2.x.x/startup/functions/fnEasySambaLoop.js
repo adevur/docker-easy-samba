@@ -37,7 +37,8 @@ async function fnEasySambaLoop(){
         shares: undefined,
         paused: false,
         pausedAware: false,
-        quotaBroken: false
+        quotaBroken: false,
+        remoteApiConfig: undefined
     };
 
     // loop every 10 seconds
@@ -62,7 +63,7 @@ async function fnEasySambaCycle(vars){
     await fnEasySambaCycleManageConfigGen(vars);
 
     // start EasySamba Remote API
-    await fnStartRemoteAPI();
+    await fnStartRemoteAPI(vars);
     
     // apply soft-quota
     fnEasySambaCycleQuota(vars);
@@ -172,30 +173,19 @@ async function fnEasySambaCycleProcess(vars){
     }
 
     // update running configuration,
-    //   in case it's first startup, something changed, or SAMBA crashed
-    if (vars["previousConfig"] === undefined || somethingChanged || sambaCrashed){
+    //   in case it's first startup, something changed, there's no configuration file anymore, or SAMBA crashed
+    if (vars["previousConfig"] === undefined || somethingChanged || rawConfig === false || sambaCrashed){
         log(`------ EASY-SAMBA CONFIGURATION PROCESS #${vars["counter"]} ------`);
         let res = false;
         
         vars["shares"] = undefined;
         
-        if (vars["previousConfig"] !== undefined || config !== false){
-            log(`[LOG] SAMBA server configuration process has started.`);
-        }
-        
-        if (vars["previousConfig"] === undefined && config === false){
+        if (config === false){
             log(`[ERROR] easy-samba configuration file could not be loaded or it is not in JSON format.`);
             res = false;
         }
-        else if (vars["previousConfig"] === undefined && config !== false){
-            log(`[LOG] easy-samba configuration has been retrieved from file '${sourceConfig}'.`);
-            res = await fnUpdateConfig(config);
-            vars["previousConfig"] = rawConfig;
-        }
-        else if (vars["previousConfig"] !== undefined && config === false){
-            res = await fnUpdateConfig(JSON.parse(vars["previousConfig"]));
-        }
-        else if (vars["previousConfig"] !== undefined && config !== false){
+        else {
+            log(`[LOG] SAMBA server configuration process has started.`);
             log(`[LOG] easy-samba configuration has been retrieved from file '${sourceConfig}'.`);
             res = await fnUpdateConfig(config);
             vars["previousConfig"] = rawConfig;

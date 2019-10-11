@@ -21,12 +21,22 @@ const CFG = require("/startup/functions/fnGetConfigDir.js")();
 // FUNCTION: fnStartRemoteAPI()
 // INPUT: N/A
 // OUTPUT: N/A
-async function fnStartRemoteAPI(){
+async function fnStartRemoteAPI(vars){
     if (fs.existsSync(`${CFG}/config.json`) !== true && fs.existsSync(`${CFG}/config.gen.js`) !== true && fs.existsSync(`${CFG}/remote-api.json`)){
         try {
+            const remoteApiConfig = fs.readFileSync(`${CFG}/remote-api.json`, "utf8");
             if (fnIsRunning("node /startup/remote-api/index.js") !== true){
                 log(`[LOG] EasySamba Remote API is enabled and is starting...`);
                 fnSpawn("node", ["/startup/remote-api/index.js"]);
+                vars.remoteApiConfig = remoteApiConfig;
+                await fnSleep(2000);
+                log("");
+            }
+            else if (remoteApiConfig !== vars.remoteApiConfig){
+                log(`[LOG] Remote API is restarting because its configuration changed...`);
+                fnKill("node /startup/remote-api/index.js");
+                fnSpawn("node", ["/startup/remote-api/index.js"]);
+                vars.remoteApiConfig = remoteApiConfig;
                 await fnSleep(2000);
                 log("");
             }
