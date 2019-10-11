@@ -1342,9 +1342,12 @@ const ConfigGen = class {
                 assert( [auth["username"], auth["password"]].every(fnIsString) );
                 assert( ca === undefined || fnIsString(ca) );
 
-                this["$url"] = url.parse("https://localhost:9595/api-v2", true);
-                this["$url"].hostname = hostname;
-                this["$url"].port = port.toString();
+                this["$url"] = url.parse(url.format({
+                    protocol: "https",
+                    hostname: hostname,
+                    port: String(port),
+                    pathname: "/api-v2"
+                }));
                 this.auth = fnCopy(auth);
                 this.ca = ca;
 
