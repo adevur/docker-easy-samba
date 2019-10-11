@@ -10,7 +10,7 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 ## version history
 
-### [STABLE] [FEATURE] 2.3.0 (2019-10-10 UTC)
+### [UNSTABLE] [FEATURE] 2.3.0 (2019-10-10 UTC)
 - New features:
 
   - `EasySamba Remote API V1` has been replaced by `Remote API V2`, and `cert-nego-v3` protocol has been replaced by `cert-nego-v4`. `Remote API V2` introduces multi-user support inside `Remote API` (and you can choose which APIs each user is allowed to use). Moreover, `ConfigGen.js` library has been updated in order to support the new APIs: function `ConfigGen.remote()` has changed; functions `remote.changeMyPassword()`, `remote.changeOtherPassword()`, `remote.isAuthValid()` and `remote.getEnabledAPI()` have been added; and functions `remote.changeRemoteToken()` and `remote.isTokenValid()` have been removed. Here's an example of how a `remote-api.json` file looks now:

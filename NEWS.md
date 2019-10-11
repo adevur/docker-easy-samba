@@ -11,11 +11,11 @@ Stay updated on `easy-samba` development.
 
 About `EasySamba Cluster API`:
 
-- Work is in progress implementing a first version of `Cluster API`, which will support `fault-tolerance` mode using some storage replication software (at the moment, the candidates are `lsyncd` and `GlusterFS`). In particular, `lsyncd` is a solution that would not require `--privilege` or `--cap-add SYS_ADMIN` flags in Docker, which is much better, from a security point of view.
+- Work is in progress for implementing a first version of `Cluster API`, which will support `fault-tolerance` mode using some storage replication software (at the moment, the candidates are `lsyncd` and `GlusterFS`). In particular, `lsyncd` is a solution that would not require `--privilege` or `--cap-add SYS_ADMIN` flags in Docker, which is much better, from a security point of view.
 
 About future improvements in SAMBA authentication:
 
-- Work is in progress implementing alternative ways to authenticate SAMBA users. In particular, using PAM and/or Active Directory.
+- Work is in progress for implementing alternative ways to authenticate SAMBA users. In particular, using PAM and/or Active Directory.
 
 ### (2019-10-05 UTC) support for `ppc64le` architecture and future features
 - New architecture `ppc64le` is now supported by `easy-samba` version `2.x.x`. It can be downloaded normally with command `docker pull adevur/easy-samba:latest` on `ppc64le` devices. Alternatively, it can be downloaded explicitly, by pulling tag `latest-ppc64le` instead of generic `latest` tag.
