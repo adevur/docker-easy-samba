@@ -37,16 +37,17 @@ function fnCreateServer(httpsKey, httpsCert, config){
                 else if (parsedUrl.pathname === "/cert-nego-v4" && req.method === "GET" && config["cert-nego"] === true){
                     const query = parsedUrl.query;
                     const salt = (fnHas(query, "salt") && fnIsString(query["salt"]) && query["salt"].length === 10) ? query["salt"] : undefined;
+                    const secureSalt = (fnHas(query, "secureSalt") && fnIsString(query["secureSalt"]) && query["secureSalt"].length === 64) ? query["secureSalt"] : undefined;
                     const username = (fnHas(query, "username") && fnIsString(query["username"]) && query["username"].length > 0) ? query["username"] : undefined;
-                    if (salt === undefined || username === undefined){
+                    if (salt === undefined || secureSalt === undefined || username === undefined){
                         logx("cert-nego-invalid-input", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "error"]);
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CERT-NEGO:INVALID-INPUT" }), "utf8");
                     }
                     else {
-                        const { hashedCert, invalidUser } = fnGetHashedCert(httpsCert, config, salt, username);
+                        const { hashedCert, invalidUser } = fnGetHashedCert(httpsCert, config, salt, username, secureSalt);
                         if (invalidUser){
-                            logx("cert-nego-invalid-user", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "error"]);
+                            logx("cert-nego-invalid-creds", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "error"]);
                         }
                         else {
                             logx("cert-nego-success", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "success"]);
@@ -78,7 +79,7 @@ function fnCreateServer(httpsKey, httpsCert, config){
 
 
 
-function fnGetHashedCert(httpsCert, config, salt, username){
+function fnGetHashedCert(httpsCert, config, salt, username, secureSalt){
     let userID = undefined;
     
     try {
@@ -101,7 +102,9 @@ function fnGetHashedCert(httpsCert, config, salt, username){
     const saltHashed = crypto.createHash("sha256").update(salt, "utf8").digest("hex").toUpperCase();
 
     const finalHash = crypto.createHash("sha512").update(`${httpsCertHashed}:${usernameHashed}:${userPasswordHashed}:${saltHashed}`, "utf8").digest("hex").toUpperCase();
-    return { hashedCert: { "cert": httpsCert, "hash": finalHash }, invalidUser: (userID === undefined) };
+    const otp = String(Date.now()).slice(0, 8);
+    const mySecureSalt = crypto.createHash("sha256").update(`${usernameHashed}:${userPasswordHashed}:${otp}:${saltHashed}`, "utf8").digest("hex").toUpperCase();
+    return { hashedCert: { "cert": httpsCert, "hash": finalHash }, invalidUser: (userID === undefined || secureSalt.toUpperCase() !== mySecureSalt) };
 }
 
 

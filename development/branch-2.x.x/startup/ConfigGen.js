@@ -1357,7 +1357,14 @@ const ConfigGen = class {
             // remote.certNego()
             // SUPPORTED PROTOCOLS: cert-nego-v4
             async certNego(){
+                const auth = this.auth;
                 const salt = crypto.randomBytes(5).toString("hex").toUpperCase();
+                const otp = String(Date.now()).slice(0, 8);
+                const usernameHashed = crypto.createHash("sha256").update(auth.username, "utf8").digest("hex").toUpperCase();
+                const userPasswordHashed = crypto.createHash("sha256").update(auth.password, "utf8").digest("hex").toUpperCase();
+                const saltHashed = crypto.createHash("sha256").update(salt, "utf8").digest("hex").toUpperCase();
+                const secureSalt = crypto.createHash("sha256").update(`${usernameHashed}:${userPasswordHashed}:${otp}:${saltHashed}`, "utf8").digest("hex").toUpperCase();
+    
                 const urlStr = url.format({
                     protocol: "https",
                     hostname: this["$url"].hostname,
@@ -1365,10 +1372,10 @@ const ConfigGen = class {
                     pathname: "/cert-nego-v4",
                     query: {
                         salt: salt,
-                        username: this.auth.username
+                        secureSalt: secureSalt,
+                        username: auth.username
                     }
                 });
-                const auth = this.auth;
                 
                 // check if remote container is reachable
                 try {
@@ -1407,10 +1414,6 @@ const ConfigGen = class {
                 // check if remote certificate is authentic
                 try {
                     const httpsCertHashed = crypto.createHash("sha256").update(httpsCert, "utf8").digest("hex").toUpperCase();
-                    const usernameHashed = crypto.createHash("sha256").update(auth.username, "utf8").digest("hex").toUpperCase();
-                    const userPasswordHashed = crypto.createHash("sha256").update(auth.password, "utf8").digest("hex").toUpperCase();
-                    const saltHashed = crypto.createHash("sha256").update(salt, "utf8").digest("hex").toUpperCase();
-                    
                     assert( finalHash.toUpperCase() === crypto.createHash("sha512").update(`${httpsCertHashed}:${usernameHashed}:${userPasswordHashed}:${saltHashed}`, "utf8").digest("hex").toUpperCase() );
                     return httpsCert;
                 }
