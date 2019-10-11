@@ -9,7 +9,6 @@ module.exports = fnLog;
 // dependencies
 const fs = require("fs");
 const assert = require("assert");
-const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
 
