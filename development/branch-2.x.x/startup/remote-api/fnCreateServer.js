@@ -11,6 +11,7 @@ const https = require("https");
 const crypto = require("crypto");
 const url = require("url");
 const log = require("/startup/functions/fnLog.js")("/share/logs/remote-api.logs");
+const logx = require("/startup/functions/fnLogX.js")("/share/logs/remote-api-access.logs");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnAPIv2 = require("/startup/remote-api/fnAPIv2.js");
 const fnHas = require("/startup/functions/fnHas.js");
@@ -28,7 +29,7 @@ function fnCreateServer(httpsKey, httpsCert, config){
                     const body = [];
                     req.on("data", (chunk) => { body.push(chunk); });
                     req.on("end", () => {
-                        const result = fnAPIv2(Buffer.concat(body).toString(), config);
+                        const result = fnAPIv2(Buffer.concat(body).toString(), config, req.socket.address().address);
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify(result), "utf8");
                     });
@@ -38,16 +39,25 @@ function fnCreateServer(httpsKey, httpsCert, config){
                     const salt = (fnHas(query, "salt") && fnIsString(query["salt"]) && query["salt"].length === 10) ? query["salt"] : undefined;
                     const username = (fnHas(query, "username") && fnIsString(query["username"]) && query["username"].length > 0) ? query["username"] : undefined;
                     if (salt === undefined || username === undefined){
+                        logx("cert-nego-invalid-input", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "error"]);
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CERT-NEGO:INVALID-INPUT" }), "utf8");
                     }
                     else {
-                        const result = { "jsonrpc": "2.0", "result": fnGetHashedCert(httpsCert, config, salt, username), "error": null };
+                        const { hashedCert, invalidUser } = fnGetHashedCert(httpsCert, config, salt, username);
+                        if (invalidUser){
+                            logx("cert-nego-invalid-user", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "error"]);
+                        }
+                        else {
+                            logx("cert-nego-success", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "success"]);
+                        }
+                        const result = { "jsonrpc": "2.0", "result": hashedCert, "error": null };
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify(result), "utf8");
                     }
                 }
                 else {
+                    logx("wrong-request", { sourceAddress: req.socket.address().address, httpMethod: req.method, httpPath: parsedUrl.pathname }, ["error"]);
                     res.writeHead(200, { "Content-Type": "application/json" });
                     res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:WRONG-REQUEST" }), "utf8");
                 }
@@ -91,7 +101,7 @@ function fnGetHashedCert(httpsCert, config, salt, username){
     const saltHashed = crypto.createHash("sha256").update(salt, "utf8").digest("hex").toUpperCase();
 
     const finalHash = crypto.createHash("sha512").update(`${httpsCertHashed}:${usernameHashed}:${userPasswordHashed}:${saltHashed}`, "utf8").digest("hex").toUpperCase();
-    return { "cert": httpsCert, "hash": finalHash };
+    return { hashedCert: { "cert": httpsCert, "hash": finalHash }, invalidUser: (userID === undefined) };
 }
 
 
