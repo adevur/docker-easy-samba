@@ -17,6 +17,7 @@ const fnIsInteger = require("/startup/functions/fnIsInteger.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
+const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 const fnCreateServer = require("/startup/remote-api/fnCreateServer.js");
@@ -132,9 +133,11 @@ function fnCheckUsers(config){
             if (fnHas(e, "enabled-api") !== true || e["enabled-api"] === "*"){
                 e["enabled-api"] = config["$METHODS"];
             }
-            result = result && e["enabled-api"].every((f) => { return config["$METHODS"].includes(f); });
+            result = result && fnIsArray(e["enabled-api"]) && e["enabled-api"].every((f) => { return config["$METHODS"].includes(f); });
             if (result){
                 names.push(e.name);
+                e["enabled-api"].push("hello");
+                e["enabled-api"] = fnRemoveDuplicates(e["enabled-api"]);
             }
             return result;
         }));
