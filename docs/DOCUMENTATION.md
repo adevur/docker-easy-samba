@@ -114,7 +114,7 @@ This is the list of supported properties for a `shares`'s element: `name`, `path
 
   - It cannot contain control characters (i.e. chars with a code between 0 and 31 or with a code of 127).
 
-  - It cannot be equal to `"/share/config"`, to `"/share/."` or to `"/share/.."`.
+  - It cannot be equal to `"/share/config"`, to `"/share/logs"`, to `"/share/."` or to `"/share/.."`.
 
   - It cannot be long more than 255 characters.
 
