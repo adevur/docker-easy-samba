@@ -9,7 +9,6 @@ module.exports = fnCreateServer;
 // dependencies
 const https = require("https");
 const crypto = require("crypto");
-const url = require("url");
 const log = require("/startup/functions/fnLog.js")("/share/logs/remote-api.logs");
 const logx = require("/startup/functions/fnLogX.js")("/share/logs/remote-api-access.logs");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
@@ -24,7 +23,7 @@ function fnCreateServer(httpsKey, httpsCert, config){
         try {
             log(`[LOG] starting HTTPS server...`);
             const server = https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
-                const parsedUrl = url.parse(req.url, true);
+                const parsedUrl = new URL(req.url);
                 if (parsedUrl.pathname === "/api-v2" && req.method === "POST" && config["version"] === "2"){
                     const body = [];
                     req.on("data", (chunk) => { body.push(chunk); });
@@ -35,7 +34,7 @@ function fnCreateServer(httpsKey, httpsCert, config){
                     });
                 }
                 else if (parsedUrl.pathname === "/cert-nego-v4" && req.method === "GET" && config["cert-nego"] === true){
-                    const query = parsedUrl.query;
+                    const query = fnParseQuery(parsedUrl);
                     const salt = (fnHas(query, "salt") && fnIsString(query["salt"]) && query["salt"].length === 10) ? query["salt"] : undefined;
                     const secureSalt = (fnHas(query, "secureSalt") && fnIsString(query["secureSalt"]) && query["secureSalt"].length === 64) ? query["secureSalt"] : undefined;
                     const username = (fnHas(query, "username") && fnIsString(query["username"]) && query["username"].length > 0) ? query["username"] : undefined;
@@ -105,6 +104,14 @@ function fnGetHashedCert(httpsCert, config, salt, username, secureSalt){
     const otp = String(Date.now()).slice(0, 8);
     const mySecureSalt = crypto.createHash("sha256").update(`${usernameHashed}:${userPasswordHashed}:${otp}:${saltHashed}`, "utf8").digest("hex").toUpperCase();
     return { hashedCert: { "cert": httpsCert, "hash": finalHash }, invalidUser: (userID === undefined || secureSalt.toUpperCase() !== mySecureSalt) };
+}
+
+
+
+function fnParseQuery(parsedUrl){
+    let params = {};
+    Array.from(parsedUrl.searchParams.entries()).map((e) => { const r = {}; r[e[0]] = e[1]; return r; }).forEach((e) => { params = { ...params, ...e }; });
+    return params;
 }
 
 
