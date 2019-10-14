@@ -78,7 +78,6 @@ const fs = require("fs");
 const crypto = require("crypto");
 const assert = require("assert");
 const https = require("https");
-const url = require("url");
 
 // global variables
 const globalVersion = "2.3";
@@ -1341,13 +1340,11 @@ const ConfigGen = class {
                 assert( fnHas(auth, ["username", "password"]) );
                 assert( [auth["username"], auth["password"]].every(fnIsString) );
                 assert( ca === undefined || fnIsString(ca) );
-
-                this["$url"] = url.parse(url.format({
-                    protocol: "https",
-                    hostname: hostname,
-                    port: String(port),
-                    pathname: "/api-v2"
-                }));
+                
+                this["$url"] = new URL("https://localhost:9595/api-v2");
+                this["$url"].hostname = hostname;
+                this["$url"].port = String(port);
+                
                 this.auth = fnCopy(auth);
                 this.ca = ca;
 
@@ -1364,18 +1361,14 @@ const ConfigGen = class {
                 const userPasswordHashed = crypto.createHash("sha256").update(auth.password, "utf8").digest("hex").toUpperCase();
                 const saltHashed = crypto.createHash("sha256").update(salt, "utf8").digest("hex").toUpperCase();
                 const secureSalt = crypto.createHash("sha256").update(`${usernameHashed}:${userPasswordHashed}:${otp}:${saltHashed}`, "utf8").digest("hex").toUpperCase();
-    
-                const urlStr = url.format({
-                    protocol: "https",
-                    hostname: this["$url"].hostname,
-                    port: this["$url"].port,
-                    pathname: "/cert-nego-v4",
-                    query: {
-                        salt: salt,
-                        secureSalt: secureSalt,
-                        username: auth.username
-                    }
-                });
+
+                let urlStr = new URL("https://localhost:9595/cert-nego-v4");
+                urlStr.hostname = this["$url"].hostname;
+                urlStr.port = this["$url"].port;
+                urlStr.searchParams.set("salt", salt);
+                urlStr.searchParams.set("secureSalt", secureSalt);
+                urlStr.searchParams.set("username", auth.username);
+                urlStr = urlStr.toString();
                 
                 // check if remote container is reachable
                 try {
@@ -1423,7 +1416,7 @@ const ConfigGen = class {
             }
             
             async cmd(method, other = {}, customAuth = undefined){
-                const urlStr = url.format(this["$url"]);
+                const urlStr = this["$url"].toString();
                 const auth = (customAuth === undefined) ? this.auth : customAuth;
                 let ca = this.ca;
                 
