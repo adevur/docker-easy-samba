@@ -23,7 +23,7 @@ function fnCreateServer(httpsKey, httpsCert, config){
         try {
             log(`[LOG] starting HTTPS server...`);
             const server = https.createServer({ key: httpsKey, cert: httpsCert }, (req, res) => {
-                const parsedUrl = new URL(req.url);
+                const parsedUrl = new URL(req.url, "https://localhost:9595");
                 if (parsedUrl.pathname === "/api-v2" && req.method === "POST" && config["version"] === "2"){
                     const body = [];
                     req.on("data", (chunk) => { body.push(chunk); });
