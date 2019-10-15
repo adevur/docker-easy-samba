@@ -129,15 +129,23 @@ function fnCheckUsers(config){
         assert( fnIsArray(config["users"]) );
         const names = [];
         assert(config["users"].every((e) => {
-            let result = fnHas(e, ["name", "password"]) && [e.name, e.password].every(fnIsString) && e.password.length > 0 && e.name.length > 0 && names.includes(e.name) !== true;
+            const isLocalUser = fnHas(e, ["name", "password"]) && [e.name, e.password].every(fnIsString) && e.password.length > 0 && e.name.length > 0 && names.includes(e.name) !== true;
+            const isLdapUser = fnHas(e, "ldap-user") && fnIsString(e["ldap-user"]) && e["ldap-user"].length > 0 && (fnHas(e, ["name"]) ? (fnIsString(e.name) && e.name.length > 0 && names.includes(e.name) !== true) : (names.includes(e["ldap-user"]) !== true));
+            const isLdapGroup = fnHas(e, "ldap-group") && fnIsString(e["ldap-group"]) && e["ldap-group"].length > 0 && names.includes(e["ldap-group"]) !== true;
+            
+            
             if (fnHas(e, "enabled-api") !== true || e["enabled-api"] === "*"){
                 e["enabled-api"] = config["$METHODS"];
             }
-            result = result && fnIsArray(e["enabled-api"]) && e["enabled-api"].every((f) => { return config["$METHODS"].includes(f); });
+            
+            const hasValidEnabledAPI = (fnIsString(e["enabled-api"]) && e["enabled-api"].startsWith("ldap-attr:") && (fnHas(e, "ldap-user") || fnHas(e, "ldap-group"))) || (fnIsArray(e["enabled-api"]) && e["enabled-api"].every((f) => { return config["$METHODS"].includes(f); }));
+            
+            const result = (isLocalUser || isLdapUser || isLdapGroup) && hasValidEnabledAPI;
             if (result){
-                names.push(e.name);
-                e["enabled-api"].push("hello");
-                e["enabled-api"] = fnRemoveDuplicates(e["enabled-api"]);
+                names.push( fnHas(e, "name") ? e.name : (fnHas(e, "ldap-user") ? e["ldap-user"] : e["ldap-group"]) );
+                if (fnIsArray(e["enabled-api"])){
+                    e["enabled-api"] = fnRemoveDuplicates(e["enabled-api"]);
+                }
             }
             return result;
         }));
