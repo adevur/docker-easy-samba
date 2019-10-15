@@ -18,6 +18,7 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
+const { valid, isString, isIncludedIn, startsWith } = require("/startup/functions/valid.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 const fnCreateServer = require("/startup/remote-api/fnCreateServer.js");
@@ -129,18 +130,60 @@ function fnCheckUsers(config){
         assert( fnIsArray(config["users"]) );
         const names = [];
         assert(config["users"].every((e) => {
-            const isLocalUser = fnHas(e, ["name", "password"]) && [e.name, e.password].every(fnIsString) && e.password.length > 0 && e.name.length > 0 && names.includes(e.name) !== true;
-            const isLdapUser = fnHas(e, "ldap-user") && fnIsString(e["ldap-user"]) && e["ldap-user"].length > 0 && (fnHas(e, ["name"]) ? (fnIsString(e.name) && e.name.length > 0 && names.includes(e.name) !== true) : (names.includes(e["ldap-user"]) !== true));
-            const isLdapGroup = fnHas(e, "ldap-group") && fnIsString(e["ldap-group"]) && e["ldap-group"].length > 0 && names.includes(e["ldap-group"]) !== true;
+            const isLocalUser = {
+                has: ["name", "password"],
+                and: {
+                    check: {
+                        prop: ["name", "password"],
+                        every: {
+                            strLength: { greater: 0 }
+                        }
+                    },
+                    and: { prop: "name", not: isIncludedIn(names) }
+                }
+            };
             
+            const isLdapUser = {
+                check: {
+                    prop: "ldap-user",
+                    strLength: { greater: 0 }
+                },
+                and: {
+                    inCase: { has: "name" },
+                    check: {
+                        prop: "name",
+                        strLength: { greater: 0 },
+                        and: { not: isIncludedIn(names) }
+                    }
+                }
+            };
+            
+            const isLdapGroup = {
+                prop: "ldap-group",
+                strLength: { greater: 0 },
+                and: { not: isIncludedIn(names) }
+            };
             
             if (fnHas(e, "enabled-api") !== true || e["enabled-api"] === "*"){
                 e["enabled-api"] = config["$METHODS"];
             }
             
-            const hasValidEnabledAPI = (fnIsString(e["enabled-api"]) && e["enabled-api"].startsWith("ldap-attr:") && (fnHas(e, "ldap-user") || fnHas(e, "ldap-group"))) || (fnIsArray(e["enabled-api"]) && e["enabled-api"].every((f) => { return config["$METHODS"].includes(f); }));
+            const hasValidEnabledAPI = {
+                check: {
+                    hasEither: ["ldap-user", "ldap-group"],
+                    and: {
+                        prop: "enabled-api",
+                        check: startsWith("ldap-attr:")
+                    }
+                },
+                or: {
+                    prop: "enabled-api",
+                    everyElem: isIncludedIn(config["$METHODS"])
+                }
+            };
             
-            const result = (isLocalUser || isLdapUser || isLdapGroup) && hasValidEnabledAPI;
+            const result = valid(e, { either: [isLocalUser, isLdapUser, isLdapGroup], and: hasValidEnabledAPI });
+            
             if (result){
                 names.push( fnHas(e, "name") ? e.name : (fnHas(e, "ldap-user") ? e["ldap-user"] : e["ldap-group"]) );
                 if (fnIsArray(e["enabled-api"])){
