@@ -18,7 +18,7 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
-const { valid, isString, isIncludedIn, startsWith } = require("/startup/functions/valid.js");
+const { valid, vassert, isNEString, isIncludedIn, startsWith, isIntInRange, isBool } = require("/startup/functions/valid.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 const fnCreateServer = require("/startup/remote-api/fnCreateServer.js");
@@ -131,28 +131,23 @@ function fnCheckUsers(config){
         const names = [];
         assert(config["users"].every((e) => {
             const isLocalUser = {
-                has: ["name", "password"],
-                and: {
-                    check: {
-                        prop: ["name", "password"],
-                        every: {
-                            strLength: { greater: 0 }
-                        }
-                    },
-                    and: { prop: "name", not: isIncludedIn(names) }
-                }
+                check: {
+                    prop: ["name", "password"],
+                    every: isNEString
+                },
+                and: { prop: "name", not: isIncludedIn(names) }
             };
             
             const isLdapUser = {
                 check: {
                     prop: "ldap-user",
-                    strLength: { greater: 0 }
+                    check: isNEString
                 },
                 and: {
                     inCase: { has: "name" },
                     check: {
                         prop: "name",
-                        strLength: { greater: 0 },
+                        check: isNEString,
                         and: { not: isIncludedIn(names) }
                     }
                 }
@@ -160,7 +155,7 @@ function fnCheckUsers(config){
             
             const isLdapGroup = {
                 prop: "ldap-group",
-                strLength: { greater: 0 },
+                check: isNEString,
                 and: { not: isIncludedIn(names) }
             };
             
@@ -249,9 +244,10 @@ function fnCheckPort(config){
     }
 
     try {
-        assert( fnHas(config, "port") );
-        assert( fnIsInteger(config["port"]) );
-        assert( config["port"] >= 1024 && config["port"] <= 49151 );
+        vassert(config, {
+            prop: "port",
+            check: isIntInRange(1024, 49151)
+        });
         log(`[LOG] EasySamba Remote API will listen to custom port ${config["port"]}.`);
     }
     catch (error){
@@ -264,11 +260,10 @@ function fnCheckPort(config){
 
 function fnCheckCertNego(config){
     try {
-        assert( fnHas(config, "cert-nego") );
-        assert( [true, false].includes(config["cert-nego"]) );
-        if (config["cert-nego"] !== true){
-            log(`[LOG] EasySamba Remote API will not enable certificate-negotiation feature.`);
-        }
+        vassert(config, {
+            prop: "cert-nego",
+            check: isBool
+        });
     }
     catch (error){
         config["cert-nego"] = true;
@@ -276,6 +271,9 @@ function fnCheckCertNego(config){
     
     if (config["cert-nego"]){
         log(`[LOG] EasySamba Remote API will enable certificate-negotiation feature.`);
+    }
+    else {
+        log(`[LOG] EasySamba Remote API will not enable certificate-negotiation feature.`);
     }
 }
 
