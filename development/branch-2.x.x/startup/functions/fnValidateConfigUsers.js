@@ -17,7 +17,7 @@ const fnListGroups = require("/startup/functions/fnListGroups.js");
 
 // FUNCTION: fnValidateConfigUsers()
 // TODO: write a brief description of this function
-function fnValidateConfigUsers(users, sharedb){
+function fnValidateConfigUsers(sharedb){
     const isValidUser = {
         check: [
             { has: ["name", "password"], error: `USERS IN 'users' MUST HAVE 'name' AND 'password' PROPERTIES` },
@@ -31,12 +31,10 @@ function fnValidateConfigUsers(users, sharedb){
          doo: (user) => { sharedb.users.push(user["name"]); }
     };
 
-    const test = [
+    return [
         { check: isArray, error: `'users' MUST BE AN ARRAY` },
         { every: isValidUser }
     ];
-
-    return valid(users, test);
 }
 
 

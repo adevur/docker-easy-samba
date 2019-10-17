@@ -12,12 +12,8 @@ const fnValidateConfigVersion = require("/startup/functions/fnValidateConfigVers
 const fnValidateConfigUsers = require("/startup/functions/fnValidateConfigUsers.js");
 const fnValidateConfigGroups = require("/startup/functions/fnValidateConfigGroups.js");
 const fnValidateConfigShares = require("/startup/functions/fnValidateConfigShares.js");
-const fnHas = require("/startup/functions/fnHas.js");
-const fnIsString = require("/startup/functions/fnIsString.js");
-const fnIsArray = require("/startup/functions/fnIsArray.js");
 const isValidNetBIOSname = require("/startup/functions/isValidNetBIOSname.js");
-const fnWriteFile = require("/startup/functions/fnWriteFile.js");
-const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
+
 
 
 
@@ -29,43 +25,17 @@ const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 function fnValidateConfig(config){
     // TODO: document "sharedb"
     const sharedb = { "users": [], "names": ["global", "homes", "printers"], "paths": [], "groups": {} };
-
-    // "config" must contain "domain", "users" and "shares" properties
-    if (fnHas(config, ["domain", "users", "shares"]) !== true){
-        return "MUST CONTAIN 'domain', 'users' AND 'shares' PROPERTIES";
-    }
-
-    // check "version" property
-    const validateConfigVersion = fnValidateConfigVersion(config);
-    if (validateConfigVersion !== true){
-        return validateConfigVersion;
-    }
-
-    // check "domain" property
-    // EXPLAIN: "domain" must be a valid NetBIOS name
-    if (valid(config["domain"], isValidNetBIOSname) !== true){
-        return "'domain' IS NOT A VALID NETBIOS NAME";
-    }
-
-    // check "users" property
-    const validateConfigUsers = fnValidateConfigUsers(config["users"], sharedb);
-    if (validateConfigUsers !== true){
-        return validateConfigUsers;
-    }
-
-    // check "groups" property
-    const validateConfigGroups = fnValidateConfigGroups(config, sharedb);
-    if (validateConfigGroups !== true){
-        return validateConfigGroups;
-    }
-
-    // check "shares" property
-    const validateConfigShares = fnValidateConfigShares(config["shares"], sharedb);
-    if (validateConfigShares !== true){
-        return validateConfigShares;
-    }
-
-    return true;
+    
+    const test = [
+        { has: ["domain", "users", "shares"], error: "MUST CONTAIN 'domain', 'users' AND 'shares' PROPERTIES" },
+        fnValidateConfigVersion(),
+        { prop: "domain", check: isValidNetBIOSname, error: "'domain' IS NOT A VALID NETBIOS NAME" },
+        { prop: "users", check: fnValidateConfigUsers(sharedb) },
+        fnValidateConfigGroups(sharedb),
+        { prop: "shares", check: fnValidateConfigShares(sharedb) }
+    ];
+    
+    return valid(config, test);
 }
 
 

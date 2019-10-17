@@ -18,7 +18,7 @@ const { valid, isIncludedIn, isPropOf } = require("/startup/functions/valid.js")
 
 // FUNCTION: fnValidateConfigGroups()
 // TODO: write a brief description of this function
-function fnValidateConfigGroups(config, sharedb){
+function fnValidateConfigGroups(sharedb){
     const isAlreadyUsed = { either: [isIncludedIn(sharedb.users), isPropOf(sharedb.groups)] };
 
     const isValidGroup = {
@@ -61,13 +61,11 @@ function fnValidateConfigGroups(config, sharedb){
         { every: isValidGroup }
     ];
 
-    const test = {
+    return {
         inCase: { has: "groups" },
         prop: "groups",
         check: isValidGroupsProperty
     };
-
-    return valid(config, test);
 }
 
 

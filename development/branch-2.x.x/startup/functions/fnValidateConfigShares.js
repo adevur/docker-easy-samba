@@ -18,7 +18,7 @@ const { valid, isASCII, isString, startsWith, substring, isIncludedIn, isAlphaNu
 
 // FUNCTION: fnValidateConfigShares()
 // TODO: write a brief description of this function
-function fnValidateConfigShares(shares, sharedb){
+function fnValidateConfigShares(sharedb){
     const isValidSharePath = [
         { check: [isString, startsWith("/share/"), { length: { greaterEq: 8 } }], error: `SHARED FOLDERS' PATH MUST BE A SUB-DIRECTORY OF '/share'` },
         { pre: substring(7), check: isValidPath, error: `SHARED FOLDERS' PATH MUST BE A VALID PATH` },
@@ -55,12 +55,10 @@ function fnValidateConfigShares(shares, sharedb){
         { either: [{ has: "guest" }, { prop: "users", length: { greater: 0 } }], error: share => `AT LEAST ONE USER SHOULD BE ABLE TO ACCESS SHARED FOLDER '${share["path"]}'` }
     ];
 
-    const test = [
+    return [
         { check: isArray, error: `'shares' MUST BE AN ARRAY` },
         { every: isValidShare }
     ];
-    
-    return valid(shares, test);
 }
 
 
