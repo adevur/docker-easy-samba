@@ -94,7 +94,7 @@ const utils = {
         return utils.isString(input) && input.split("").every((e) => { return utils.isInRange(48, 57)(e.charCodeAt(0)); });
     },
     isAlpha: input => utils.isString(input) && input.split("").every(e => e.toUpperCase() !== e.toLowerCase()),
-    isAlphaNum: input => utils.isAlpha(input) || utils.isDigit(input),
+    isAlphaNum: input => utils.isString(input) && input.split("").every(e => utils.isAlpha(e) || utils.isDigit(e)),
     substring: (start, end = undefined) => {
         return (input) => {
             if (utils.isString(input) !== true){
@@ -264,6 +264,9 @@ function valid(input, test, vars = {}){
     }
     else if (utils.has(test)("check") && canTest){
         result = valid(input, test["check"], vars);
+    }
+    else if (utils.has(test)("always") && canTest){
+        result = test["always"] === true;
     }
     else if (utils.has(test)("length") && canTest){
         result = valid(input.length, test["length"], vars);

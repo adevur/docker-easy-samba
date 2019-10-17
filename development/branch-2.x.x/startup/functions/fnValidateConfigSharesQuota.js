@@ -7,77 +7,46 @@ module.exports = fnValidateConfigSharesQuota;
 
 
 // dependencies
-const assert = require("assert");
-const fnHas = require("/startup/functions/fnHas.js");
-const fnIsArray = require("/startup/functions/fnIsArray.js");
-const fnIsString = require("/startup/functions/fnIsString.js");
-const fnValidateString = require("/startup/functions/fnValidateString.js");
 const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
+const { valid, substring, isDigit, isArray, isIncludedIn, isPropOf } = require("/startup/functions/valid.js");
 
 
 
 // TODO: description
 // TODO: EXPLAIN
-function fnValidateConfigSharesQuota(share, sharedb){
-    try {
-        // "soft-quota" is optional
-        if (fnHas(share, "soft-quota") !== true){
-            return true;
+function fnValidateConfigSharesQuota(sharedb){
+    return { inCase: { has: "soft-quota" }, check: [
+        { always: true, doo: (share) => { sharedb["$sqwl"] = []; } },
+        {
+            prop: "soft-quota",
+            check: [
+                { has: ["limit", "whitelist"] },
+                { prop: "limit", strLength: { between: [3, 11] } },
+                { prop: "limit", post: substring(-2), either: ["kB", "MB", "GB"], doo: (e) => { sharedb["$squ"] = e; } },
+                { prop: "limit", post: substring(0, -3), check: isDigit, doo: (e) => { sharedb["$sqlr"] = parseInt(e, 10); } },
+                { prop: "whitelist", check: isArray },
+                { prop: "whitelist", every: { either: [
+                    { check: "nobody", doo: () => { sharedb["$sqwl"].push("nobody"); } },
+                    { check: isIncludedIn(sharedb.users), doo: (e) => { sharedb["$sqwl"].push(e); } },
+                    { check: isPropOf(sharedb.groups), doo: (e) => { sharedb["$sqwl"] = sharedb["$sqwl"].concat(sharedb.groups[e]); } }
+                ] } }
+            ]
         }
+    ], doo: (share) => {
+        share["$soft-quota"] = {};
         
-        const quota = share["soft-quota"];
-
-        // must have "limit" and "whitelist" properties
-        assert( fnHas(quota, ["limit", "whitelist"]) );
-        
-        // check "limit" property
-        assert( fnIsString(quota["limit"]) && quota["limit"].length > 2 && quota["limit"].length < 12 );
-        const unit = quota["limit"].slice(quota["limit"].length - 2, quota["limit"].length);
-        assert( ["kB", "MB", "GB"].includes(unit) );
-        let limitRaw = quota["limit"].slice(0, quota["limit"].length - 2);
-        assert( fnValidateString(limitRaw, ["09"]) );
-        limitRaw = parseInt(limitRaw, 10);
         let limitBytes = 0;
-        limitBytes = (unit === "kB") ? (limitRaw * 1024) : limitBytes;
-        limitBytes = (unit === "MB") ? (limitRaw * 1024 * 1024) : limitBytes;
-        limitBytes = (unit === "GB") ? (limitRaw * 1024 * 1024 * 1024) : limitBytes;
+        limitBytes = (sharedb["$squ"] === "kB") ? (sharedb["$sqlr"] * 1024) : limitBytes;
+        limitBytes = (sharedb["$squ"] === "MB") ? (sharedb["$sqlr"] * 1024 * 1024) : limitBytes;
+        limitBytes = (sharedb["$squ"] === "GB") ? (sharedb["$sqlr"] * 1024 * 1024 * 1024) : limitBytes;
         
-        // check "whitelist" property
-        assert( fnIsArray(quota["whitelist"]) );
-        let whitelist = [];
-        assert(quota["whitelist"].every((e) => {
-            if (fnIsString(e) !== true){
-                return false;
-            }
+        share["$soft-quota"]["limit"] = limitBytes;
+        share["$soft-quota"]["whitelist"] = fnRemoveDuplicates(sharedb["$sqwl"]);
         
-            if (e === "nobody"){
-                whitelist.push("nobody");
-                return true;
-            }
-            else if (sharedb.users.includes(e)){
-                whitelist.push(e);
-                return true;
-            }
-            else if (fnHas(sharedb.groups, e)){
-                whitelist = whitelist.concat(sharedb.groups[e]);
-                return true;
-            }
-            else {
-                return false;
-            }
-        }));
-        
-        // remove duplicates from "whitelist"
-        whitelist = fnRemoveDuplicates(whitelist);
-        
-        // add "$soft-quota" to "share"
-        share["$soft-quota"] = { "limit": limitBytes, "whitelist": whitelist };
-        
-        return true;
-    }
-    catch (error){
-        return `SHARE '${share["path"]}' HAS AN INVALID SOFT-QUOTA`;
-    }
+        delete sharedb["$squ"];
+        delete sharedb["$sqlr"];
+        delete sharedb["$sqwl"];
+    }, error: share => `SHARE '${share["path"]}' HAS AN INVALID SOFT-QUOTA` };
 }
 
 
