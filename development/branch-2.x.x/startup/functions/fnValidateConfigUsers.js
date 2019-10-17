@@ -7,11 +7,9 @@ module.exports = fnValidateConfigUsers;
 
 
 // dependencies
-const fnHas = require("/startup/functions/fnHas.js");
-const fnIsString = require("/startup/functions/fnIsString.js");
-const fnIsArray = require("/startup/functions/fnIsArray.js");
-const fnIsValidUsername = require("/startup/functions/fnIsValidUsername.js");
-const fnIsValidPassword = require("/startup/functions/fnIsValidPassword.js");
+const { valid, isArray, isString, isIncludedIn } = require("/startup/functions/valid.js");
+const isValidUsername = require("/startup/functions/isValidUsername.js");
+const isValidPassword = require("/startup/functions/isValidPassword.js");
 const fnListUsers = require("/startup/functions/fnListUsers.js");
 const fnListGroups = require("/startup/functions/fnListGroups.js");
 
@@ -20,66 +18,25 @@ const fnListGroups = require("/startup/functions/fnListGroups.js");
 // FUNCTION: fnValidateConfigUsers()
 // TODO: write a brief description of this function
 function fnValidateConfigUsers(users, sharedb){
-    // "users" must be an array (it can be empty)
-    if (fnIsArray(users) !== true){
-        return `'users' MUST BE AN ARRAY`;
-    }
+    const isValidUser = {
+        check: [
+            { has: ["name", "password"], error: `USERS IN 'users' MUST HAVE 'name' AND 'password' PROPERTIES` },
+            { prop: ["name", "password"], every: isString, error: `USER 'name' AND 'password' PROPERTIES MUST BE STRINGS` },
+            { prop: "name", check: isValidUsername, error: `THERE IS A USERNAME DEFINED IN 'users' THAT IS NOT VALID` },
+            { prop: "password", check: isValidPassword, error: `THERE IS A PASSWORD DEFINED IN 'users' THAT IS NOT VALID` },
+            { prop: "name", not: isIncludedIn(fnListUsers()), error: username => `USER '${username}' ALREADY EXISTS IN THE OS` },
+            { prop: "name", not: isIncludedIn(fnListGroups()), error: username => `USER '${username}' ALREADY EXISTS IN THE OS AS A GROUP` },
+            { prop: "name", not: isIncludedIn(sharedb.users), error: username => `USER '${username}' HAS BEEN DEFINED MORE THAN ONCE` }
+         ],
+         doo: (user) => { sharedb.users.push(user["name"]); }
+    };
 
-    let error = "";
+    const test = [
+        { check: isArray, error: `'users' MUST BE AN ARRAY` },
+        { every: isValidUser }
+    ];
 
-    const result = users.every((user) => {
-        // "user" must have "name" and "password" properties
-        if (fnHas(user, ["name", "password"]) !== true){
-            error = `USERS IN 'users' MUST HAVE 'name' AND 'password' PROPERTIES`;
-            return false;
-        }
-
-        // "username" and "password" must be strings
-        if (fnIsString(user["name"]) !== true || fnIsString(user["password"]) !== true){
-            error = `USER 'name' AND 'password' PROPERTIES MUST BE STRINGS`;
-            return false;
-        }
-
-        // "username" must be a valid username
-        if (fnIsValidUsername(user["name"]) !== true){
-            error = `THERE IS A USERNAME DEFINED IN 'users' THAT IS NOT VALID`;
-            return false;
-        }
-
-        // "password" must be a valid password
-        if (fnIsValidPassword(user["password"]) !== true){
-            error = `THERE IS A PASSWORD DEFINED IN 'users' THAT IS NOT VALID`;
-            return false;
-        }
-
-        // user must not exist in the OS
-        if (fnListUsers().includes(user["name"])){
-            error = `USER '${user["name"]}' ALREADY EXISTS IN THE OS`;
-            return false;
-        }
-
-        // user must not exist in the OS as a group
-        if (fnListGroups().includes(user["name"])){
-            error = `USERNAME '${user["name"]}' ALREADY EXISTS IN THE OS AS A GROUP`;
-            return false;
-        }
-
-        // user must be unique in config.json
-        if (sharedb.users.includes(user["name"])){
-            error = `USER '${user["name"]}' HAS BEEN DEFINED MORE THAN ONCE`;
-            return false;
-        }
-
-        sharedb.users.push(user["name"]); // TODO: EXPLAIN
-
-        return true;
-    });
-
-    if (result !== true){
-        return error;
-    }
-
-    return true;
+    return valid(users, test);
 }
 
 

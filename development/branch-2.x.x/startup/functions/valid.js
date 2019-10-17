@@ -35,6 +35,11 @@ const utils = {
             return source !== undefined && source !== null && utils.isNEString(input) && source.hasOwnProperty(input);
         };
     },
+    isPropOf: (source) => {
+        return (input) => {
+            return source !== undefined && source !== null && utils.isNEString(input) && source.hasOwnProperty(input);
+        };
+    },
     isIncludedIn: (source) => {
         return (input) => {
             return (utils.isArray(source) && source.includes(input)) || (utils.isString(source) && utils.isString(input) && source.includes(input));
@@ -88,6 +93,8 @@ const utils = {
     isDigit: (input) => {
         return utils.isString(input) && input.split("").every((e) => { return utils.isInRange(48, 57)(e.charCodeAt(0)); });
     },
+    isAlpha: input => utils.isString(input) && input.split("").every(e => e.toUpperCase() !== e.toLowerCase()),
+    isAlphaNum: input => utils.isAlpha(input) || utils.isDigit(input),
     substring: (start, end = undefined) => {
         return (input) => {
             if (utils.isString(input) !== true){
@@ -142,7 +149,8 @@ function voodoo(input, test, fn, vars = {}){
 function valid(input, test, vars = {}){
     if (utils.isFunction(test)){
         try {
-            return test(input) ? true : false;
+            const temp = test(input);
+            return (temp === true) ? true : temp;
         }
         catch (error){
             return false;
@@ -157,8 +165,27 @@ function valid(input, test, vars = {}){
     else if ([true, false, undefined, null].includes(test)){
         return input === test;
     }
+    else if (utils.isArray(test)){
+        let err = false;
+        let res = true;
+        let i = 0;
+        
+        for (i = 0; i < test.length; i++){
+            err = valid(input, test[i], vars);
+            if (err !== true){
+                res = false;
+                break;
+            }
+        }
+        
+        return (res === true) ? true : err;
+    }
     
     let canTest = true;
+    
+    if (utils.has(test)("pull")){
+        input = utils.has(vars)(test["pull"]) ? vars[test["pull"]] : undefined;
+    }
     
     if (utils.has(test)("pre") && utils.isFunction(test["pre"])){
         try {
@@ -212,7 +239,7 @@ function valid(input, test, vars = {}){
             const splitted = utils.isArray(input) ? input : input.split("");
             let counter = 0;
             splitted.forEach((e) => {
-                counter += valid(e, test["count"], vars) ? 1 : 0;
+                counter += (valid(e, test["count"], vars) === true) ? 1 : 0;
             });
             input = counter;
         }
@@ -263,15 +290,64 @@ function valid(input, test, vars = {}){
         result = utils.isNum(input) && input <= test["lessEq"];
     }
     else if (utils.has(test)("every") && canTest){
-        if (utils.isArray(input)){
-            result = input.every(e => valid(e, test["every"], vars) === true);
-        }
-        else if (utils.isString(input)){
-            result = input.split("").every(e => valid(e, test["every"], vars) === true);
-        }
-        else {
+        if (utils.isArray(input) !== true && utils.isString(input) !== true){
             result = false;
         }
+        const temp = utils.isArray(input) ? input : input.split("");
+        
+        let err = false;
+        let res = true;
+        let i = 0;
+        
+        for (i = 0; i < temp.length; i++){
+            err = valid(temp[i], test["every"], vars);
+            if (err !== true){
+                res = false;
+                break;
+            }
+        }
+        
+        result = (res === true) ? true : err;
+    }
+    else if (utils.has(test)("everyElem") && canTest){
+        if (utils.isArray(input) !== true){
+            result = false;
+        }
+        const temp = input;
+        
+        let err = false;
+        let res = true;
+        let i = 0;
+        
+        for (i = 0; i < temp.length; i++){
+            err = valid(temp[i], test["everyElem"], vars);
+            if (err !== true){
+                res = false;
+                break;
+            }
+        }
+        
+        result = (res === true) ? true : err;
+    }
+    else if (utils.has(test)("everyChar") && canTest){
+        if (utils.isString(input) !== true){
+            result = false;
+        }
+        const temp = input.split("");
+        
+        let err = false;
+        let res = true;
+        let i = 0;
+        
+        for (i = 0; i < temp.length; i++){
+            err = valid(temp[i], test["everyChar"], vars);
+            if (err !== true){
+                res = false;
+                break;
+            }
+        }
+        
+        result = (res === true) ? true : err;
     }
     else if (utils.has(test)("some") && canTest){
         if (utils.isArray(input)){
@@ -283,12 +359,6 @@ function valid(input, test, vars = {}){
         else {
             result = false;
         }
-    }
-    else if (utils.has(test)("everyElem") && canTest){
-        result = utils.isArray(input) ? input.every(e => valid(e, test["everyElem"], vars) === true) : false;
-    }
-    else if (utils.has(test)("everyChar") && canTest){
-        result = utils.isString(input) ? input.split("").every(e => valid(e, test["everyChar"], vars) === true) : false;
     }
     else if (utils.has(test)("has") && canTest){
         const keys = utils.isArray(test["has"]) ? test["has"] : [test["has"]];
@@ -358,6 +428,17 @@ function valid(input, test, vars = {}){
     }
     
     error = utils.has(test)("error") ? test["error"] : error;
+    
+    error = utils.isFunction(error) ? error(input) : error;
+    
+    if (realRes === true && utils.has(test)("doo") && utils.isFunction(test["doo"])){
+        try {
+            test["doo"](input);
+        }
+        catch (error){
+            // do nothing
+        }
+    }
     
     return (realRes === true) ? true : error;
 }

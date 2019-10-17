@@ -7,6 +7,7 @@ module.exports = fnValidateConfig;
 
 
 // dependencies
+const { valid } = require("/startup/functions/valid.js");
 const fnValidateConfigVersion = require("/startup/functions/fnValidateConfigVersion.js");
 const fnValidateConfigUsers = require("/startup/functions/fnValidateConfigUsers.js");
 const fnValidateConfigGroups = require("/startup/functions/fnValidateConfigGroups.js");
@@ -14,7 +15,7 @@ const fnValidateConfigShares = require("/startup/functions/fnValidateConfigShare
 const fnHas = require("/startup/functions/fnHas.js");
 const fnIsString = require("/startup/functions/fnIsString.js");
 const fnIsArray = require("/startup/functions/fnIsArray.js");
-const fnCheckNetBIOSname = require("/startup/functions/fnCheckNetBIOSname.js");
+const isValidNetBIOSname = require("/startup/functions/isValidNetBIOSname.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 
@@ -42,7 +43,7 @@ function fnValidateConfig(config){
 
     // check "domain" property
     // EXPLAIN: "domain" must be a valid NetBIOS name
-    if (fnIsString(config["domain"]) !== true || fnCheckNetBIOSname(config["domain"]) !== true){
+    if (valid(config["domain"], isValidNetBIOSname) !== true){
         return "'domain' IS NOT A VALID NETBIOS NAME";
     }
 
