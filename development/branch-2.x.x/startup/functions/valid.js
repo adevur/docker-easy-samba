@@ -9,6 +9,8 @@ const assert = require("assert");
 const utils = {
     isString: input => input === String(input),
     isNEString: input => utils.isString(input) && input.length > 0,
+    isLowerCase: input => utils.isString(input) && input === input.toLowerCase() && input !== input.toUpperCase(),
+    isUpperCase: input => utils.isString(input) && input === input.toUpperCase() && input !== input.toLowerCase(),
     isNum: input => input === Number(input),
     isInt: Number.isInteger,
     isPosInt: input => utils.isInt(input) && input > 0,
@@ -23,6 +25,8 @@ const utils = {
             return [min, max, input].every(utils.isInt) && input >= min && input <= max;
         };
     },
+    isPrintable: input => utils.isString(input) && input.split("").every(e => utils.isInRange(32, 126)(e.charCodeAt(0))),
+    isASCII: input => utils.isString(input) && input.split("").every(e => utils.isInRange(0, 127)(e.charCodeAt(0))),
     isArray: Array.isArray,
     isBool: input => [true, false].includes(input),
     isFunction: input => typeof(input) === "function",
@@ -36,6 +40,11 @@ const utils = {
             return (utils.isArray(source) && source.includes(input)) || (utils.isString(source) && utils.isString(input) && source.includes(input));
         };
     },
+    areIncludedIn: (source) => {
+        return (input) => {
+            return utils.isArray(input) && input.every(utils.isIncludedIn(source));
+        };
+    },
     startsWith: (source) => {
         return (input) => {
             return utils.isString(input) && utils.isString(source) && input.startsWith(source);
@@ -43,6 +52,7 @@ const utils = {
     },
     isJSON: (input) => {
         try {
+            assert( utils.isString(input) );
             const temp = JSON.parse(input);
             return true;
         }
@@ -52,11 +62,48 @@ const utils = {
     },
     parseJSON: (input) => {
         try {
+            assert( utils.isString(input) );
             return JSON.parse(input);
         }
         catch (error){
             return undefined;
         }
+    },
+    toUpperCase: (input) => {
+        return utils.isString(input) ? input.toUpperCase() : undefined;
+    },
+    toLowerCase: (input) => {
+        return utils.isString(input) ? input.toLowerCase() : undefined;
+    },
+    firstChars: (num) => {
+        return (input) => {
+            return (utils.isInt(num) && utils.isString(input) && num <= input.length) ? input.slice(0, num) : undefined;
+        };
+    },
+    lastChars: (num) => {
+        return (input) => {
+            return (utils.isInt(num) && utils.isString(input) && num <= input.length) ? input.slice(input.length - num, input.length) : undefined;
+        };
+    },
+    isDigit: (input) => {
+        return utils.isString(input) && input.split("").every((e) => { return utils.isInRange(48, 57)(e.charCodeAt(0)); });
+    },
+    substring: (start, end = undefined) => {
+        return (input) => {
+            if (utils.isString(input) !== true){
+                return undefined;
+            }
+            end = (end === undefined) ? input.length - 1 : end;
+            if ([start, end].every(utils.isInt) !== true){
+                return undefined;
+            }
+            const startAbs = (start >= 0) ? start : (input.length + start);
+            const endAbs = (end >= 0) ? end : (input.length + end);
+            if ([startAbs, endAbs].every(utils.isInRange(0, input.length - 1)) !== true || startAbs > endAbs){
+                return undefined;
+            }
+            return input.slice(startAbs, endAbs + 1);
+        };
     },
 };
 
@@ -77,7 +124,8 @@ module.exports = { ...(module.exports), voodoo: voodoo };
 
 
 function vassert(input, test, vars = {}){
-    assert( valid(input, test, vars) === true );
+    const temp = valid(input, test, vars);
+    assert( temp === true, temp );
 }
 
 function voodoo(input, test, fn, vars = {}){
@@ -107,7 +155,7 @@ function valid(input, test, vars = {}){
         return input === test;
     }
     else if ([true, false, undefined, null].includes(test)){
-        return test;
+        return input === test;
     }
     
     let canTest = true;
@@ -199,6 +247,9 @@ function valid(input, test, vars = {}){
     else if (utils.has(test)("arrLength") && canTest){
         result = utils.isArray(input) ? valid(input.length, test["arrLength"], vars) : false;
     }
+    else if (utils.has(test)("charcode") && canTest){
+        result = (utils.isString(input) && input.length >= 1) ? valid(input.charCodeAt(0), test["charcode"], vars) : false;
+    }
     else if (utils.has(test)("greater") && canTest){
         result = utils.isNum(input) && input > test["greater"];
     }
@@ -213,10 +264,10 @@ function valid(input, test, vars = {}){
     }
     else if (utils.has(test)("every") && canTest){
         if (utils.isArray(input)){
-            result = input.every(e => valid(e, test["every"], vars));
+            result = input.every(e => valid(e, test["every"], vars) === true);
         }
         else if (utils.isString(input)){
-            result = input.split("").every(e => valid(e, test["every"], vars));
+            result = input.split("").every(e => valid(e, test["every"], vars) === true);
         }
         else {
             result = false;
@@ -224,20 +275,20 @@ function valid(input, test, vars = {}){
     }
     else if (utils.has(test)("some") && canTest){
         if (utils.isArray(input)){
-            result = input.some(e => valid(e, test["some"], vars));
+            result = input.some(e => valid(e, test["some"], vars) === true);
         }
         else if (utils.isString(input)){
-            result = input.split("").some(e => valid(e, test["some"], vars));
+            result = input.split("").some(e => valid(e, test["some"], vars) === true);
         }
         else {
             result = false;
         }
     }
     else if (utils.has(test)("everyElem") && canTest){
-        result = utils.isArray(input) ? input.every(e => valid(e, test["everyElem"], vars)) : false;
+        result = utils.isArray(input) ? input.every(e => valid(e, test["everyElem"], vars) === true) : false;
     }
     else if (utils.has(test)("everyChar") && canTest){
-        result = utils.isString(input) ? input.split("").every(e => valid(e, test["everyChar"], vars)) : false;
+        result = utils.isString(input) ? input.split("").every(e => valid(e, test["everyChar"], vars) === true) : false;
     }
     else if (utils.has(test)("has") && canTest){
         const keys = utils.isArray(test["has"]) ? test["has"] : [test["has"]];
@@ -253,28 +304,51 @@ function valid(input, test, vars = {}){
     }
     else if (utils.has(test)("either") && canTest){
         result = test["either"].some((e) => {
-            return valid(input, e, vars);
+            return valid(input, e, vars) === true;
         });
+    }
+    else if (utils.has(test)("between") && canTest){
+        result = utils.isArray(test["between"]) && test["between"].length === 2 && test["between"].every(utils.isNum) && utils.isInRange(...test["between"])(input);
+    }
+    else if (utils.has(test)("betweenInt") && canTest){
+        result = utils.isArray(test["betweenInt"]) && test["betweenInt"].length === 2 && test["betweenInt"].every(utils.isInt) && utils.isIntInRange(...test["betweenInt"])(input);
     }
     
     let realRes = false;
+    let error = false;
     
     if (canTest !== true){
         realRes = false;
     }
     else if (utils.has(test)("and")){
-        realRes = result && valid(input, test["and"], vars);
+        if (result === true){
+            const and = valid(input, test["and"], vars);
+            error = (and !== true) ? and : error;
+            realRes = and === true;
+        }
+        else {
+            error = result;
+            realRes = false;
+        }
     }
     else if (utils.has(test)("or")){
-        realRes = result || valid(input, test["or"], vars);
+        if (result === true){
+            realRes = true;
+        }
+        else {
+            error = result;
+            const or = valid(input, test["or"], vars);
+            realRes = or === true;
+        }
     }
     else {
-        realRes = result;
+        error = (result !== true) ? result : error;
+        realRes = result === true;
     }
     
     if (utils.has(test)("put") && utils.isNEString(test["put"])){
         try {
-            if (realRes){
+            if (realRes === true){
                 vars[test["put"]] = input;
             }
         }
@@ -283,7 +357,9 @@ function valid(input, test, vars = {}){
         }
     }
     
-    return realRes;
+    error = utils.has(test)("error") ? test["error"] : error;
+    
+    return (realRes === true) ? true : error;
 }
 
 
