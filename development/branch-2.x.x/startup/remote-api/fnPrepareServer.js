@@ -18,7 +18,7 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
-const { valid, vassert, isNEString, isIncludedIn, startsWith, isIntInRange, isBool } = require("/startup/functions/valid.js");
+const { valid, vassert, voodoo, isNEString, isIncludedIn, startsWith, isIntInRange, isBool, has, isArray } = require("/startup/functions/valid.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 const fnCreateServer = require("/startup/remote-api/fnCreateServer.js");
@@ -121,72 +121,43 @@ function fnCheckVersion(config){
 
 function fnCheckUsers(config){
     try {
-        if (fnHas(config, "users") !== true){
+        if (has(config)("users") !== true){
             log(`[WARNING] since '${CFG}/remote-api.json' doesn't have a 'users' property, a new user 'admin' with a random password will be generated and written to file '${CFG}/remote-api.json'...`);
             config["users"] = [{ "name": "admin", "password": ConfigGen.genRandomPassword(12), "enabled-api": "*" }];
             fnUpdateConfigFile(`${CFG}/remote-api.json`, config, ["version", "users"]);
         }
         
-        assert( fnIsArray(config["users"]) );
         const names = [];
-        assert(config["users"].every((e) => {
-            const isLocalUser = {
-                check: {
-                    prop: ["name", "password"],
-                    every: isNEString
-                },
-                and: { prop: "name", not: isIncludedIn(names) }
-            };
-            
-            const isLdapUser = {
-                check: {
-                    prop: "ldap-user",
-                    check: isNEString
-                },
-                and: {
-                    inCase: { has: "name" },
-                    check: {
-                        prop: "name",
-                        check: isNEString,
-                        and: { not: isIncludedIn(names) }
-                    }
-                }
-            };
-            
-            const isLdapGroup = {
-                prop: "ldap-group",
-                check: isNEString,
-                and: { not: isIncludedIn(names) }
-            };
-            
-            if (fnHas(e, "enabled-api") !== true || e["enabled-api"] === "*"){
-                e["enabled-api"] = config["$METHODS"];
-            }
-            
-            const hasValidEnabledAPI = {
-                check: {
-                    hasEither: ["ldap-user", "ldap-group"],
-                    and: {
-                        prop: "enabled-api",
-                        check: startsWith("ldap-attr:")
-                    }
-                },
-                or: {
-                    prop: "enabled-api",
-                    everyElem: isIncludedIn(config["$METHODS"])
-                }
-            };
-            
-            const result = valid(e, { either: [isLocalUser, isLdapUser, isLdapGroup], and: hasValidEnabledAPI });
-            
-            if (result){
-                names.push( fnHas(e, "name") ? e.name : (fnHas(e, "ldap-user") ? e["ldap-user"] : e["ldap-group"]) );
-                if (fnIsArray(e["enabled-api"])){
-                    e["enabled-api"] = fnRemoveDuplicates(e["enabled-api"]);
-                }
-            }
-            return result;
-        }));
+        
+        const isLocalUser = {
+            check: [{ prop: ["name", "password"], every: isNEString }, { prop: "name", not: isIncludedIn(names) }],
+            doo: (user) => { names.push(user.name); }
+        };
+        
+        const isLdapUser = { check: [
+            { prop: "ldap-user", check: isNEString },
+            { inCase: { has: "name" }, prop: "name", check: [isNEString, { not: isIncludedIn(names) }] },
+            { inCase: { not: { has: "name" } }, prop: "ldap-user", not: isIncludedIn(names) }
+        ], doo: (user) => { names.push(user["ldap-user"]); } };
+        
+        const isLdapGroup = { prop: "ldap-group", check: [isNEString, { not: isIncludedIn(names) }], doo: (groupname) => { names.push(groupname); } };
+        
+        const hasValidEnabledAPI = [
+            { inCase: { not: { has: "enabled-api" } }, always: true, doo: (user) => { user["enabled-api"] = config["$METHODS"]; } },
+            { inCase: { prop: "enabled-api", check: "*" }, always: true, doo: (user) => { user["enabled-api"] = config["$METHODS"]; } },
+            { either: [
+                [{ hasEither: ["ldap-user", "ldap-group"] }, { prop: "enabled-api", check: startsWith("ldap-attr:") }],
+                { prop: "enabled-api", everyElem: isIncludedIn(config["$METHODS"]) }
+            ] },
+            { inCase: { prop: "enabled-api", check: isArray }, always: true, doo: (user) => { user["enabled-api"] = fnRemoveDuplicates(user["enabled-api"]); } }
+        ];
+        
+        const isValidUser = [
+            { either: [isLocalUser, isLdapUser, isLdapGroup] },
+            hasValidEnabledAPI
+        ];
+        
+        vassert(config["users"], { everyElem: isValidUser });
         
         log(`[LOG] 'users' property has been correctly validated.`);
     }
@@ -238,36 +209,29 @@ function fnLoadKeyCert(){
 
 
 function fnCheckPort(config){
-    if (fnHas(config, "port") !== true){
+    if (has(config)("port") !== true){
         config["port"] = 9595;
         return;
     }
-
-    try {
-        vassert(config, {
-            prop: "port",
-            check: isIntInRange(1024, 49151)
-        });
+    
+    const isValidPort = { prop: "port", check: isIntInRange(1024, 49151) };
+    
+    voodoo(config, isValidPort).yay(() => {
         log(`[LOG] EasySamba Remote API will listen to custom port ${config["port"]}.`);
-    }
-    catch (error){
+    }).oops(() => {
         log(`[WARNING] it's been defined a custom port in '${CFG}/remote-api.json', but it will not be used, since it is not in the allowed range 1024-49151.`);
         config["port"] = 9595;
-    }
+    });
 }
 
 
 
 function fnCheckCertNego(config){
-    try {
-        vassert(config, {
-            prop: "cert-nego",
-            check: isBool
-        });
-    }
-    catch (error){
+    const isValidCertNego = { prop: "cert-nego", check: isBool };
+    
+    voodoo(config, isValidCertNego).oops(() => {
         config["cert-nego"] = true;
-    }
+    });
     
     if (config["cert-nego"]){
         log(`[LOG] EasySamba Remote API will enable certificate-negotiation feature.`);

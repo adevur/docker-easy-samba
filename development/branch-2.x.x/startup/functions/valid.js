@@ -135,9 +135,42 @@ function vassert(input, test, vars = {}){
     assert( temp === true, temp );
 }
 
-function voodoo(input, test, fn, vars = {}){
-    if (valid(input, test, vars) === true){
-        fn();
+
+
+function voodoo(input, test, vars = {}){
+    const c = class {
+        constructor(res, err){
+            this.res = res;
+            this.err = err;
+            return this;
+        }
+        
+        yay(callback){
+            if (this.res === true){
+                callback();
+            }
+            return this;
+        }
+        
+        oops(callback){
+            if (this.res !== true){
+                callback(this.err);
+            }
+            return this;
+        }
+        
+        always(callback){
+            callback(this.res, this.err);
+            return this;
+        }
+    };
+    
+    const result = valid(input, test, vars);
+    if (result === true){
+        return new c(true, undefined);
+    }
+    else {
+        return new c(false, result);
     }
 }
 
