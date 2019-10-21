@@ -20,6 +20,7 @@ RUN yum clean all -y \
     openssl \
     psmisc \
     procps-ng \
+    openldap-clients \
   && yum module install -y nodejs \
   && yum autoremove -y \
   && yum clean all -y

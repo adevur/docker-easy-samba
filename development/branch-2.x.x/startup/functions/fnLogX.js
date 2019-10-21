@@ -21,6 +21,8 @@ const fnIsString = require("/startup/functions/fnIsString.js");
 function fnLogX(path){
     return (event, params, tags = []) => {
         try {
+            assert( fs.existsSync(path) );
+        
             const obj = {};
             
             obj["datetime"] = Date.now();
@@ -30,14 +32,13 @@ function fnLogX(path){
         
             let msg = JSON.stringify(obj);
             assert( fnIsString(msg) );
-            const hash = crypto.createHash("sha256").update(msg, "utf8").digest("hex").toUpperCase();
-            obj["id"] = hash;
+            const hash = crypto.createHash("sha256").update(msg, "utf8").digest("hex");
+            const id = crypto.createHash("sha256").update(hash + crypto.randomBytes(4).toString("hex"), "ascii").digest("hex").toUpperCase();
+            obj["id"] = id;
             msg = JSON.stringify(obj);
             assert( fnIsString(msg) );
             
-            assert( fs.existsSync(path) );
             fs.appendFileSync(path, `${msg}\n`, { encoding: "utf8" });
-            
             return true;
         }
         catch (error){

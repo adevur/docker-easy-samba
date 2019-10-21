@@ -112,6 +112,30 @@ const utils = {
             return input.slice(startAbs, endAbs + 1);
         };
     },
+    split: (separator) => {
+        return (input) => {
+            if ([separator, input].every(utils.isString) !== true){
+                return undefined;
+            }
+            return input.split(separator);
+        };
+    },
+    isHostname: (input) => {
+        return utils.isNEString(input) && input.split(".").every((e) => {
+            return utils.isNEString(e)
+                && utils.isASCII(e)
+                && (
+                    utils.isAlphaNum(e) || (
+                        e.startsWith("xn--") && e.length > 4 && utils.isAlphaNum(e.substring(4))
+                    )
+                );
+        });
+    },
+    isIP: (input) => {
+        return utils.isNEString(input) && input.split(".").length === 4 && input.split(".").every((e) => {
+            return utils.isInRange(1, 3)(e.length) && utils.isDigit(e) && utils.isInRange(0, 255)(parseInt(e, 10));
+        });
+    },
 };
 
 

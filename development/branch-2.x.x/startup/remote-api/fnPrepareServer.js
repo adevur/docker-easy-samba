@@ -18,7 +18,7 @@ const fnIsArray = require("/startup/functions/fnIsArray.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
 const fnRemoveDuplicates = require("/startup/functions/fnRemoveDuplicates.js");
-const { valid, vassert, voodoo, isNEString, isIncludedIn, startsWith, isIntInRange, isBool, has, isArray } = require("/startup/functions/valid.js");
+const { valid, vassert, voodoo, isNEString, isIncludedIn, startsWith, isIntInRange, isBool, has, isArray, isIP, isHostname, isString, split, substring } = require("/startup/functions/valid.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 const ConfigGen = require("/startup/ConfigGen.js"); // needed for ConfigGen.genRandomPassword()
 const fnCreateServer = require("/startup/remote-api/fnCreateServer.js");
@@ -33,6 +33,9 @@ async function fnPrepareServer(){
     
     // check property "version"
     fnCheckVersion(config);
+    
+    // load LDAP configuration
+    fnLoadLdapConfig(config);
     
     // check property "users"
     fnCheckUsers(config);
@@ -119,6 +122,77 @@ function fnCheckVersion(config){
 
 
 
+function fnLoadLdapConfig(config){
+    config["$ldap"] = {};
+
+    try {
+        const ldap = JSON.parse(fs.readFileSync(`${CFG}/ldap.json`, "utf8"));
+        
+        const isValidSearchBase = [
+            isNEString,
+            { pre: split(","), every: [
+                isNEString,
+                startsWith("dc="),
+                { pre: substring(3), check: [isHostname, { count: ".", check: 0 }] }
+            ] }
+        ];
+        
+        const test = [
+            { prop: "version", check: "1" },
+            { prop: "protocol", check: "ldap", doo: (proto) => { config["$ldap"].protocol = proto; } },
+            // { prop: "protocol", either: ["ldap", "ldaps"], doo: (proto) => { config["$ldap"].protocol = proto; } },
+            { inCase: { has: "active-directory" }, prop: "active-directory", check: isBool, doo: (ad) => { config["$ldap"].ad = ad; } },
+            { inCase: { not: { has: "active-directory" } }, always: true, doo: () => { config["$ldap"].ad = false; } },
+            { prop: "hostname", either: [isIP, isHostname], doo: (hostname) => { config["$ldap"].hostname = hostname; } },
+            { inCase: { has: "port" }, prop: "port", check: isIntInRange(1, 49151), doo: (port) => { config["$ldap"].port = String(port); } },
+            { inCase: { not: { has: "port" } }, always: true, doo: () => { config["$ldap"].port = (config["$ldap"].protocol === "ldap") ? "389" : "636"; } },
+            { inCase: { either: [
+                { prop: "hostname", check: isIP },
+                { has: "search-base" },
+                { not: { has: "active-directory" } },
+                { prop: "active-directory", check: false }
+            ] }, prop: "search-base", check: isValidSearchBase, doo: (sb) => { config["$ldap"].searchBase = sb; } },
+            { inCase: { not: { has: "search-base" } }, always: true, doo: () => { config["$ldap"].searchBase = config["$ldap"].hostname.split(".").slice(1).map(e => `dc=${e}`).join(","); } },
+            { inCase: { has: "usernamePrepend" }, prop: "usernamePrepend", check: isString, doo: (prepend) => { config["$ldap"].usernamePrepend = prepend; } },
+            { inCase: { not: { has: "usernamePrepend" } }, always: true, doo: () => { config["$ldap"].usernamePrepend = ""; } },
+            { inCase: { has: "usernameAppend" }, prop: "usernameAppend", check: isString, doo: (append) => { config["$ldap"].usernameAppend = append; } },
+            { inCase: { not: { has: "usernameAppend" } }, always: true, doo: () => {
+                if (config["$ldap"].ad){
+                    config["$ldap"].usernameAppend = "@" + config["$ldap"].searchBase.split(",").map(e => e.substring(3)).join(".");
+                }
+                else {
+                    config["$ldap"].usernameAppend = "";
+                }
+            } },
+            { inCase: { has: "groupPrepend" }, prop: "groupPrepend", check: isString, doo: (prepend) => { config["$ldap"].groupPrepend = prepend; } },
+            { inCase: { not: { has: "groupPrepend" } }, always: true, doo: () => {
+                if (config["$ldap"].ad){
+                    config["$ldap"].groupPrepend = "cn=";
+                }
+                else {
+                    config["$ldap"].groupPrepend = "";
+                }
+            } },
+            { inCase: { has: "groupAppend" }, prop: "groupAppend", check: isString, doo: (append) => { config["$ldap"].groupAppend = append; } },
+            { inCase: { not: { has: "groupAppend" } }, always: true, doo: () => {
+                if (config["$ldap"].ad){
+                    config["$ldap"].groupAppend = ",cn=Users," + config["$ldap"].searchBase;
+                }
+                else {
+                    config["$ldap"].groupAppend = "";
+                }
+            } }
+        ];
+        
+        vassert(ldap, test);
+    }
+    catch (error){
+        config["$ldap"] = false;
+    }
+}
+
+
+
 function fnCheckUsers(config){
     try {
         if (has(config)("users") !== true){
@@ -131,16 +205,19 @@ function fnCheckUsers(config){
         
         const isLocalUser = {
             check: [{ prop: ["name", "password"], every: isNEString }, { prop: "name", not: isIncludedIn(names) }],
-            doo: (user) => { names.push(user.name); }
+            doo: (user) => { names.push(user.name); user["$type"] = "local"; }
         };
         
         const isLdapUser = { check: [
             { prop: "ldap-user", check: isNEString },
-            { inCase: { has: "name" }, prop: "name", check: [isNEString, { not: isIncludedIn(names) }] },
-            { inCase: { not: { has: "name" } }, prop: "ldap-user", not: isIncludedIn(names) }
-        ], doo: (user) => { names.push(user["ldap-user"]); } };
+            { inCase: { has: "name" }, prop: "name", check: [isNEString, { not: isIncludedIn(names) }], doo: (name) => { names.push(name); } },
+            { inCase: { not: { has: "name" } }, prop: "ldap-user", not: isIncludedIn(names), doo: (name) => { names.push(name); } }
+        ], doo: (user) => { user["$type"] = "ldapUser"; } };
         
-        const isLdapGroup = { prop: "ldap-group", check: [isNEString, { not: isIncludedIn(names) }], doo: (groupname) => { names.push(groupname); } };
+        const isLdapGroup = {
+            check: { prop: "ldap-group", check: [isNEString, { not: isIncludedIn(names) }] },
+            doo: (user) => { names.push(user["ldap-group"]); user["$type"] = "ldapGroup"; }
+        };
         
         const hasValidEnabledAPI = [
             { inCase: { not: { has: "enabled-api" } }, always: true, doo: (user) => { user["enabled-api"] = config["$METHODS"]; } },
@@ -149,11 +226,18 @@ function fnCheckUsers(config){
                 [{ hasEither: ["ldap-user", "ldap-group"] }, { prop: "enabled-api", check: startsWith("ldap-attr:") }],
                 { prop: "enabled-api", everyElem: isIncludedIn(config["$METHODS"]) }
             ] },
-            { inCase: { prop: "enabled-api", check: isArray }, always: true, doo: (user) => { user["enabled-api"] = fnRemoveDuplicates(user["enabled-api"]); } }
+            { inCase: { prop: "enabled-api", check: isArray }, always: true, doo: (user) => {
+                user["enabled-api"].push("hello");
+                user["enabled-api"] = fnRemoveDuplicates(user["enabled-api"]);
+            } }
         ];
         
+        const isLdapEnabled = () => {
+            return config["$ldap"] !== false;
+        };
+        
         const isValidUser = [
-            { either: [isLocalUser, isLdapUser, isLdapGroup] },
+            { either: [isLocalUser, [isLdapEnabled, isLdapUser], [isLdapEnabled, isLdapGroup]] },
             hasValidEnabledAPI
         ];
         

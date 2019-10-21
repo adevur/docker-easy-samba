@@ -16,7 +16,7 @@ const fnIsString = require("/startup/functions/fnIsString.js");
 const fnGetVersion = require("/startup/functions/fnGetVersion.js");
 const fnWriteFile = require("/startup/functions/fnWriteFile.js");
 const fnDeleteFile = require("/startup/functions/fnDeleteFile.js");
-const fnSecureStringCompare = require("/startup/functions/fnSecureStringCompare.js");
+const fnAuth = require("/startup/remote-api/fnAuth.js");
 const CFG = require("/startup/functions/fnGetConfigDir.js")();
 
 
@@ -46,15 +46,19 @@ function fnAPIv2(str, config, sourceAddress){
     const id = input["id"];
     const params = input["params"];
     const method = input["method"];
+    const creds = {
+        username: undefined,
+        enabledAPI: undefined,
+        userType: undefined
+    };
     
     // validate creds
     try {
-        let correctPassword = false;
-        config["users"].forEach((e) => {
-            correctPassword = (e["name"] === params["auth"]["username"] && fnSecureStringCompare(params["auth"]["password"], e["password"])) ? true : correctPassword;
-        });
-        
-        assert( correctPassword );
+        const auth = fnAuth(config, params.auth.username, params.auth.password);
+        assert( auth.res );
+        creds.username = params.auth.username;
+        creds.enabledAPI = auth.enabledAPI;
+        creds.userType = auth.userType;
     }
     catch (error){
         if (params.auth.username !== "" || params.auth.password !== ""){
@@ -63,10 +67,8 @@ function fnAPIv2(str, config, sourceAddress){
         return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:INVALID-CREDS`, "id": id };
     }
     
-    const userID = fnGetUserID(config, params["auth"]["username"]);
-    
     // validate method
-    if (config["users"][userID]["enabled-api"].includes(method) !== true){
+    if (creds.enabledAPI.includes(method) !== true){
         logx("api-not-allowed", { sourceAddress: sourceAddress, username: params.auth.username, method: method }, ["api", "error"]);
         return { "jsonrpc": "2.0", "result": null, "error": `REMOTE-API:API-NOT-SUPPORTED`, "id": id };
     }
@@ -97,7 +99,7 @@ function fnAPIv2(str, config, sourceAddress){
     
     // execute api call
     try {
-        return fnCallAPI(method, params, id, config, sourceAddress);
+        return fnCallAPI(method, params, id, config, sourceAddress, creds);
     }
     catch (error){
         logx("api-cannot-respond", { sourceAddress: sourceAddress, username: params.auth.username, method: method }, ["api", "error"]);
@@ -107,11 +109,11 @@ function fnAPIv2(str, config, sourceAddress){
 
 
 
-function fnCallAPI(method, params, id, config, sourceAddress){
+function fnCallAPI(method, params, id, config, sourceAddress, creds){
     // available API methods in this Remote API version
     const METHODS = config["$METHODS"];
     
-    const userID = fnGetUserID(config, params["auth"]["username"]);
+    const userID = (creds.userType === "local") ? fnGetUserID(config, creds.username) : undefined;
     
     switch (method){
     
@@ -156,7 +158,7 @@ function fnCallAPI(method, params, id, config, sourceAddress){
             try {
                 const running = fs.existsSync("/startup/easy-samba.running");
                 const version = fnGetVersion().version;
-                logx("api-get-info-success", { sourceAddress: sourceAddress, username: params.auth.username }, ["api", "error", "api-get-info"]);
+                logx("api-get-info-success", { sourceAddress: sourceAddress, username: params.auth.username }, ["api", "success", "api-get-info"]);
                 return { "jsonrpc": "2.0", "result": { "running": running, "version": version, "config-path": CFG }, "error": null, "id": id };
             }
             catch (error){
@@ -195,11 +197,16 @@ function fnCallAPI(method, params, id, config, sourceAddress){
         // get-enabled-api
         case "get-enabled-api":
             logx("api-get-enabled-api-success", { sourceAddress: sourceAddress, username: params.auth.username }, ["api", "success", "api-get-enabled-api"]);
-            return { "jsonrpc": "2.0", "result": { "enabled-api": config["users"][userID]["enabled-api"] }, "error": null, "id": id };
+            return { "jsonrpc": "2.0", "result": { "enabled-api": creds.enabledAPI }, "error": null, "id": id };
             break;
             
         // change-my-password
         case "change-my-password":
+            if (creds.userType !== "local"){
+                logx("api-change-my-password-error", { sourceAddress: sourceAddress, username: params.auth.username, errorType: "not-local-user" }, ["api", "error", "api-change-my-password"]);
+                return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-MY-PASSWORD:NOT-LOCAL-USER", "id": id };
+            }
+            
             const backup = config["users"][userID]["password"];
             try {
                 config["users"][userID]["password"] = params["new-password"];
@@ -223,7 +230,7 @@ function fnCallAPI(method, params, id, config, sourceAddress){
                 catch (error){
                     // do nothing
                 }
-                logx("api-change-my-password-error", { sourceAddress: sourceAddress, username: params.auth.username }, ["api", "error", "api-change-my-password"]);
+                logx("api-change-my-password-error", { sourceAddress: sourceAddress, username: params.auth.username, errorType: "cannot-change-password" }, ["api", "error", "api-change-my-password"]);
                 return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-MY-PASSWORD:ERROR", "id": id };
             }
             break;
@@ -231,9 +238,15 @@ function fnCallAPI(method, params, id, config, sourceAddress){
         // change-other-password
         case "change-other-password":
             const otherID = fnGetUserID(config, params["username"]);
+            
             if (otherID === undefined){
                 logx("api-change-other-password-error", { sourceAddress: sourceAddress, username: params.auth.username, otherUser: params.username, errorType: "invalid-username" }, ["api", "error", "api-change-other-password"]);
                 return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-OTHER-PASSWORD:INVALID-USERNAME", "id": id };
+            }
+            
+            if (config["users"][otherID]["$type"] !== "local"){
+                logx("api-change-other-password-error", { sourceAddress: sourceAddress, username: params.auth.username, otherUser: params.username, errorType: "not-local-user" }, ["api", "error", "api-change-other-password"]);
+                return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-OTHER-PASSWORD:NOT-LOCAL-USER", "id": id };
             }
             
             const backup2 = config["users"][otherID]["password"];
@@ -259,7 +272,7 @@ function fnCallAPI(method, params, id, config, sourceAddress){
                 catch (error){
                     // do nothing
                 }
-                logx("api-change-other-password-error", { sourceAddress: sourceAddress, username: params.auth.username, otherUser: params.username }, ["api", "error", "api-change-other-password"]);
+                logx("api-change-other-password-error", { sourceAddress: sourceAddress, username: params.auth.username, otherUser: params.username, errorType: "cannot-change-password" }, ["api", "error", "api-change-other-password"]);
                 return { "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CHANGE-OTHER-PASSWORD:ERROR", "id": id };
             }
             break;
