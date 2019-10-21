@@ -70,8 +70,8 @@ function fnLdapMemberOf(ldap, username, password, groupname){
     const appendU = ldap.usernameAppend;
     const prependG = ldap.groupPrepend.toLowerCase();
     const appendG = ldap.groupAppend.toLowerCase();
-    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", `${prependU}${username}${appendU}`, "-b", ldap.searchBase], { stdio: ["ignore", undefined, "ignore"] });
-    return result.stdout.toString("utf8").toLowerCase().includes(`dn: ${prependG}${groupname.toLowerCase()}${appendG}\n`);
+    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", `${prependU}${username}${appendU}`, "-b", ldap.searchBase, "-LLL", `(&(objectClass=user)(sAMAccountName=${username}) (memberof=${prependG}${groupname}${appendG}))`], { stdio: ["ignore", undefined, "ignore"] });
+    return result.status === 0 && result.stdout.toString("utf8").toLowerCase().includes(`memberof: ${prependG}${groupname.toLowerCase()}${appendG}\n`);
 }
 
 
