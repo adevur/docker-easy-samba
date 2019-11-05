@@ -174,7 +174,7 @@ Version history and changelogs of `adevur/easy-samba` docker image.
 
 - Bug fixes:
 
-  - Several code and features that were deprecated in `easy-samba` version `1.x.x` have been removed. As a consequence, this version of `easy-samba` (i.e. `2.0.1`) only supports configuration files and `config.gen.js` files written for `easy-samba` version `1.8.x` and `2.0.x`.
+  - Several code and features that were deprecated in `easy-samba` version `1.x.x` have been removed. As a consequence, this version of `easy-samba` (i.e. `2.0.1`) only supports configuration files and `config.gen.js` files written for `easy-samba` version `1.18.x` and `2.0.x`.
   
     > COMMITS: CC-9, CC-10, CC-11, CC-12, CC-13, FIX-7
 
