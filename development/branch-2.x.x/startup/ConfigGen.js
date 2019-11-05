@@ -68,6 +68,7 @@
     remote.pauseEasySamba()
     remote.startEasySamba()
     remote.certNego()
+    remote.certNegoRaw()
 
 */
 
@@ -1415,6 +1416,63 @@ const ConfigGen = class {
                 }
             }
             
+            // remote.certNegoRaw()
+            // SUPPORTED PROTOCOLS: cert-nego-v4/rawCert
+            async certNegoRaw(hashToCheck){
+                if (fnIsString(hashToCheck) !== true || hashToCheck.toLowerCase().startsWith("sha256:base64:") !== true || hashToCheck.length < 15){
+                    throw new Error("INVALID-INPUT");
+                }
+            
+                const auth = this.auth;
+                
+                // check if remote container is reachable
+                try {
+                    const tempRemote = ConfigGen.remote(this["$url"].hostname, parseInt(this["$url"].port, 10), auth, "unsafe");
+                    assert( (await tempRemote.isReachable()) === true );
+                }
+                catch (error){
+                    throw new Error("CANNOT-CONNECT");
+                }
+                
+                let urlStr = new URL("https://localhost:9595/cert-nego-v4");
+                urlStr.hostname = this["$url"].hostname;
+                urlStr.port = this["$url"].port;
+                urlStr.searchParams.set("rawCert", "true");
+                urlStr = urlStr.toString();
+                
+                // get remote container's response and check that response is valid
+                let httpsCert = undefined;
+                try {
+                    const options = {
+                        method: "GET",
+                        rejectUnauthorized: false,
+                        requestCert: true
+                    };
+                    
+                    let result = await fnRequestHTTPS(urlStr, options);
+                    result = JSON.parse(result);
+                    assert( fnHas(result, ["jsonrpc", "result"]) );
+                    assert( result["jsonrpc"] === "2.0" );
+                    assert( fnIsString(result["result"]) );
+                    assert( fnHas(result, "error") ? (result["error"] === null) : true );
+                    
+                    httpsCert = result["result"];
+                }
+                catch (error){
+                    throw new Error(`CERT-NEGO-NOT-SUPPORTED`);
+                }
+                
+                // check if remote certificate is authentic
+                try {
+                    const httpsCertHashed = crypto.createHash("sha256").update(httpsCert, "utf8").digest("base64");
+                    assert( hashToCheck.substring(14) === httpsCertHashed );
+                    return httpsCert;
+                }
+                catch (error){
+                    throw new Error(`INVALID-CREDS`);
+                }
+            }
+            
             async cmd(method, other = {}, customAuth = undefined){
                 const urlStr = this["$url"].toString();
                 const auth = (customAuth === undefined) ? this.auth : customAuth;
@@ -1423,6 +1481,24 @@ const ConfigGen = class {
                 if (ca === undefined){
                     try {
                         ca = await this.certNego();
+                        this.ca = ca;
+                    }
+                    catch (error){
+                        if (error.message === "CANNOT-CONNECT"){
+                            return { res: undefined, err: "CANNOT-CONNECT" };
+                        }
+                        else if (error.message === "INVALID-CREDS"){
+                            return { res: undefined, err: "REMOTE-API:INVALID-CREDS" };
+                        }
+                        else {
+                            ca = "global";
+                            this.ca = "global";
+                        }
+                    }
+                }
+                else if (ca.toLowerCase().startsWith("sha256:base64:") && ca.length > 14){
+                    try {
+                        ca = await this.certNegoRaw(ca);
                         this.ca = ca;
                     }
                     catch (error){

@@ -33,23 +33,31 @@ function fnCreateServer(httpsKey, httpsCert, config){
                         res.end(JSON.stringify(result), "utf8");
                     });
                 }
-                else if (parsedUrl.pathname === "/cert-nego-v4" && req.method === "GET" && config["cert-nego"] === true){
+                else if (parsedUrl.pathname === "/cert-nego-v4" && req.method === "GET"){
                     const query = fnParseQuery(parsedUrl);
                     const salt = (fnHas(query, "salt") && fnIsString(query["salt"]) && query["salt"].length === 10) ? query["salt"] : undefined;
                     const secureSalt = (fnHas(query, "secureSalt") && fnIsString(query["secureSalt"]) && query["secureSalt"].length === 64) ? query["secureSalt"] : undefined;
                     const username = (fnHas(query, "username") && fnIsString(query["username"]) && query["username"].length > 0) ? query["username"] : undefined;
-                    if (salt === undefined || secureSalt === undefined || username === undefined){
-                        logx("cert-nego-invalid-input", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "error"]);
+                    const rawCert = (fnHas(query, "rawCert") && fnIsString(query["rawCert"])) ? query["rawCert"] : undefined;
+                    
+                    if (rawCert === "true"){
+                        logx("cert-nego-success", { sourceAddress: req.socket.address().address, rawCert: true }, ["cert-nego", "success"]);
+                        const result = { "jsonrpc": "2.0", "result": httpsCert, "error": null };
+                        res.writeHead(200, { "Content-Type": "application/json" });
+                        res.end(JSON.stringify(result), "utf8");
+                    }
+                    else if (salt === undefined || secureSalt === undefined || username === undefined || config["cert-nego"] !== true){
+                        logx("cert-nego-invalid-input", { sourceAddress: req.socket.address().address, creds: { username: username } }, ["cert-nego", "error"]);
                         res.writeHead(200, { "Content-Type": "application/json" });
                         res.end(JSON.stringify({ "jsonrpc": "2.0", "result": null, "error": "REMOTE-API:CERT-NEGO:INVALID-INPUT" }), "utf8");
                     }
                     else {
                         const { hashedCert, invalidUser } = fnGetHashedCert(httpsCert, config, salt, username, secureSalt);
                         if (invalidUser){
-                            logx("cert-nego-invalid-creds", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "error"]);
+                            logx("cert-nego-invalid-creds", { sourceAddress: req.socket.address().address, creds: { username: username } }, ["cert-nego", "error"]);
                         }
                         else {
-                            logx("cert-nego-success", { sourceAddress: req.socket.address().address, username: username }, ["cert-nego", "success"]);
+                            logx("cert-nego-success", { sourceAddress: req.socket.address().address, creds: { username: username } }, ["cert-nego", "success"]);
                         }
                         const result = { "jsonrpc": "2.0", "result": hashedCert, "error": null };
                         res.writeHead(200, { "Content-Type": "application/json" });
