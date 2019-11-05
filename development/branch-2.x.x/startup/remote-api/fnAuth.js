@@ -50,17 +50,17 @@ function fnAuth(config, username, password){
 
     const validCreds = { prop: "users", some: { either: [localCreds, ldapUserCreds, ldapGroupCreds] } };
 
-    let result = { res: false, enabledAPI: [], userType: undefined };
+    let result = { res: false, enabledAPI: [], userType: undefined, ldapUser: undefined, ldapGroup: undefined };
 
     voodoo(config, validCreds).yay(() => {
         if (userType === "local"){
-            result = { res: true, enabledAPI: enabledAPI, userType: userType };
+            result = { res: true, enabledAPI: enabledAPI, userType: userType, ldapUser: undefined, ldapGroup: undefined };
         }
         else if (userType === "ldapUser"){
             enabledAPI = isArray(enabledAPI) ? enabledAPI : fnLdapGetUserEnabledAPI(config, ldapUser, password, enabledAPI.substring(10));
             enabledAPI.push("hello");
             enabledAPI = fnRemoveDuplicates(enabledAPI);
-            result = { res: true, enabledAPI: enabledAPI, userType: userType, ldapUser: ldapUser };
+            result = { res: true, enabledAPI: enabledAPI, userType: userType, ldapUser: ldapUser, ldapGroup: undefined };
         }
         else if (userType === "ldapGroup"){
             enabledAPI = isArray(enabledAPI) ? enabledAPI : fnLdapGetGroupEnabledAPI(config, ldapUser, password, ldapGroup, enabledAPI.substring(10)).concat(fnLdapGetUserEnabledAPI(config, ldapUser, password, enabledAPI.substring(10)));
@@ -83,7 +83,7 @@ function fnLdapGetAttr(ldap, username, password, filter, searchBase, attrName){
         searchBase: replaceUsername(ldap.bindOptions.searchBase)
     };
     
-    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", bind.username, "-b", searchBase, "-LLL", filter, attrName], { stdio: ["ignore", undefined, "ignore"] });
+    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", bind.username, "-b", searchBase, "-LLL", filter, attrName], { timeout: 5000, stdio: ["ignore", undefined, "ignore"] });
     
     if (result.status !== 0){
         return undefined;
@@ -157,7 +157,7 @@ function fnLdapMemberOf(ldap, username, password, groupname){
         return false;
     }
     
-    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", bind.username, "-b", userDN, "-LLL", "(&)", "memberOf"], { stdio: ["ignore", undefined, "ignore"] });
+    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", bind.username, "-b", userDN, "-LLL", "(&)", "memberOf"], { timeout: 5000, stdio: ["ignore", undefined, "ignore"] });
     return result.status === 0 && result.stdout.toString("utf8").toLowerCase().includes(`memberof: ${groupDN.toLowerCase()}\n`);
 }
 
@@ -171,7 +171,7 @@ function fnLdapBind(ldap, username, password){
         searchBase: replaceUsername(ldap.bindOptions.searchBase)
     };
     
-    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", bind.username, "-b", bind.searchBase], { stdio: "ignore" });
+    const result = spawnSync("ldapsearch", ["-H", `${ldap.protocol}://${ldap.hostname}:${ldap.port}`, "-x", "-w", password, "-D", bind.username, "-b", bind.searchBase], { timeout: 5000, stdio: "ignore" });
     return result.status === 0;
 }
 
