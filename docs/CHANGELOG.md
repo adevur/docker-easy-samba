@@ -2,13 +2,77 @@
 # easy-samba changelog
 Version history and changelogs of `adevur/easy-samba` docker image.
 
-### Current unstable release: `2.3.0`
+### Current unstable release: `2.4.0`
 
 ### Current stable release: `1.19.1`
 
 ### Current long-term release: `no long-term release yet`
 
 ## version history
+
+### [UNSTABLE] [FEATURE] 2.4.0 (2019-11-05 UTC)
+- New features:
+
+  - `Remote API` now supports integration with LDAP and Active Directory, in order to authenticate users. Three types of user are now supported: `local` (i.e. which are defined in `remote-api.json` itself with their passwords, and which can fully make use of `cert-nego-v4`), `ldapUser` (i.e. users defined in the LDAP server, whose password is stored in the LDAP server) and `ldapGroup` (i.e. users which are members of a particular LDAP group). Their enabled APIs can also be retrieved from a custom attribute on the LDAP server. Configuration parameters of the LDAP server are stored in the file `/share/config/ldap.json`.
+  
+    Here's an example of a `remote-api.json` file with LDAP users:
+    
+    ```json
+    {
+      "users": [
+        { "ldap-user": "john.doe", "enabled-api": ["get-config", "set-config"] },
+        { "ldap-group": "EasySambaRemoteAPIGroup", "enabled-api": "ldap-attr:easySambaEnabledAPI" },
+        { "name": "localAdmin", "password": "123456" }
+      ]
+    }
+    ```
+    
+    Here's an example of a `ldap.json` file:
+    
+    ```json
+    {
+      "version": "1",
+      "protocol": "ldap",
+      "active-directory": true,
+      "hostname": "dc.demo.local"
+    }
+    ```
+    
+    > COMMITS: NEW-16, NEW-18, FIX-22, NEW-19, FIX-23
+
+  - `Remote API` is now able to save detailed logs about API access and events. These logs will be saved to file `/share/logs/remote-api-access.logs`, if this file exists. Each line of this file is a JSON string; in order to read the logs, you need to extract and parse each line as an individual JSON object.
+  
+    > COMMITS: NEW-12, NEW-13
+    
+  - In `Remote API`, protocol `cert-nego-v4` has been enhanced: now it reports users who sent wrong credentials; also, in order to make `cert-nego-v4` work with LDAP authentication, it is now available a new `rawCert` mode that sends only the raw certificate, and `ConfigGen.js` library takes care to check its authenticity by comparing it with a user-provided hash passed to `ConfigGen.remote()`. New function `remote.certNegoRaw()` has been added to `ConfigGen.js` library, accordingly.
+  
+    > COMMITS: NEW-14, FIX-24
+    
+  - If you edit file `/share/config/remote-api.json`, `Remote API` will be automatically restarted with the new configuration.
+  
+    > COMMITS: NEW-15
+    
+  - If no valid `easy-samba` configuration is found (e.g. `config.json` or `remote-api.config.json`), SAMBA server will stop until a valid configuration is provided.
+  
+    > COMMITS: NEW-15
+    
+  - Now, every user of `Remote API` is always allowed to use `hello` API.
+  
+    > COMMITS: FIX-16
+
+- Bug fixes:
+
+  - In `ConfigGen.js` library, it's been fixed a bug that prevented the correct IP or hostname to be set in `ConfigGen.remote()`.
+  
+    > COMMITS: FIX-15
+    
+  - Minor bugfixes and several code cleanup.
+  
+    > COMMITS: FIX-17, FIX-18, FIX-19, FIX-20, FIX-21, CC-15, CC-16, NEW-17, CC-17, CC-18, CC-19, CC-20
+
+- Security fixes:
+
+  - N/A
 
 ### [UNSTABLE] [FEATURE] 2.3.0 (2019-10-10 UTC)
 - New features:
