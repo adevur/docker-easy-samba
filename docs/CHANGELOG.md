@@ -104,14 +104,12 @@ Version history and changelogs of `adevur/easy-samba` docker image.
     chown root:root /mnt/disk2/easy-samba-logs
     chmod 660 /mnt/disk2/easy-samba-logs
     
-    # let's make a symbolic link that connects '/mnt/disk2/easy-samba-logs' to '/easy-samba/share/logs'
-    ln -s /mnt/disk2/easy-samba-logs /easy-samba/share/logs
-    
     # now we can create empty files 'easy-samba.logs' and 'remote-api.logs', so that easy-samba will save its logs to disk
-    touch /easy-samba/share/logs/easy-samba.logs
-    touch /easy-samba/share/logs/remote-api.logs
+    touch /mnt/disk2/easy-samba-logs/easy-samba.logs
+    touch /mnt/disk2/easy-samba-logs/remote-api.logs
     
-    # finally, we can start our easy-samba container the usual way
+    # finally, we can start our easy-samba container adding a new volume to the command line
+    docker run ... -v /easy-samba/share:/share -v /mnt/disk2/easy-samba-logs:/share/logs ...
     ```
     
     > COMMITS: NEW-8
