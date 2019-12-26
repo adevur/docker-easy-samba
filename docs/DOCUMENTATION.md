@@ -842,7 +842,7 @@ async function myAsyncFunction(){
 ```
 
 ### `remote.isReachable()` method
-This method can be used to test connectivity towards a remote container using `EasySamba Remote API`. This method returns `false` in case the remote container is not reachable: URL, port or certificate are not correct, or remote container is not running, or `Remote API` is not running. This function doesn't check if provided credentials valid (see function `remote.isAuthValid()` for that purpose).
+This method can be used to test connectivity towards a remote container using `EasySamba Remote API`. This method returns `false` in case the remote container is not reachable: URL, port or certificate are not correct, or remote container is not running, or `Remote API` is not running. This function doesn't check if provided credentials are valid (see function `remote.isAuthValid()` for that purpose).
 
 > NOTE: this function is async and returns a Promise.
 
@@ -937,7 +937,7 @@ This method can be used to get `easy-samba` and `Remote API` logs of a remote co
 
 - ARGUMENTS: N/A
 
-- OUTPUT: it returns a Promise that resolves to an object that looks like this: `{ "easy-samba-logs": "...", "remote-api-logs": "..." }`; logs are retrieved from files `/share/config/easy-samba.logs` and `/share/config/remote-api.logs`, located inside the remote container
+- OUTPUT: it returns a Promise that resolves to an object that looks like this: `{ "easy-samba-logs": "...", "remote-api-logs": "..." }`; logs are retrieved from files `/share/logs/easy-samba.logs` and `/share/logs/remote-api.logs`, located inside the remote container
 
 - ERRORS: this is the list of possible error messages that can be thrown by this function:
 
